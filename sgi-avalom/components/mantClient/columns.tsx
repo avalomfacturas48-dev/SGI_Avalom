@@ -11,52 +11,47 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Cliente } from "@/lib/types";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
-};
-
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Cliente>[] = [
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "cli_nombre",
+    header: "Nombre",
   },
   {
-    accessorKey: "email",
-    header: "Email",
+    accessorKey: "cli_papellido",
+    header: "Apellido",
   },
   {
-    accessorKey: "amount",
-    header: "Amount",
+    accessorKey: "cli_cedula",
+    header: "Cedula",
+  },
+  {
+    accessorKey: "cli_correo",
+    header: "Correo",
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const payment = row.original;
+      const cliente = row.original;
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">Abrir Menú</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() => navigator.clipboard.writeText(cliente.cli_id.toString())}
             >
-              Copy payment ID
+              Copiar ID cliente
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem>Ver cliente</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

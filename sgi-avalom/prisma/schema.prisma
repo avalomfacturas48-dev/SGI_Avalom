@@ -191,7 +191,7 @@ model ava_usuario {
   usu_sapellido     String?   @db.String(30)
   usu_cedula        String?   @unique(map: "ava_usuario_unq01") @db.String(15)
   usu_correo        String    @unique(map: "ava_usuario_unq02") @db.String(50)
-  usu_contrasena    String    @db.String(15)
+  usu_contrasena    String    @db.String(500)
   usu_telefono      String?   @db.String(15)
   usu_fechacreacion DateTime? @default(dbgenerated("current_date()")) @db.Date
   usu_estado        String    @db.String(1)

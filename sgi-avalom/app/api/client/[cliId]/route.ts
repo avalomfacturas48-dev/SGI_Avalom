@@ -4,17 +4,17 @@ import { authenticate } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { cliId: string } }
 ) {
   try {
     return authenticate(async (req: NextRequest, res: NextResponse) => {
-      const user = await prisma.ava_usuario.findUnique({
-        where: { usu_id: parseInt(params.userId) },
+      const client = await prisma.ava_cliente.findUnique({
+        where: { cli_id: parseInt(params.cliId) },
       });
-      if (!user) {
-        return NextResponse.json({ status: 404, message: "User Not Found" });
+      if (!client) {
+        return NextResponse.json({ status: 404, message: "Client Not Found" });
       }
-      return NextResponse.json(user);
+      return NextResponse.json(client);
     })(request, new NextResponse());
   } catch (error) {
     console.error("Error:", error);
@@ -24,37 +24,36 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { cliId: string } }
 ) {
   try {
     return authenticate(async (req: NextRequest, res: NextResponse) => {
       const body = await request.json();
-      if (!body.usu_nombre || !body.usu_correo) {
-        return NextResponse.json({ status: 400, message: "Bad Request" });
-      }
-      const user = await prisma.ava_usuario.update({
-        where: { usu_id: parseInt(params.userId) },
+      const updatedClient = await prisma.ava_cliente.update({
+        where: { cli_id: parseInt(params.cliId) },
         data: body,
       });
-      return NextResponse.json(user);
+      return NextResponse.json(updatedClient);
     })(request, new NextResponse());
   } catch (error) {
+    console.error("Error:", error);
     return NextResponse.json({ status: 500, message: "Internal Server Error" });
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: { cliId: string } }
 ) {
   try {
     return authenticate(async (req: NextRequest, res: NextResponse) => {
-      const user = await prisma.ava_usuario.delete({
-        where: { usu_id: parseInt(params.userId) },
+      await prisma.ava_cliente.delete({
+        where: { cli_id: parseInt(params.cliId) },
       });
-      return NextResponse.json(user);
+      return NextResponse.json({ status: 204 });
     })(request, new NextResponse());
   } catch (error) {
+    console.error("Error:", error);
     return NextResponse.json({ status: 500, message: "Internal Server Error" });
   }
 }

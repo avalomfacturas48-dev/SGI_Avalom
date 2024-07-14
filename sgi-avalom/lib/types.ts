@@ -1,3 +1,31 @@
+export interface Cliente {
+  cli_id: number
+  cli_nombre: string
+  cli_papellido: string
+  cli_sapellido: string
+  cli_cedula: string
+  cli_telefono: string
+  cli_correo: string
+  cli_fechacreacion: string
+  ava_deposito: AvaDeposito[]
+  ava_pago: AvaPago[]
+}
+
+export interface AvaDeposito {
+  dep_id: number
+  dep_monto: number
+  dep_fecha: string
+  cli_id: number
+}
+
+export interface AvaPago {
+  pago_id: number
+  pago_monto: number
+  pago_fecha: string
+  cli_id: number
+}
+
+
 export interface User {
   usu_id: number;
   usu_nombre: string;
