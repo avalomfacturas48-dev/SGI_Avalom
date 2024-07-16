@@ -19,7 +19,6 @@ const config = {
     },
     extend: {
       colors: {
-        sideBar: "hsl(var(--sideBar))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -37,6 +36,10 @@ const config = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        nuevo: {
+          DEFAULT: "hsl(var(--nuevo))",
+          foreground: "hsl(var(--nuevo-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -52,6 +55,14 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        sideBar: {
+          DEFAULT: "hsl(var(--sideBar))",
+          foreground: "hsl(var(--sideBar-foreground))",
+        },
+        backgroundWhite: {
+          DEFAULT: "hsl(var(--backgroundWhite))",
+          foreground: "hsl(var(--backgroundWhite-foreground))",
         },
       },
       borderRadius: {

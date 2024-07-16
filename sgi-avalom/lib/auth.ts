@@ -22,13 +22,14 @@ export const comparePassword = async (
 
 // Generar el token JWT
 export const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "24h" });
 };
 
 // Verificar el token JWT
-export const verifyToken = (token: string) => {
+export const verifyToken = (token: string): User | null => {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET) as User;
+    return decoded;
   } catch (error) {
     return null;
   }

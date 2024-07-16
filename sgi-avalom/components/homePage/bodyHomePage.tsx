@@ -77,22 +77,22 @@ const cardData = [
   {
     label: "Total Revenue",
     amount: "$45,231.89",
-    discription: "+20.1% from last month",
+    description: "+20.1% from last month",
   },
   {
     label: "Subscriptions",
     amount: "+2350",
-    discription: "+180.1% from last month",
+    description: "+180.1% from last month",
   },
   {
     label: "Sales",
     amount: "+12,234",
-    discription: "+19% from last month",
+    description: "+19% from last month",
   },
   {
     label: "Active Now",
     amount: "+573",
-    discription: "+201 since last hour",
+    description: "+201 since last hour",
   },
 ];
 
@@ -161,18 +161,18 @@ const BodyHomePage: React.FC = () => {
       <ModeToggle />
       <section className="grid w-full grid-cols-1 gap-4 gap-x-8 transition-all sm:grid-cols-2 xl:grid-cols-4">
         {cardData.map((d, i) => (
-          <Card>
+          <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{d.label}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{d.amount}</div>
-              <p className="text-xs text-muted-foreground">{d.discription}</p>
+              <p className="text-xs text-muted-foreground">{d.description}</p>
             </CardContent>
           </Card>
         ))}
       </section>
-      <section className="grid grid-cols-1  gap-4 transition-all lg:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 transition-all lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Recent Sales</CardTitle>
@@ -207,7 +207,7 @@ const BodyHomePage: React.FC = () => {
           </CardHeader>
           <CardContent className="grid gap-8">
             {uesrSalesData.map((d, i) => (
-              <div className="flex items-center gap-4">
+              <div key={i} className="flex items-center gap-4">
                 <div className=" h-12 w-12 rounded-full bg-gray-100 p-1">
                   <img
                     width={200}
