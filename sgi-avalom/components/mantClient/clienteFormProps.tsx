@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useState } from "react";
 import { Cliente } from "@/lib/types";
 import axios from "axios";
@@ -6,21 +5,21 @@ import cookie from "js-cookie";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
-import useClientStore from "@/lib/clientStore";
+import useClientStore from "@/lib/zustand/clientStore";
 import { Alert } from "@/components/ui/alert";
 
 interface ClienteFormProps {
   action: "create" | "edit" | "view";
-  cliente?: Cliente;
-  onSuccess?: () => void;
+  entity?: Cliente;
+  onSuccess: () => void;
 }
 
 const ClienteForm: React.FC<ClienteFormProps> = ({
   action,
-  cliente,
+  entity,
   onSuccess,
 }) => {
-  const initialFormData = cliente || {
+  const initialFormData = entity || {
     cli_nombre: "",
     cli_papellido: "",
     cli_sapellido: "",
@@ -114,7 +113,7 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
             id="cli_sapellido"
             name="cli_sapellido"
             type="text"
-            value={formData.cli_sapellido}
+            value={formData.cli_sapellido || ""}
             onChange={handleChange}
             disabled={action === "view"}
           />
@@ -148,7 +147,7 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
             id="cli_correo"
             name="cli_correo"
             type="email"
-            value={formData.cli_correo}
+            value={formData.cli_correo || ""}
             onChange={handleChange}
             disabled={action === "view"}
           />

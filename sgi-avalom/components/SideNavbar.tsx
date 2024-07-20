@@ -1,23 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Nav } from "./ui/nav";
-import {
-  LayoutDashboard,
-  BookUser,
-  ChevronRight,
-  Users,
-  User,
-} from "lucide-react";
-import { Button } from "./ui/button";
 import { useWindowWidth } from "@react-hook/window-size";
+import { LayoutDashboard, BookUser, ChevronRight, Users } from "lucide-react";
+import { Nav } from "./ui/nav";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/lib/UserContext";
 
-type Props = {};
-
-const SideNavbar: React.FC<Props> = () => {
+const SideNavbar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [mounted, setMounted] = useState(false);
   const onlyWidth = useWindowWidth();
   const mobileWidth = onlyWidth < 768;
+
+  const { user } = useUser();
 
   useEffect(() => {
     setMounted(true); // Marcar el componente como montado
@@ -32,6 +28,13 @@ const SideNavbar: React.FC<Props> = () => {
     return null;
   }
 
+  const truncateName = (name: string, maxLength: number) => {
+    if (name.length > maxLength) {
+      return `${name.substring(0, maxLength)}...`;
+    }
+    return name;
+  };
+
   return (
     <div
       onMouseEnter={() => {
@@ -40,7 +43,7 @@ const SideNavbar: React.FC<Props> = () => {
       onMouseLeave={() => {
         setIsCollapsed(true);
       }}
-      className="relative bg-sideBar min-w-[60px] md:min-w-[80px] border-r px-3 pb-10 pt-24 "
+      className="relative bg-sideBar min-w-[60px] md:min-w-[95px] border-r px-3 pb-10 pt-24"
     >
       {!mobileWidth && (
         <div className="absolute right-[-20px] top-7">
@@ -53,6 +56,27 @@ const SideNavbar: React.FC<Props> = () => {
           </Button>
         </div>
       )}
+      <div className="flex items-center flex-col gap-2 mb-4">
+        {user && (
+          <>
+            <Avatar>
+              <AvatarImage
+                src={"https://github.com/shadcn.png"}
+                alt={`@${user.usu_nombre}`}
+              />
+              <AvatarFallback>
+                {user.usu_nombre ? user.usu_nombre[0] : "U"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden md:flex text-sm md:text-sm">
+              {truncateName(user.usu_nombre, 8)}
+            </span>
+            <span className="flex md:hidden text-sm md:text-sm">
+            {user.usu_nombre ? user.usu_nombre.substring(0, 3) : "U"}
+            </span>
+          </>
+        )}
+      </div>
       <Nav
         isCollapsed={mobileWidth ? true : isCollapsed}
         links={[

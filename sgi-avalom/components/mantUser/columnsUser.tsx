@@ -1,4 +1,13 @@
 "use client";
+import axios from "axios";
+import cookie from "js-cookie";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import useUserStore from "@/lib/zustand/userStore";
+import { User } from "@/lib/types";
+import AlertDialog from "@/components/alertDialog";
+import UserForm from "@/components/mantUser/UserFormProps";
+import ManageActions from "@/components/dataTable/manageActions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,15 +16,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ColumnDef } from "@tanstack/react-table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { User } from "@/lib/types";
-// import UserAlertDialog from "./userAlertDialog";
-// import ManageUserActions from "./manageUserActions";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import axios from "axios";
-import cookie from "js-cookie";
-// import useUserStore from "@/lib/userStore";
+
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -76,9 +79,9 @@ export const columns: ColumnDef<User>[] = [
     id: "actions",
     cell: ({ row }) => {
       const user = row.original;
-    //   const { removeUser } = useUserStore((state) => ({
-    //     removeUser: state.removeUser,
-    //   }));
+      const { removeUser } = useUserStore((state) => ({
+        removeUser: state.removeUser,
+      }));
 
       const handleAction = async () => {
         try {
@@ -93,11 +96,11 @@ export const columns: ColumnDef<User>[] = [
             "Content-Type": "application/json",
           };
 
-          const response = await axios.delete(`/api/user/${user.usu_id}`, {
+          const response = await axios.delete(`/api/users/${user.usu_id}`, {
             headers,
           });
           if (response.data) {
-            // removeUser(user.usu_id);
+            removeUser(user.usu_id);
           }
         } catch (error) {
           console.error("Error al borrar usuario:", error);
@@ -122,30 +125,32 @@ export const columns: ColumnDef<User>[] = [
             >
               Copiar ID usuario
             </DropdownMenuItem>
-            {/* <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <ManageUserActions
+            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+              <ManageActions<User>
                 title={"Ver usuario"}
-                titleButtom="Ver Usuario"
+                titleButton="Ver Usuario"
                 description={"Visualiza los datos del usuario"}
                 action={"view"}
                 classn={"p-4 m-0 h-8 w-full"}
                 variant={"ghost"}
-                user={user}
+                entity={user}
+                FormComponent={UserForm}
               />
             </div>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <ManageUserActions
+              <ManageActions<User>
                 title={"Editar Usuario"}
-                titleButtom="Editar Usuario"
+                titleButton="Editar Usuario"
                 description={"Edita los datos del usuario"}
                 action={"edit"}
                 classn={"p-4 m-0 h-8 w-full"}
                 variant={"ghost"}
-                user={user}
+                entity={user}
+                FormComponent={UserForm}
               />
             </div>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <UserAlertDialog
+              <AlertDialog
                 title="Está seguro?"
                 description="Esta acción no se puede deshacer. Está seguro de que desea borrar este usuario?"
                 triggerText="Borrar Usuario"
@@ -155,7 +160,7 @@ export const columns: ColumnDef<User>[] = [
                 variant={"ghost"}
                 onAction={handleAction}
               />
-            </div> */}
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       );

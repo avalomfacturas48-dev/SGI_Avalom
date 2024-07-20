@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Cliente } from "./types";
+import { Cliente } from "../types";
 
 interface ClientState {
   clients: Cliente[];

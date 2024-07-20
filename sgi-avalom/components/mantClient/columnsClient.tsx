@@ -1,4 +1,13 @@
 "use client";
+import axios from "axios";
+import cookie from "js-cookie";
+import { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import useClientStore from "@/lib/zustand/clientStore";
+import { Cliente } from "@/lib/types";
+import ClientAlertDialog from "@/components/alertDialog";
+import ClienteForm from "@/components/mantClient/clienteFormProps";
+import ManageActions from "@/components/dataTable/manageActions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,16 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Cliente } from "@/lib/types";
-import ClientAlertDialog from "./clientAlertDialog";
-import ManageClientActions from "./manageClientActions";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import axios from "axios";
-import cookie from "js-cookie";
-import useClientStore from "@/lib/clientStore";
 
 export const columnsClient: ColumnDef<Cliente>[] = [
   // {
@@ -138,25 +139,27 @@ export const columnsClient: ColumnDef<Cliente>[] = [
               Copiar ID cliente
             </DropdownMenuItem>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <ManageClientActions
+              <ManageActions<Cliente>
                 title={"Ver cliente"}
-                titleButtom="Ver Cliente"
+                titleButton={"Ver Cliente"}
                 description={"Visualiza los datos del cliente"}
                 action={"view"}
                 classn={"p-4 m-0 h-8 w-full"}
                 variant={"ghost"}
-                cliente={cliente}
+                entity={cliente}
+                FormComponent={ClienteForm}
               />
             </div>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <ManageClientActions
-                title={"Editar Cliente"}
-                titleButtom="Editar Cliente"
-                description={"Edita los datos del cliente"}
-                action={"edit"}
+              <ManageActions<Cliente>
+                titleButton="Editar"
+                title="Editar Cliente"
+                description="Modifica la información del cliente"
+                action="edit"
                 classn={"p-4 m-0 h-8 w-full"}
                 variant={"ghost"}
-                cliente={cliente}
+                entity={cliente}
+                FormComponent={ClienteForm}
               />
             </div>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">

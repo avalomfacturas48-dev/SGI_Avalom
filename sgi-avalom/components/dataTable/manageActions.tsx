@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+"use client";
 import {
   Dialog,
   DialogContent,
@@ -17,13 +17,18 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import ClienteForm from "./clienteFormProps";
 import { useWindowWidth } from "@react-hook/window-size";
 import { useState } from "react";
-import { Cliente } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
-interface ManageClientActionsProps {
-  titleButtom?: string;
+interface FormProps<T> {
+  action: "create" | "edit" | "view";
+  entity?: T;
+  onSuccess: () => void;
+}
+
+interface ManageActionsProps<T> {
+  titleButton?: string;
   title: string;
   description: string;
   action: "create" | "edit" | "view";
@@ -39,19 +44,21 @@ interface ManageClientActionsProps {
     | undefined;
   classn?: string;
   icon?: React.ReactNode;
-  cliente?: Cliente;
+  entity?: T;
+  FormComponent: React.FC<FormProps<T>>;
 }
 
-const ManageClientActions: React.FC<ManageClientActionsProps> = ({
-  titleButtom,
+const ManageActions = <T,>({
+  titleButton,
   title,
   description,
   action,
   variant,
   classn,
   icon,
-  cliente,
-}) => {
+  entity,
+  FormComponent,
+}: ManageActionsProps<T>) => {
   const [open, setOpen] = useState(false);
   const onlyWidth = useWindowWidth();
   const isDesktop = onlyWidth >= 768;
@@ -70,7 +77,7 @@ const ManageClientActions: React.FC<ManageClientActionsProps> = ({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button variant={variant} className={classn} onClick={toggleOpen}>
-            {titleButtom}
+            {titleButton}
             {icon}
           </Button>
         </DialogTrigger>
@@ -79,9 +86,9 @@ const ManageClientActions: React.FC<ManageClientActionsProps> = ({
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
-          <ClienteForm
+          <FormComponent
             action={action}
-            cliente={cliente}
+            entity={entity}
             onSuccess={handleSuccess}
           />
         </DialogContent>
@@ -93,7 +100,7 @@ const ManageClientActions: React.FC<ManageClientActionsProps> = ({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Button variant={variant} className={classn} onClick={toggleOpen}>
-          {titleButtom}
+          {titleButton}
           {icon}
         </Button>
       </DrawerTrigger>
@@ -102,15 +109,15 @@ const ManageClientActions: React.FC<ManageClientActionsProps> = ({
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
-        <ClienteForm
+        <FormComponent
           action={action}
-          cliente={cliente}
+          entity={entity}
           onSuccess={handleSuccess}
         />
         <DrawerFooter className="pt-2">
           <DrawerClose asChild onClick={toggleOpen}>
             <Button variant={variant} className={classn}>
-              Cancel
+              Cancelar
             </Button>
           </DrawerClose>
         </DrawerFooter>
@@ -119,4 +126,4 @@ const ManageClientActions: React.FC<ManageClientActionsProps> = ({
   );
 };
 
-export default ManageClientActions;
+export default ManageActions;

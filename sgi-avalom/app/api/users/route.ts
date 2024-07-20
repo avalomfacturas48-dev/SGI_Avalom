@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import bcrypt from "bcryptjs";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -22,9 +23,17 @@ export async function POST(request: NextRequest) {
     try {
       const body = await request.json();
 
-      if (!body.usu_nombre || !body.usu_correo || !body.usu_contrasena) {
+      if (
+        !body.usu_nombre ||
+        !body.usu_papellido ||
+        !body.usu_cedula ||
+        !body.usu_correo ||
+        !body.usu_contrasena ||
+        !body.usu_estado ||
+        !body.usu_rol
+      ) {
         return NextResponse.json(
-          { error: "Missing required fields" },
+          { error: "Faltan campos relevantes" },
           { status: 400 }
         );
       }
@@ -49,11 +58,19 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json(user);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating user:", error);
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          return NextResponse.json(
+            { error: "Existe un usuario con datos relevantes repetidos" },
+            { status: 409 }
+          );
+        }
+      }
       return NextResponse.json(
-        { error: "Invalid email or password" },
-        { status: 401 }
+        { error: "Error interno del servidor" },
+        { status: 500 }
       );
     }
   })(request, new NextResponse());

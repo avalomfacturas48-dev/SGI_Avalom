@@ -1,16 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { DataTable } from "@/components/mantClient/data-table";
+import { DataTable } from "@/components/dataTable/data-table";
 import { columnsClient } from "@/components/mantClient/columnsClient";
 import { ModeToggle } from "@/components/modeToggle";
 import axios from "axios";
 import { useEffect } from "react";
-import useClientStore from "@/lib/clientStore";
-import ManageClientActions from "@/components/mantClient/manageClientActions";
+import useClientStore from "@/lib/zustand/clientStore";
+import ManageActions from "@/components/dataTable/manageActions";
 import { Plus } from "lucide-react";
 import cookie from "js-cookie";
+import ClienteForm from "@/components/mantClient/clienteFormProps";
+import { Cliente } from "@/lib/types";
 
 const BodyMantClient: React.FC = () => {
   const { clients, setClients } = useClientStore((state) => ({
@@ -49,14 +50,15 @@ const BodyMantClient: React.FC = () => {
         <Card className="flex flex-col md:flex-row justify-between items-center w-full p-2">
           <h1 className="text-xl md:text-2xl font-bold">Gestión de Clientes</h1>
           <div className="flex flex-wrap justify-center md:justify-end">
-            <ManageClientActions
+            <ManageActions<Cliente>
               variant={"nuevo"}
-              titleButtom={"Nuevo Cliente"}
+              titleButton={"Nuevo Cliente"}
               icon={<Plus />}
               title={"Nuevo Cliente"}
               description={"Ingresa un nuevo cliente"}
               action={"create"}
               classn={"m-2"}
+              FormComponent={ClienteForm}
             />
             <Button className="m-2">Exportar Clientes</Button>
             <Button className="m-2">Descargar Plantilla</Button>
