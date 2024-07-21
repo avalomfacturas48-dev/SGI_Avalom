@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useWindowWidth } from "@react-hook/window-size";
-import { LayoutDashboard, BookUser, ChevronRight, Users } from "lucide-react";
+import { LayoutDashboard, BookUser, ChevronRight, Users, Building2 } from "lucide-react";
 import { Nav } from "./ui/nav";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,6 +96,12 @@ const SideNavbar: React.FC = () => {
             title: "Usuarios",
             href: "/mantUser",
             icon: Users,
+            variant: "ghost",
+          },
+          {
+            title: "Edificios",
+            href: "/mantBuild",
+            icon: Building2,
             variant: "ghost",
           },
         ]}

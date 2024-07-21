@@ -7,35 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ava_airbnb {
-  air_id            Int               @id @default(sequence(maxValue: 2147483647))
-  air_identificador String            @db.String(15)
-  air_descripcion   String?           @db.String(50)
-  edi_id            Int?
-  ava_edificio      ava_edificio?     @relation(fields: [edi_id], references: [edi_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_reservacion   ava_reservacion[]
-
-  @@index([edi_id], map: "ava_airbnb_fk01")
-}
-
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model ava_alquiler {
-  alq_id              Int                   @id @default(sequence(maxValue: 2147483647))
-  alq_monto           String                @db.String(20)
-  alq_fechapago       DateTime              @db.Date
-  alq_contrato        String?               @db.String(50)
-  alq_estado          String                @db.String(1)
-  alq_fechacreacion   DateTime?             @default(dbgenerated("current_date()")) @db.Date
-  dep_id              Int?
-  loc_id              Int?
-  ava_departamento    ava_departamento?     @relation(fields: [dep_id], references: [dep_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_local           ava_local?            @relation(fields: [loc_id], references: [loc_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_alquilermensual ava_alquilermensual[]
-  ava_deposito        ava_deposito[]
+  alq_id               Int                    @id @default(sequence(maxValue: 2147483647))
+  alq_monto            String                 @db.String(20)
+  alq_fechapago        DateTime               @db.Date
+  alq_contrato         String?                @db.String(50)
+  alq_estado           String                 @db.String(1)
+  alq_fechacreacion    DateTime?              @default(dbgenerated("current_date()")) @db.Date
+  prop_id              Int?
+  ava_propiedad        ava_propiedad?         @relation(fields: [prop_id], references: [prop_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship34")
+  ava_alquilermensual  ava_alquilermensual[]
+  ava_clientexalquiler ava_clientexalquiler[]
+  ava_deposito         ava_deposito[]
 
-  @@index([dep_id], map: "ava_alquiler_fk01")
-  @@index([loc_id], map: "ava_alquiler_fk02")
+  @@index([prop_id], map: "ava_alquiler_fk01")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -50,72 +37,41 @@ model ava_alquilermensual {
   alqm_estado        String        @db.String(1)
   alqm_fechacreacion DateTime?     @default(dbgenerated("current_date()")) @db.Date
   alq_id             Int?
-  ava_alquiler       ava_alquiler? @relation(fields: [alq_id], references: [alq_id], onDelete: NoAction, onUpdate: NoAction)
+  ava_alquiler       ava_alquiler? @relation(fields: [alq_id], references: [alq_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship19")
   ava_pago           ava_pago[]
 
   @@index([alq_id], map: "ava_alquilermensual_fk01")
 }
 
 model ava_cliente {
-  cli_id            Int            @id @default(sequence(maxValue: 2147483647))
-  cli_nombre        String         @db.String(30)
-  cli_papellido     String         @db.String(30)
-  cli_sapellido     String?        @db.String(30)
-  cli_cedula        String         @unique(map: "ava_cliente_unq01") @db.String(15)
-  cli_telefono      String         @db.String(15)
-  cli_correo        String?        @db.String(50)
-  cli_fechacreacion DateTime?      @default(dbgenerated("current_date()")) @db.Date
-  ava_deposito      ava_deposito[]
-  ava_pago          ava_pago[]
-
-  @@index([cli_correo], map: "ava_cliente_unq02")
-}
-
-model ava_departamento {
-  dep_id            Int            @id @default(sequence(maxValue: 2147483647))
-  dep_identificador String         @db.String(15)
-  dep_descripcion   String?        @db.String(50)
-  edi_id            Int?
-  ava_alquiler      ava_alquiler[]
-  ava_edificio      ava_edificio?  @relation(fields: [edi_id], references: [edi_id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([edi_id], map: "ava_departamento_fk01")
+  cli_id               Int                    @id @default(sequence(maxValue: 2147483647))
+  cli_nombre           String                 @db.String(30)
+  cli_papellido        String                 @db.String(30)
+  cli_sapellido        String?                @db.String(30)
+  cli_cedula           String                 @unique(map: "ava_cliente_unq01") @db.String(15)
+  cli_telefono         String                 @db.String(15)
+  cli_correo           String                 @unique(map: "ava_cliente_unq02") @db.String(50)
+  cli_fechacreacion    DateTime?              @default(dbgenerated("current_date()")) @db.Date
+  ava_clientexalquiler ava_clientexalquiler[]
 }
 
 model ava_deposito {
-  dep_id            Int           @id @default(sequence(maxValue: 2147483647))
-  dep_monto         String        @db.String(20)
-  dep_fechadeposito DateTime      @db.Date
-  dep_fechacreacion DateTime?     @default(dbgenerated("current_date()")) @db.Date
-  dep_documento     String?       @db.String(50)
-  cli_id            Int?
-  alq_id            Int?
-  ava_alquiler      ava_alquiler? @relation(fields: [alq_id], references: [alq_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_cliente       ava_cliente?  @relation(fields: [cli_id], references: [cli_id], onDelete: NoAction, onUpdate: NoAction)
+  depo_id          Int           @id @default(sequence(maxValue: 2147483647))
+  depo_montoactual String        @db.String(15)
+  depo_total       String        @db.String(15)
+  depo_descripcion String?       @db.String(50)
+  alq_id           Int?
+  ava_alquiler     ava_alquiler? @relation(fields: [alq_id], references: [alq_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship23")
+  ava_pago         ava_pago[]
 
-  @@index([cli_id], map: "ava_deposito_fk01")
-  @@index([alq_id], map: "ava_deposito_fk02")
+  @@index([alq_id], map: "ava_deposito_fk01")
 }
 
 model ava_edificio {
-  edi_id            Int                @id @default(sequence(maxValue: 2147483647))
-  edi_identificador String             @db.String(15)
-  edi_descripcion   String?            @db.String(50)
-  ava_airbnb        ava_airbnb[]
-  ava_departamento  ava_departamento[]
-  ava_local         ava_local[]
-  ava_pagoservicio  ava_pagoservicio[]
-}
-
-model ava_local {
-  loc_id            Int            @id @default(sequence(maxValue: 2147483647))
-  loc_identificador String         @db.String(15)
-  loc_descripcion   String?        @db.String(50)
-  edi_id            Int?
-  ava_alquiler      ava_alquiler[]
-  ava_edificio      ava_edificio?  @relation(fields: [edi_id], references: [edi_id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([edi_id], map: "ava_local_fk01")
+  edi_id            Int             @id @default(sequence(maxValue: 2147483647))
+  edi_identificador String          @db.String(15)
+  edi_descripcion   String?         @db.String(50)
+  ava_propiedad     ava_propiedad[]
 }
 
 model ava_pago {
@@ -126,60 +82,56 @@ model ava_pago {
   pag_fechapago       DateTime             @db.Date
   res_id              Int?
   alqm_id             Int?
-  cli_id              Int?
-  ava_alquilermensual ava_alquilermensual? @relation(fields: [alqm_id], references: [alqm_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_cliente         ava_cliente?         @relation(fields: [cli_id], references: [cli_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_reservacion     ava_reservacion?     @relation(fields: [res_id], references: [res_id], onDelete: NoAction, onUpdate: NoAction)
+  depo_id             Int?
+  ava_reservacion     ava_reservacion?     @relation(fields: [res_id], references: [res_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship21")
+  ava_alquilermensual ava_alquilermensual? @relation(fields: [alqm_id], references: [alqm_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship22")
+  ava_deposito        ava_deposito?        @relation(fields: [depo_id], references: [depo_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship24")
 
-  @@index([res_id], map: "ava_pago_fk01")
+  @@index([depo_id], map: "ava_pago_fk01")
   @@index([alqm_id], map: "ava_pago_fk02")
-  @@index([cli_id], map: "ava_pago_fk03")
+  @@index([res_id], map: "ava_pago_fk03")
 }
 
 model ava_pagoservicio {
-  pags_id          Int           @id @default(sequence(maxValue: 2147483647))
-  pags_monto       String        @db.String(20)
-  pags_descripcion String?       @db.String(50)
-  pags_cuenta      String?       @db.String(50)
-  pags_fechapago   DateTime      @db.Date
+  pser_id          Int            @id @default(sequence(maxValue: 2147483647))
+  pser_monto       String         @db.String(15)
+  pser_fecha       DateTime       @db.Date
+  pser_descripcion String?        @db.String(50)
   ser_id           Int?
-  edi_id           Int?
-  ava_edificio     ava_edificio? @relation(fields: [edi_id], references: [edi_id], onDelete: NoAction, onUpdate: NoAction)
-  ava_servicio     ava_servicio? @relation(fields: [ser_id], references: [ser_id], onDelete: NoAction, onUpdate: NoAction)
+  prop_id          Int?
+  ava_servicio     ava_servicio?  @relation(fields: [ser_id], references: [ser_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship27")
+  ava_propiedad    ava_propiedad? @relation(fields: [prop_id], references: [prop_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship35")
 
   @@index([ser_id], map: "ava_pagoservicio_fk01")
-  @@index([edi_id], map: "ava_pagoservicio_fk02")
+  @@index([prop_id], map: "ava_pagoservicio_fk02")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model ava_reservacion {
-  res_id              Int         @id @default(sequence(maxValue: 2147483647))
-  res_nombrecliente   String      @db.String(50)
-  res_telefonocliente String?     @db.String(15)
-  res_correocliente   String?     @db.String(50)
-  res_fechacreacion   DateTime?   @default(dbgenerated("current_date()")) @db.Date
-  res_fechaentrada    DateTime    @db.Date
-  res_fechasalida     DateTime    @db.Date
-  res_estado          String      @db.String(1)
-  air_id              Int?
+  res_id              Int            @id @default(sequence(maxValue: 2147483647))
+  res_nombrecliente   String         @db.String(50)
+  res_telefonocliente String?        @db.String(15)
+  res_correocliente   String?        @db.String(50)
+  res_fechacreacion   DateTime?      @default(dbgenerated("current_date()")) @db.Date
+  res_fechaentrada    DateTime       @db.Date
+  res_fechasalida     DateTime       @db.Date
+  res_estado          String         @db.String(1)
+  prop_id             Int?
   ava_pago            ava_pago[]
-  ava_airbnb          ava_airbnb? @relation(fields: [air_id], references: [air_id], onDelete: NoAction, onUpdate: NoAction)
+  ava_propiedad       ava_propiedad? @relation(fields: [prop_id], references: [prop_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship33")
 
-  @@index([air_id], map: "ava_reservacion_fk01")
+  @@index([prop_id], map: "ava_reservacion_fk01")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model ava_servicio {
-  ser_id            Int                @id @default(sequence(maxValue: 2147483647))
-  ser_nombre        String             @db.String(50)
-  ser_descripcion   String?            @db.String(100)
-  ser_estado        String             @db.String(1)
-  ser_fechacreacion DateTime?          @default(dbgenerated("current_date()")) @db.Date
-  ava_pagoservicio  ava_pagoservicio[]
-
-  @@index([ser_nombre], map: "ava_servicio_unq01")
+  ser_id           Int                @id @default(sequence(maxValue: 2147483647))
+  ser_nombre       String             @db.String(30)
+  ser_servicio     String?            @db.String(40)
+  ser_mediopago    String?            @db.String(30)
+  ava_pagoservicio ava_pagoservicio[]
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -189,11 +141,52 @@ model ava_usuario {
   usu_nombre        String    @db.String(30)
   usu_papellido     String    @db.String(30)
   usu_sapellido     String?   @db.String(30)
-  usu_cedula        String?   @unique(map: "ava_usuario_unq01") @db.String(15)
+  usu_cedula        String    @unique(map: "ava_usuario_unq01") @db.String(15)
   usu_correo        String    @unique(map: "ava_usuario_unq02") @db.String(50)
   usu_contrasena    String    @db.String(500)
   usu_telefono      String?   @db.String(15)
   usu_fechacreacion DateTime? @default(dbgenerated("current_date()")) @db.Date
   usu_estado        String    @db.String(1)
   usu_rol           String    @db.String(1)
+}
+
+model ava_clientexalquiler {
+  alq_id       Int
+  cli_id       Int
+  ava_alquiler ava_alquiler @relation(fields: [alq_id], references: [alq_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship30")
+  ava_cliente  ava_cliente  @relation(fields: [cli_id], references: [cli_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship31")
+
+  @@id([alq_id, cli_id])
+}
+
+model ava_propiedad {
+  prop_id            Int                @id @default(sequence(maxValue: 2147483647))
+  prop_identificador String             @db.String(15)
+  prop_descripcion   String?            @db.String(50)
+  edi_id             Int?
+  tipp_id            Int?
+  ava_alquiler       ava_alquiler[]
+  ava_pagoservicio   ava_pagoservicio[]
+  ava_edificio       ava_edificio?      @relation(fields: [edi_id], references: [edi_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship32")
+  ava_tipopropiedad  ava_tipopropiedad? @relation(fields: [tipp_id], references: [tipp_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship36")
+  ava_reservacion    ava_reservacion[]
+
+  @@index([tipp_id], map: "ava_propiedad_fk01")
+  @@index([edi_id], map: "ava_propiedad_fk02")
+}
+
+model ava_tipopropiedad {
+  tipp_id       Int             @id @default(sequence(maxValue: 2147483647))
+  tipp_nombre   String          @db.String(30)
+  ava_propiedad ava_propiedad[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model parametros {
+  par_nombre      String? @db.String(30)
+  par_logo        String? @db.String(100)
+  par_correo      String? @db.String(50)
+  par_descripcion String? @db.String(50)
+
+  @@ignore
 }

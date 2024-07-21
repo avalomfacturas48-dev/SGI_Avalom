@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+// import bcrypt from "bcryptjs";
 
 export async function GET(
   request: NextRequest,
@@ -51,6 +52,7 @@ export async function PUT(
       }
 
       const emailLowerCase = body.usu_correo.toLowerCase();
+      // const hashedPassword = await bcrypt.hash(body.usu_contrasena, 10);
 
       const user = await prisma.ava_usuario.update({
         where: { usu_id: parseInt(params.userId) },
@@ -60,6 +62,7 @@ export async function PUT(
           usu_sapellido: body.usu_sapellido,
           usu_cedula: body.usu_cedula,
           usu_correo: emailLowerCase,
+          // usu_contrasena: hashedPassword,
           usu_telefono: body.usu_telefono,
           usu_estado: body.usu_estado,
           usu_rol: body.usu_rol,

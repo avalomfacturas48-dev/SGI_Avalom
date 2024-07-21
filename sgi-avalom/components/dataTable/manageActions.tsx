@@ -20,6 +20,8 @@ import {
 import { useWindowWidth } from "@react-hook/window-size";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface FormProps<T> {
   action: "create" | "edit" | "view";
@@ -81,16 +83,18 @@ const ManageActions = <T,>({
             {icon}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[825px]">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
-          <FormComponent
-            action={action}
-            entity={entity}
-            onSuccess={handleSuccess}
-          />
+          <ScrollArea className="h-72 rounded-md">
+            <FormComponent
+              action={action}
+              entity={entity}
+              onSuccess={handleSuccess}
+            />
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     );
