@@ -5,14 +5,8 @@ import { authenticate } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const buildings = await prisma.ava_propiedad.findMany({
-        include: {
-          ava_alquiler: true,
-          ava_tipopropiedad: true,
-          ava_edificio: true,
-        },
-      });
-      return NextResponse.json(buildings);
+      const tiposPropiedad = await prisma.ava_tipopropiedad.findMany();
+      return NextResponse.json(tiposPropiedad);
     } catch (error) {
       return NextResponse.json(
         { error: "Error interno del servidor" },
@@ -25,13 +19,23 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const data = await req.json();
-      const property = await prisma.ava_propiedad.create({
-        data,
+      const body = await request.json();
+
+      if (!body.tipp_nombre) {
+        return NextResponse.json(
+          { error: "Faltan campos relevantes" },
+          { status: 400 }
+        );
+      }
+
+      const tipoPropiedad = await prisma.ava_tipopropiedad.create({
+        data: {
+          tipp_nombre: body.tipp_nombre,
+        },
       });
-      return NextResponse.json(property);
+
+      return NextResponse.json(tipoPropiedad);
     } catch (error) {
-      console.error(error);
       return NextResponse.json(
         { error: "Error interno del servidor" },
         { status: 500 }

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import useBuildingStore from "@/lib/zustand/buildStore";
+import axios from "axios";
+import cookie from "js-cookie";
 
 interface BuildFormProps {
   action: "create" | "edit" | "view";
@@ -38,14 +40,36 @@ const BuildForm: React.FC<BuildFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const token = cookie.get("token");
+      if (!token) {
+        console.error("No hay token disponible");
+        setError("No hay token disponible");
+        return;
+      }
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       if (action === "create") {
-        addBuilding(formData as AvaEdificio);
-        console.log("Edificio creado:", formData);
-        onSuccess && onSuccess();
+        const response = await axios.post("/api/building", formData, {
+          headers,
+        });
+        if (response.data) {
+          addBuilding(response.data);
+          console.log("Edificio creado:", formData);
+          onSuccess && onSuccess();
+        }
       } else if (action === "edit") {
-        updateBuilding(formData as AvaEdificio);
-        console.log("Edificio Actualizado:", formData);
-        onSuccess && onSuccess();
+        const response = await axios.put(`/api/building/${building?.edi_id}`, formData, {
+          headers,
+        });
+        if (response.data) {
+          updateBuilding(response.data);
+          console.log("Edificio Actualizado:", formData);
+          onSuccess && onSuccess();
+        }
       }
     } catch (error: any) {
       console.error("Error al guardar el Edificio:", error);

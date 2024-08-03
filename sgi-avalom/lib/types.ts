@@ -81,7 +81,7 @@ export interface AvaAlquiler {
   alq_monto: string;
   alq_fechapago: string;
   alq_contrato?: string;
-  alq_estado: string;
+  alq_estado: "A" | "F" | "C";
   alq_fechacreacion?: string
   prop_id?: number;
   ava_propiedad?: AvaPropiedad;

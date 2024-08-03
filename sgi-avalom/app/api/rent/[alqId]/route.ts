@@ -4,25 +4,20 @@ import { authenticate } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  { params }: { params: { alqId: string } }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const property = await prisma.ava_propiedad.findFirst({
-        where: { prop_id: Number(params.propId) },
-        include: {
-          ava_alquiler: true,
-          ava_tipopropiedad: true,
-          ava_edificio: true,
-        },
+      const rent = await prisma.ava_alquiler.findFirst({
+        where: { alq_id: Number(params.alqId) },
       });
-      if (!property) {
+      if (!rent) {
         return NextResponse.json(
-          { error: "Propiedad no encontrada" },
+          { error: "Alquiler no encontrado" },
           { status: 404 }
         );
       }
-      return NextResponse.json(property);
+      return NextResponse.json(rent);
     } catch (error) {
       console.error(error);
       return NextResponse.json(
@@ -35,22 +30,17 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  { params }: { params: { alqId: string } }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const data = await req.json();
-      const property = await prisma.ava_propiedad.update({
-        where: { prop_id: Number(params.propId) },
-        data: {
-          prop_identificador: data.prop_identificador,
-          prop_descripcion: data.prop_descripcion,
-          tipp_id: data.tipp_id,
-        }
+      const rent = await prisma.ava_alquiler.update({
+        where: { alq_id: Number(params.alqId) },
+        data,
       });
-      return NextResponse.json(property);
+      return NextResponse.json(rent);
     } catch (error) {
-      console.error(error);
       return NextResponse.json(
         { error: "Error interno del servidor" },
         { status: 500 }
@@ -61,15 +51,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  { params }: { params: { alqId: string } }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      await prisma.ava_propiedad.delete({
-        where: { prop_id: Number(params.propId) },
+      await prisma.ava_alquiler.delete({
+        where: { alq_id: Number(params.alqId) },
       });
       return NextResponse.json({
-        message: "Propiedad eliminada correctamente",
+        message: "Alquiler eliminado correctamente",
       });
     } catch (error) {
       return NextResponse.json(

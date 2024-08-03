@@ -5,14 +5,15 @@ import { authenticate } from "@/lib/auth";
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const buildings = await prisma.ava_propiedad.findMany({
-        include: {
-          ava_alquiler: true,
-          ava_tipopropiedad: true,
-          ava_edificio: true,
-        },
-      });
-      return NextResponse.json(buildings);
+      const rents = await prisma.ava_alquiler.findMany(
+        {
+          include: {
+            ava_alquilermensual: true,
+            ava_propiedad: true,
+          },
+        }
+      );
+      return NextResponse.json(rents);
     } catch (error) {
       return NextResponse.json(
         { error: "Error interno del servidor" },
@@ -26,12 +27,13 @@ export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const data = await req.json();
-      const property = await prisma.ava_propiedad.create({
+      console.log(data);
+      const rent = await prisma.ava_alquiler.create({
         data,
       });
-      return NextResponse.json(property);
+      return NextResponse.json(rent);
     } catch (error) {
-      console.error(error);
+      console.error("Error creating rent:", error);
       return NextResponse.json(
         { error: "Error interno del servidor" },
         { status: 500 }

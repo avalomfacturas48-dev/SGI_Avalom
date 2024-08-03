@@ -1,4 +1,3 @@
-// src/lib/zustand/buildStore.ts
 import { create } from "zustand";
 import { AvaPropiedad, AvaEdificio } from "@/lib/types";
 

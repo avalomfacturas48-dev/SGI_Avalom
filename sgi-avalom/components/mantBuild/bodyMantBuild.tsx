@@ -1,9 +1,11 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import cookie from "js-cookie";
 import axios from "axios";
 import { Plus } from "lucide-react";
 import useBuildingStore from "@/lib/zustand/buildStore";
+import useTypeStore from "@/lib/zustand/typeStore";
 import { AvaEdificio } from "@/lib/types";
 import { ModeToggle } from "@/components/modeToggle";
 import { columns } from "./columnBuild";
@@ -12,11 +14,13 @@ import ManageActions from "@/components/dataTable/manageActions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import BuildForm from "./buildFormProps";
-import { columnsProperty } from "./columnProperty";
+import { columnsProperty } from "./mantProperty/columnProperty";
 import PropertyManager from "./mantProperty/propertyManager";
+import PropertyForm from "./mantProperty/propertyFormProps";
 
 const BodyMantBuild: React.FC = () => {
   const { setBuildings, buildings } = useBuildingStore();
+  const { fetchTypes, types } = useTypeStore();
   const [selectedBuilding, setSelectedBuilding] = useState<AvaEdificio | null>(
     null
   );
@@ -27,7 +31,7 @@ const BodyMantBuild: React.FC = () => {
       console.error("No hay token disponible");
       return;
     }
-    const fetch = async () => {
+    const fetchBuildings = async () => {
       const headers = {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -37,8 +41,36 @@ const BodyMantBuild: React.FC = () => {
         setBuildings(response.data);
       }
     };
-    fetch();
+    fetchBuildings();
   }, [setBuildings]);
+
+  useEffect(() => {
+    const fetchPropertyTypes = async () => {
+      if (types.length === 0) {
+        await fetchTypes();
+      }
+    };
+    fetchPropertyTypes();
+  }, [fetchTypes, types]);
+
+  useEffect(() => {
+    if (
+      selectedBuilding &&
+      !buildings.some((b) => b.edi_id === selectedBuilding.edi_id)
+    ) {
+      // Clear selectedBuilding if it no longer exists
+      setSelectedBuilding(null);
+    }
+  }, [buildings]);
+
+  useEffect(() => {
+    const building = buildings.find(
+      (b) => b.edi_id === selectedBuilding?.edi_id
+    );
+    if (building) {
+      setSelectedBuilding(building);
+    }
+  }, [buildings, selectedBuilding?.edi_id]);
 
   return (
     <div className="flex flex-col w-full space-y-10 md:flex-row md:space-y-0 md:space-x-10">
@@ -85,6 +117,11 @@ const BodyMantBuild: React.FC = () => {
                     action={"edit"}
                     onSuccess={() => {}}
                   />
+                  <PropertyForm
+                    buildingId={selectedBuilding.edi_id}
+                    action="create"
+                    onSuccess={() => {}}
+                  />
                   <DataTable
                     columns={columnsProperty}
                     data={selectedBuilding.ava_propiedad || []}
@@ -94,7 +131,6 @@ const BodyMantBuild: React.FC = () => {
             </div>
           )}
         </div>
-        {/* <PropertyManager propertyId={1}></PropertyManager> */}
       </section>
     </div>
   );

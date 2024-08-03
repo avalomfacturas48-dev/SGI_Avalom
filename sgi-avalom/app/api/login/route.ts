@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
   const emailLowerCase = email.toLowerCase();
 
-  const user = await prisma.ava_usuario.findUnique({
+  const user = await prisma.ava_usuario.findFirst({
     where: { usu_correo: emailLowerCase },
   });
 

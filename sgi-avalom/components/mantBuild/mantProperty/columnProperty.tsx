@@ -4,6 +4,7 @@ import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import useBuildingStore from "@/lib/zustand/buildStore";
+import useTypeStore from "@/lib/zustand/typeStore";
 import { AvaPropiedad } from "@/lib/types"; // Importa AvaProperty si lo defines
 import AlertDialog from "@/components/alertDialog";
 // import BuildForm from "./buildFormProps";
@@ -17,10 +18,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import ManageActionsProperty from "./manageActionProperty";
 
 export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
   {
-    accessorKey: "prop_id",
+    accessorKey: "prop_identificador",
     header: ({ column }) => {
       return (
         <Button
@@ -38,8 +40,21 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
     header: "Descripción",
   },
   {
-    accessorKey:"ava_tipopropiedad.tipp_nombre",
-    header: "Tipo",
+    accessorKey: "tipp_id",
+    header: ({ column }) => (
+      <Button
+        variant="table"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Tipo
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const { types } = useTypeStore(); // Obtén los tipos de propiedad desde Zustand
+      const type = types.find(type => type.tipp_id === row.original.tipp_id);
+      return <span>{type ? type.tipp_nombre : 'Desconocido'}</span>;
+    }
   },
   {
     id: "actions",
@@ -49,9 +64,26 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
 
       const handleAction = async () => {
         try {
-          removeProperty(property.edi_id ?? 0, property.prop_id);
-        } catch (error) {
-          console.error("Error al borrar propiedad:", error);
+          const token = cookie.get("token");
+          if (!token) {
+            console.error("No hay token disponible");
+            return;
+          }
+
+          const headers = {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          };
+
+          const response = await axios.delete(
+            `/api/property/${property.prop_id}`,
+            { headers }
+          );
+          if (response.data) {
+            removeProperty(property.edi_id || 0, property.prop_id);
+          }
+        } catch (error: any) {
+          console.error("Error al borrar la propiedad:", error);
         }
       };
 
@@ -74,28 +106,14 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
               Copiar ID Propiedad
             </DropdownMenuItem>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              {/* <ManageActions<AvaProperty>
-                title={"Ver Propiedad"}
-                titleButton="Ver Propiedad"
-                description={"Visualiza los datos de la propiedad"}
-                action={"view"}
-                classn={"p-4 m-0 h-8 w-full"}
-                variant={"ghost"}
-                entity={property}
-                FormComponent={BuildForm}
-              /> */}
-            </div>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              {/* <ManageActions<AvaProperty>
+              <ManageActionsProperty<AvaPropiedad>
                 title={"Editar Propiedad"}
                 titleButton="Editar Propiedad"
                 description={"Edita los datos de la propiedad"}
-                action={"edit"}
                 classn={"p-4 m-0 h-8 w-full"}
                 variant={"ghost"}
-                entity={property}
-                FormComponent={BuildForm}
-              /> */}
+                propId={property.prop_id}
+              />
             </div>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
               <AlertDialog

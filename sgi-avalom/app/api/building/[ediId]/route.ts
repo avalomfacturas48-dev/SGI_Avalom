@@ -4,25 +4,23 @@ import { authenticate } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  { params }: { params: { ediId: string } }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const property = await prisma.ava_propiedad.findFirst({
-        where: { prop_id: Number(params.propId) },
+      const building = await prisma.ava_edificio.findFirst({
+        where: { edi_id: Number(params.ediId) },
         include: {
-          ava_alquiler: true,
-          ava_tipopropiedad: true,
-          ava_edificio: true,
+          ava_propiedad: true,
         },
       });
-      if (!property) {
+      if (!building) {
         return NextResponse.json(
-          { error: "Propiedad no encontrada" },
+          { error: "Edificio no encontrado" },
           { status: 404 }
         );
       }
-      return NextResponse.json(property);
+      return NextResponse.json(building);
     } catch (error) {
       console.error(error);
       return NextResponse.json(
@@ -35,22 +33,20 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  { params }: { params: { ediId: string } }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const data = await req.json();
-      const property = await prisma.ava_propiedad.update({
-        where: { prop_id: Number(params.propId) },
+      const building = await prisma.ava_edificio.update({
+        where: { edi_id: Number(params.ediId) },
         data: {
-          prop_identificador: data.prop_identificador,
-          prop_descripcion: data.prop_descripcion,
-          tipp_id: data.tipp_id,
-        }
+          edi_identificador: data.edi_identificador,
+          edi_descripcion: data.edi_descripcion,
+        },
       });
-      return NextResponse.json(property);
+      return NextResponse.json(building);
     } catch (error) {
-      console.error(error);
       return NextResponse.json(
         { error: "Error interno del servidor" },
         { status: 500 }
@@ -61,17 +57,18 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  { params }: { params: { ediId: string } }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      await prisma.ava_propiedad.delete({
-        where: { prop_id: Number(params.propId) },
+      await prisma.ava_edificio.delete({
+        where: { edi_id: Number(params.ediId) },
       });
       return NextResponse.json({
-        message: "Propiedad eliminada correctamente",
+        message: "Edificio eliminado correctamente",
       });
     } catch (error) {
+      console.error(error);
       return NextResponse.json(
         { error: "Error interno del servidor" },
         { status: 500 }

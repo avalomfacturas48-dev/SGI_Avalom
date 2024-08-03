@@ -3,8 +3,8 @@ import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import useBuildingStore from "@/lib/zustand/buildStore";
-import { AvaEdificio } from "@/lib/types";
+import { AvaAlquiler } from "@/lib/types"; // Importa AvaProperty si lo defines
+import usePropertyStore from "@/lib/zustand/propertyStore";
 import AlertDialog from "@/components/alertDialog";
 import {
   DropdownMenu,
@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-export const columns: ColumnDef<AvaEdificio>[] = [
+export const columnsRent: ColumnDef<AvaAlquiler>[] = [
   {
-    accessorKey: "edi_identificador",
+    accessorKey: "alq_id",
     header: ({ column }) => {
       return (
         <Button
@@ -32,14 +32,22 @@ export const columns: ColumnDef<AvaEdificio>[] = [
     },
   },
   {
-    accessorKey: "edi_descripcion",
-    header: "Descripción",
+    accessorKey: "alq_monto",
+    header: "Monto",
+  },
+  {
+    accessorKey: "alq_fechapago",
+    header: "Fecha de Pago",
+  },
+  {
+    accessorKey: "alq_estado",
+    header: "Estado",
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const building = row.original;
-      const { removeBuilding } = useBuildingStore();
+      const rent = row.original;
+      const { removeRental } = usePropertyStore();
 
       const handleAction = async () => {
         try {
@@ -54,17 +62,14 @@ export const columns: ColumnDef<AvaEdificio>[] = [
             "Content-Type": "application/json",
           };
 
-          const response = await axios.delete(
-            `/api/building/${building.edi_id}`,
-            {
-              headers,
-            }
-          );
+          const response = await axios.delete(`/api/rent/${rent.alq_id}`, {
+            headers,
+          });
           if (response.data) {
-            removeBuilding(building.edi_id);
+            removeRental(rent.alq_id);
           }
         } catch (error) {
-          console.error("Error al borrar Edificio:", error);
+          console.error("Error al borrar el alquiler:", error);
         }
       };
 
@@ -81,16 +86,16 @@ export const columns: ColumnDef<AvaEdificio>[] = [
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={(event) => {
-                navigator.clipboard.writeText(building.edi_id.toString());
+                navigator.clipboard.writeText(rent.alq_id.toString());
               }}
             >
-              Copiar ID Edificio
+              Copiar ID Alquiler
             </DropdownMenuItem>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
               <AlertDialog
                 title="Está seguro?"
-                description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Edificio?"
-                triggerText="Borrar Edificio"
+                description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Alquiler?"
+                triggerText="Borrar Alquiler"
                 cancelText="Cancelar"
                 actionText="Continuar"
                 classn={"p-4 m-0 h-8 w-full"}
