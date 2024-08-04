@@ -16,14 +16,14 @@ import cookie from "js-cookie";
 interface PropertyFormProps {
   action: "create" | "edit" | "view";
   property?: AvaPropiedad;
-  buildingId?: number;
+  entity?: number;
   onSuccess: () => void;
 }
 
 const PropertyForm: React.FC<PropertyFormProps> = ({
   action,
   property,
-  buildingId,
+  entity,
   onSuccess,
 }) => {
   const {
@@ -72,7 +72,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
       const propertyData = {
         ...data,
         tipp_id: tippId,
-        edi_id: buildingId,
+        edi_id: entity,
       };
 
       if (action === "create") {
@@ -82,7 +82,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
 
         if (response.data) {
           setSelectedProperty(response.data);
-          addProperty(buildingId || 0, response.data);
+          addProperty(entity || 0, response.data);
           onSuccess();
         }
       } else if (action === "edit") {

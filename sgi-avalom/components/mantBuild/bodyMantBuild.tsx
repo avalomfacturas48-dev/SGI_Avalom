@@ -17,6 +17,7 @@ import BuildForm from "./buildFormProps";
 import { columnsProperty } from "./mantProperty/columnProperty";
 import PropertyManager from "./mantProperty/propertyManager";
 import PropertyForm from "./mantProperty/propertyFormProps";
+import { Separator } from "../ui/separator";
 
 const BodyMantBuild: React.FC = () => {
   const { setBuildings, buildings } = useBuildingStore();
@@ -117,10 +118,17 @@ const BodyMantBuild: React.FC = () => {
                     action={"edit"}
                     onSuccess={() => {}}
                   />
-                  <PropertyForm
-                    buildingId={selectedBuilding.edi_id}
-                    action="create"
-                    onSuccess={() => {}}
+                  <Separator className="my-4"/>
+                  <ManageActions
+                    variant={"nuevo"}
+                    titleButton={"Nueva Propiedad"}
+                    icon={<Plus />}
+                    title={"Nueva Propiedad"}
+                    description={"Ingresa una nueva Propiedad"}
+                    action={"create"}
+                    classn={"m-2"}
+                    FormComponent={PropertyForm}
+                    entity={selectedBuilding.edi_id}
                   />
                   <DataTable
                     columns={columnsProperty}
