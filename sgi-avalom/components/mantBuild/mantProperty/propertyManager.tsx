@@ -8,6 +8,7 @@ import { DataTable } from "@/components/dataTable/data-table";
 import { columnsRent } from "@/components/mantBuild/mantProperty/mantRent/columnRent";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 
 interface PropertyManagerProps {
   propertyId: number;
@@ -58,6 +59,7 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({ propertyId }) => {
         action="edit"
         onSuccess={() => console.log("Propiedad editada")}
       />
+      <Separator className="my-4" />
       <Tabs defaultValue="view" className="w-full">
         <TabsList>
           <TabsTrigger value="create" onClick={handleNewRental}>
@@ -67,7 +69,10 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({ propertyId }) => {
         </TabsList>
         <TabsContent value="edit">
           <RentalForm action="edit" onSuccess={handleSuccess} />
-
+          <Separator className="my-4" />
+          <div className="m-2 flex flex-col md:flex-row justify-center items-center p-2">
+            <h1 className="text-lg md:text-xl font-bold">Historial de alquileres</h1>
+          </div>
           <DataTable
             columns={columnsRent}
             data={selectedProperty.ava_alquiler}

@@ -16,11 +16,11 @@ export interface Cliente {
   cli_id: number;
   cli_nombre: string;
   cli_papellido: string;
-  cli_sapellido?: string | null;
+  cli_sapellido?: string;
   cli_cedula: string;
   cli_telefono: string;
-  cli_correo?: string | null;
-  cli_fechacreacion?: string | null;
+  cli_correo?: string;
+  cli_fechacreacion?: string;
   ava_deposito: AvaDeposito[];
   ava_pago: AvaPago[];
 }

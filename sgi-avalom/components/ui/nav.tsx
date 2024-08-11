@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/tooltip";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { usePathname } from "next/navigation";
+import { useUser } from "@/lib/UserContext";
+import { useRouter } from "next/navigation";
 
 interface NavProps {
   isCollapsed: boolean;
@@ -25,6 +27,15 @@ interface NavProps {
 
 export function Nav({ links, isCollapsed }: NavProps) {
   const pathName = usePathname();
+  const { logout } = useUser();
+  const router = useRouter();
+
+  const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    logout();
+    router.push("/");
+  };
+
   return (
     <TooltipProvider>
       <div
@@ -75,7 +86,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                   }),
                   link.variant === "default" &&
                     "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                  "justify-start"
+                  "justify-start w-full"
                 )}
               >
                 <link.icon className="mr-2 h-4 w-4" />
@@ -93,6 +104,50 @@ export function Nav({ links, isCollapsed }: NavProps) {
                 )}
               </Link>
             )
+          )}
+          {isCollapsed ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleLogout(e);
+                  }}
+                  className={cn(
+                    buttonVariants({
+                      variant: "ghost",
+                      size: "icon",
+                    }),
+                    "h-9 w-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
+                  )}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="sr-only">Salir</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="flex items-center gap-4">
+                Salir
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Link
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleLogout(e);
+              }}
+              className={cn(
+                buttonVariants({
+                  variant: "ghost",
+                  size: "sm",
+                }),
+                "justify-start w-full dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white"
+              )}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Salir
+            </Link>
           )}
         </nav>
       </div>

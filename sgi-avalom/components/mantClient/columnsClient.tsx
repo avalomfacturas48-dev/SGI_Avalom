@@ -152,7 +152,7 @@ export const columnsClient: ColumnDef<Cliente>[] = [
             </div>
             <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
               <ManageActions<Cliente>
-                titleButton="Editar"
+                titleButton="Editar Cliente"
                 title="Editar Cliente"
                 description="Modifica la información del cliente"
                 action="edit"

@@ -99,6 +99,10 @@ const BodyMantBuild: React.FC = () => {
         </Card>
         <div className="flex flex-col md:flex-row space-y-10 md:space-y-0 md:space-x-10">
           <Card className="flex-1">
+            <div className="m-2 flex flex-col md:flex-row justify-center items-center p-2">
+              <h1 className="text-lg md:text-xl font-bold">Edificios</h1>
+            </div>
+
             <CardContent>
               <DataTable
                 data={buildings}
@@ -113,18 +117,24 @@ const BodyMantBuild: React.FC = () => {
             <div className="flex-1">
               <Card>
                 <CardContent>
+                  <div className="m-2 flex flex-col md:flex-row justify-center items-center p-2">
+                    <h1 className="text-lg md:text-xl font-bold">Edificio</h1>
+                  </div>
                   <BuildForm
                     building={selectedBuilding}
                     action={"edit"}
                     onSuccess={() => {}}
                   />
-                  <Separator className="my-4"/>
+                  <Separator className="my-4" />
+                  <div className="m-2 flex flex-col md:flex-row justify-center items-center p-2">
+                    <h1 className="text-lg md:text-xl font-bold">Alquileres</h1>
+                  </div>
                   <ManageActions
                     variant={"nuevo"}
-                    titleButton={"Nueva Propiedad"}
+                    titleButton={"Nuevo Alquiler"}
                     icon={<Plus />}
-                    title={"Nueva Propiedad"}
-                    description={"Ingresa una nueva Propiedad"}
+                    title={"Nuevo Alquiler"}
+                    description={"Ingresa una nuevo Alquiler"}
                     action={"create"}
                     classn={"m-2"}
                     FormComponent={PropertyForm}

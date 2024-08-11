@@ -1,11 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useWindowWidth } from "@react-hook/window-size";
-import { LayoutDashboard, BookUser, ChevronRight, Users, Building2 } from "lucide-react";
+import {
+  LayoutDashboard,
+  BookUser,
+  ChevronRight,
+  Users,
+  Building2,
+  LogOut,
+} from "lucide-react";
 import { Nav } from "./ui/nav";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/lib/UserContext";
+import { useRouter } from "next/navigation";
 
 const SideNavbar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -13,17 +21,22 @@ const SideNavbar: React.FC = () => {
   const onlyWidth = useWindowWidth();
   const mobileWidth = onlyWidth < 768;
 
-  const { user } = useUser();
+  const { user, logout } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
-    setMounted(true); // Marcar el componente como montado
+    setMounted(true);
   }, []);
 
   function toggleSidebar() {
     setIsCollapsed(!isCollapsed);
   }
 
-  // Renderizar null en el servidor para evitar problemas de hidratación
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   if (!mounted) {
     return null;
   }
@@ -56,7 +69,7 @@ const SideNavbar: React.FC = () => {
           </Button>
         </div>
       )}
-      <div className="flex items-center flex-col gap-2 mb-4">
+      <div className="flex items-center flex-col gap-2 m-1">
         {user && (
           <>
             <Avatar>
@@ -72,7 +85,7 @@ const SideNavbar: React.FC = () => {
               {truncateName(user.usu_nombre, 8)}
             </span>
             <span className="flex md:hidden text-sm md:text-sm">
-            {user.usu_nombre ? user.usu_nombre.substring(0, 3) : "U"}
+              {user.usu_nombre ? user.usu_nombre.substring(0, 3) : "U"}
             </span>
           </>
         )}

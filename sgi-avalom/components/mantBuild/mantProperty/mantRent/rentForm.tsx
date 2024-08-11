@@ -32,29 +32,36 @@ interface RentalFormProps {
 }
 
 const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
-  const { addRental, updateRental, selectedProperty, selectedRental, setSelectedRental } = usePropertyStore(
-    (state) => ({
-      addRental: state.addRental,
-      updateRental: state.updateRental,
-      selectedProperty: state.selectedProperty,
-      selectedRental: state.selectedRental,
-      setSelectedRental: state.setSelectedRental,
-    })
-  );
+  const {
+    addRental,
+    updateRental,
+    selectedProperty,
+    selectedRental,
+    setSelectedRental,
+  } = usePropertyStore((state) => ({
+    addRental: state.addRental,
+    updateRental: state.updateRental,
+    selectedProperty: state.selectedProperty,
+    selectedRental: state.selectedRental,
+    setSelectedRental: state.setSelectedRental,
+  }));
 
   const [error, setError] = useState<string | null>(null);
 
-  const defaultValues = action === "create" ? {
-    alq_monto: "",
-    alq_fechapago: "",
-    alq_contrato: "",
-    alq_estado: "A" as "A",
-  } : selectedRental || {
-    alq_monto: "",
-    alq_fechapago: "",
-    alq_contrato: "",
-    alq_estado: "A" as "A",
-  };
+  const defaultValues =
+    action === "create"
+      ? {
+          alq_monto: "",
+          alq_fechapago: "",
+          alq_contrato: "",
+          alq_estado: "A" as "A",
+        }
+      : selectedRental || {
+          alq_monto: "",
+          alq_fechapago: "",
+          alq_contrato: "",
+          alq_estado: "A" as "A",
+        };
 
   const form = useForm<z.infer<typeof rentalFormSchema>>({
     resolver: zodResolver(rentalFormSchema),
@@ -126,6 +133,9 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="m-2 flex flex-col md:flex-row justify-center items-center p-2">
+        <h1 className="text-lg md:text-xl font-bold">Editar Alquiler</h1>
+      </div>
       <div className="grid grid-cols-2 gap-4 m-3">
         <div>
           <Label htmlFor="alq_monto">Monto</Label>
@@ -146,12 +156,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             name="alq_fechapago"
             control={control}
             render={({ field }) => (
-              <Input
-                {...field}
-                id="alq_fechapago"
-                type="text"
-                required
-              />
+              <Input {...field} id="alq_fechapago" type="text" required />
             )}
           />
           {errors.alq_fechapago && (
@@ -164,11 +169,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             name="alq_contrato"
             control={control}
             render={({ field }) => (
-              <Input
-                {...field}
-                id="alq_contrato"
-                type="text"
-              />
+              <Input {...field} id="alq_contrato" type="text" />
             )}
           />
           {errors.alq_contrato && (
@@ -181,10 +182,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             name="alq_estado"
             control={control}
             render={({ field }) => (
-              <Select
-                value={field.value}
-                onValueChange={field.onChange}
-              >
+              <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona el estado" />
                 </SelectTrigger>
@@ -203,8 +201,12 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
       </div>
       {error && <Alert variant="destructive">{error}</Alert>}
       <div className="flex gap-4">
-        <Button type="submit" className="mt-4">Guardar</Button>
-        <Button type="button" onClick={handleClear} className="mt-4">Limpiar</Button>
+        <Button type="submit" className="mt-4">
+          Guardar
+        </Button>
+        <Button type="button" onClick={handleClear} className="mt-4">
+          Limpiar
+        </Button>
       </div>
     </form>
   );

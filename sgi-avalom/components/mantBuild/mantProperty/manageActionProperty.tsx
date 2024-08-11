@@ -76,7 +76,7 @@ const ManageActionsProperty = <T,>({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="md:max-h-[500px] lg:max-h-[600px] xl:max-h-[700px] rounded-md">
+        <ScrollArea className="max-h-[400px] md:max-h-[450px] lg:max-h-[600px]rounded-md">
           <PropertyManager propertyId={propId} />
         </ScrollArea>
       </DialogContent>

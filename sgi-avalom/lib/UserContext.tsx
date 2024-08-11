@@ -7,10 +7,12 @@ import {
   useEffect,
 } from "react";
 import { User } from "./types";
+import cookie from "js-cookie";
 
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  logout: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -32,8 +34,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  const logout = () => {
+    setUser(null);
+    cookie.remove("token");
+    localStorage.removeItem("user");
+  };
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, logout }}>
       {children}
     </UserContext.Provider>
   );
