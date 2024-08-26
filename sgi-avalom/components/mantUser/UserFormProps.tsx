@@ -1,5 +1,3 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -23,8 +20,9 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import useUserStore from "@/lib/zustand/userStore";
 import { User } from "@/lib/types";
+import { useUser } from "@/lib/UserContext";
+import useUserStore from "@/lib/zustand/userStore";
 
 // Define schema using zod
 const userFormSchema = z.object({
@@ -66,6 +64,7 @@ interface UserFormProps {
 }
 
 const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
+  const { user: currentUser } = useUser();
   const { addUser, updateUser } = useUserStore((state) => ({
     addUser: state.addUser,
     updateUser: state.updateUser,
@@ -126,6 +125,11 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
       console.error("Error al guardar el usuario: " + errorMessage);
     }
   };
+
+  // Disable role selection based on current user's role
+  const disableRoleSelection =
+    (currentUser?.usu_rol === "E" && entity?.usu_rol === "A") ||
+    (currentUser?.usu_rol === "E" && entity?.usu_rol === "J");
 
   return (
     <Form {...form}>
@@ -261,7 +265,7 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
-                  disabled={action === "view"}
+                  disabled={disableRoleSelection || action === "view"}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Rol" />

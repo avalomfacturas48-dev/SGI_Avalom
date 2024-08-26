@@ -20,11 +20,13 @@ import { Cliente } from "@/lib/types";
 interface ClientComboBoxProps {
   clients: Cliente[];
   onClientSelect: (client: Cliente) => void;
+  disabled?: boolean;
 }
 
 export const ClientComboBox: React.FC<ClientComboBoxProps> = ({
   clients,
   onClientSelect,
+  disabled = false,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [selectedClient, setSelectedClient] = React.useState<Cliente | null>(
@@ -40,7 +42,11 @@ export const ClientComboBox: React.FC<ClientComboBoxProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="m-2 w-[200px] justify-start">
+        <Button
+          variant="outline"
+          className="m-2 w-[200px] justify-start"
+          disabled={disabled}
+        >
           {selectedClient ? (
             <>
               {selectedClient.cli_nombre} {selectedClient.cli_papellido}
@@ -50,9 +56,11 @@ export const ClientComboBox: React.FC<ClientComboBoxProps> = ({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
-        <ClientList clients={clients} onSelect={handleSelect} />
-      </PopoverContent>
+      {!disabled && (
+        <PopoverContent className="w-[200px] p-0" align="start">
+          <ClientList clients={clients} onSelect={handleSelect} />
+        </PopoverContent>
+      )}
     </Popover>
   );
 };

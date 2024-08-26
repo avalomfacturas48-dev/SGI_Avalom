@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-
+import { useUser } from "@/lib/UserContext";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -78,10 +78,20 @@ export const columns: ColumnDef<User>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const user = row.original;
+      const user = row.original; // User from the row
       const { removeUser } = useUserStore((state) => ({
         removeUser: state.removeUser,
       }));
+
+      const { user: currentUser } = useUser(); // Current logged-in user
+
+      // Determine if the current user can edit/delete/view this user based on their role
+      const canEdit =
+        (currentUser?.usu_rol === "A" &&
+          ["A", "E", "R"].includes(user.usu_rol)) ||
+        (currentUser?.usu_rol === "J" &&
+          ["A", "J", "E", "R"].includes(user.usu_rol)) ||
+        (currentUser?.usu_rol === "E" && ["E", "R"].includes(user.usu_rol));
 
       const handleAction = async () => {
         try {
@@ -119,48 +129,52 @@ export const columns: ColumnDef<User>[] = [
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={(event) => {
+              onClick={() => {
                 navigator.clipboard.writeText(user.usu_id.toString());
               }}
             >
               Copiar ID usuario
             </DropdownMenuItem>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <ManageActions<User>
-                title={"Ver usuario"}
-                titleButton="Ver Usuario"
-                description={"Visualiza los datos del usuario"}
-                action={"view"}
-                classn={"p-4 m-0 h-8 w-full"}
-                variant={"ghost"}
-                entity={user}
-                FormComponent={UserForm}
-              />
-            </div>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <ManageActions<User>
-                title={"Editar Usuario"}
-                titleButton="Editar Usuario"
-                description={"Edita los datos del usuario"}
-                action={"edit"}
-                classn={"p-4 m-0 h-8 w-full"}
-                variant={"ghost"}
-                entity={user}
-                FormComponent={UserForm}
-              />
-            </div>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <AlertDialog
-                title="Está seguro?"
-                description="Esta acción no se puede deshacer. Está seguro de que desea borrar este usuario?"
-                triggerText="Borrar Usuario"
-                cancelText="Cancelar"
-                actionText="Continuar"
-                classn={"p-4 m-0 h-8 w-full"}
-                variant={"ghost"}
-                onAction={handleAction}
-              />
-            </div>
+            {canEdit && (
+              <>
+                <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                  <ManageActions<User>
+                    title={"Ver usuario"}
+                    titleButton="Ver Usuario"
+                    description={"Visualiza los datos del usuario"}
+                    action={"view"}
+                    classn={"p-4 m-0 h-8 w-full"}
+                    variant={"ghost"}
+                    entity={user}
+                    FormComponent={UserForm}
+                  />
+                </div>
+                <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                  <ManageActions<User>
+                    title={"Editar Usuario"}
+                    titleButton="Editar Usuario"
+                    description={"Edita los datos del usuario"}
+                    action={"edit"}
+                    classn={"p-4 m-0 h-8 w-full"}
+                    variant={"ghost"}
+                    entity={user}
+                    FormComponent={UserForm}
+                  />
+                </div>
+                <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                  <AlertDialog
+                    title="Está seguro?"
+                    description="Esta acción no se puede deshacer. Está seguro de que desea borrar este usuario?"
+                    triggerText="Borrar Usuario"
+                    cancelText="Cancelar"
+                    actionText="Continuar"
+                    classn={"p-4 m-0 h-8 w-full"}
+                    variant={"ghost"}
+                    onAction={handleAction}
+                  />
+                </div>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

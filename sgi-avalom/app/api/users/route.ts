@@ -3,11 +3,35 @@ import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { UserWithToken } from "@/lib/types";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const users = await prisma.ava_usuario.findMany();
+      const currentUser = req.user as UserWithToken;
+
+      // Filtrar usuarios según el rol del usuario logueado
+      let rolesToFetch: string[] = [];
+
+      if (currentUser.userRole === "A") {
+        rolesToFetch = ["A", "E", "R"];
+      } else if (currentUser.userRole === "J") {
+        rolesToFetch = ["A", "J", "E", "R"];
+      } else if (currentUser.userRole === "E") {
+        rolesToFetch = ["E", "R"];
+      } else {
+        return NextResponse.json(
+          { error: "No tiene permiso para realizar esta acción" },
+          { status: 403 }
+        );
+      }
+
+      const users = await prisma.ava_usuario.findMany({
+        where: {
+          usu_rol: { in: rolesToFetch },
+        },
+      });
+
       return NextResponse.json(users);
     } catch (error) {
       return NextResponse.json(

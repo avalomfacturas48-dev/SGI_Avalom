@@ -24,22 +24,13 @@ import {
 } from "@/components/ui/select";
 import usePropertyStore from "@/lib/zustand/propertyStore";
 import useClientStore from "@/lib/zustand/clientStore";
-import { AvaAlquiler, Cliente } from "@/lib/types";
+import { Cliente } from "@/lib/types";
 import { useEffect } from "react";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandEmpty,
-} from "@/components/ui/command";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardContent,
 } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { ClientComboBox } from "./ClientComboBox";
@@ -154,9 +145,18 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
         "Content-Type": "application/json",
       };
 
+      // Incluir los clientes relacionados en el objeto de datos
+      const updatedRentalData = {
+        ...formData,
+        ava_clientexalquiler:
+          selectedRental?.ava_clientexalquiler.map(({ ava_cliente }) => ({
+            cli_id: ava_cliente.cli_id,
+          })) || [],
+      };
+
       if (action === "create") {
         const newRental = {
-          ...formData,
+          ...updatedRentalData,
           prop_id: selectedProperty?.prop_id,
         };
         const response = await axios.post("/api/rent", newRental, { headers });
@@ -168,7 +168,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
       } else if (action === "edit" && selectedRental?.alq_id) {
         const response = await axios.put(
           `/api/rent/${selectedRental.alq_id}`,
-          formData,
+          updatedRentalData,
           { headers }
         );
         if (response.data) {
@@ -189,7 +189,14 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
   };
 
   const handleClientSelect = (client: Cliente) => {
-    if (client && (selectedRental?.ava_clientexalquiler?.length ?? 0) < 2) {
+    // Verificar si el cliente ya está asociado
+    if (
+      client &&
+      (selectedRental?.ava_clientexalquiler?.length ?? 0) < 2 &&
+      !selectedRental?.ava_clientexalquiler.some(
+        (relation) => relation.cli_id === client.cli_id
+      )
+    ) {
       addClientToRental(client);
     }
   };
@@ -197,6 +204,8 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
   const handleClientRemove = (clientId: number) => {
     removeClientFromRental(clientId);
   };
+
+  const isFormDisabled = action === "edit" && !selectedRental;
 
   return (
     <Form {...form}>
@@ -211,7 +220,11 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             <FormItem>
               <FormLabel>Monto</FormLabel>
               <FormControl>
-                <Input {...field} disabled={action === "view"} maxLength={20} />
+                <Input
+                  {...field}
+                  disabled={isFormDisabled || action === "view"}
+                  maxLength={20}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -224,7 +237,10 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             <FormItem>
               <FormLabel>Fecha de Pago</FormLabel>
               <FormControl>
-                <Input {...field} disabled={action === "view"} />
+                <Input
+                  {...field}
+                  disabled={isFormDisabled || action === "view"}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -237,7 +253,10 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             <FormItem>
               <FormLabel>Contrato</FormLabel>
               <FormControl>
-                <Input {...field} disabled={action === "view"} />
+                <Input
+                  {...field}
+                  disabled={isFormDisabled || action === "view"}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -253,7 +272,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
-                  disabled={action === "view"}
+                  disabled={isFormDisabled || action === "view"}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecciona el estado" />
@@ -269,38 +288,43 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             </FormItem>
           )}
         />
-        <div className="col-span-2">
-          <FormLabel>Agregar Clientes</FormLabel>
-          <ClientComboBox
-            clients={clients}
-            onClientSelect={handleClientSelect}
-          />
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {selectedRental?.ava_clientexalquiler.map(({ ava_cliente }) => (
-              <Card key={ava_cliente.cli_id} className="relative p-3">
-                <CardHeader className="p-0 mb-2">
-                  <CardTitle className="text-lg font-medium">
-                    {ava_cliente.cli_nombre} {ava_cliente.cli_papellido}
-                  </CardTitle>
-                  <CardDescription className="text-xs text-gray-500">
-                    {ava_cliente.cli_cedula}
-                  </CardDescription>
-                </CardHeader>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-1 right-1 p-0 m-0"
-                  onClick={() => handleClientRemove(ava_cliente.cli_id)}
-                >
-                  <X className="w-4 h-4 text-gray-600" />
-                </Button>
-              </Card>
-            ))}
+
+        {action !== "create" && (
+          <div className="col-span-2">
+            <FormLabel>Agregar Clientes</FormLabel>
+            <ClientComboBox
+              clients={clients}
+              onClientSelect={handleClientSelect}
+              disabled={isFormDisabled}
+            />
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {selectedRental?.ava_clientexalquiler.map(({ ava_cliente }) => (
+                <Card key={ava_cliente.cli_id} className="relative p-3">
+                  <CardHeader className="p-0 mb-2">
+                    <CardTitle className="text-sm font-medium">
+                      {ava_cliente.cli_nombre} {ava_cliente.cli_papellido}
+                    </CardTitle>
+                    <CardDescription className="text-xs text-gray-500">
+                      {ava_cliente.cli_cedula}
+                    </CardDescription>
+                  </CardHeader>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-1 right-1 p-0 m-0"
+                    onClick={() => handleClientRemove(ava_cliente.cli_id)}
+                    disabled={isFormDisabled}
+                  >
+                    <X className="w-4 h-4 text-gray-600" />
+                  </Button>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="flex gap-4 col-span-2">
-          <Button type="submit" className="mt-4">
+          <Button type="submit" className="mt-4" disabled={isFormDisabled}>
             Guardar
           </Button>
           <Button type="button" onClick={handleClear} className="mt-4">

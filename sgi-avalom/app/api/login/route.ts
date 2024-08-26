@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { comparePassword, generateToken } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { error } from "console";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
@@ -27,7 +26,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const token = generateToken(String(user.usu_id));
+  // Incluye el rol del usuario al generar el token
+  const token = generateToken(String(user.usu_id), user.usu_rol);
 
   return NextResponse.json({
     message: "Login successful",

@@ -12,6 +12,11 @@ export interface User {
   usu_rol: "A" | "J" | "E" | "R";
 }
 
+export interface UserWithToken extends User {
+  userId: string; // O el tipo que corresponda, si es un número, cambiar a number
+  userRole: string;
+}
+
 export interface Cliente {
   cli_id: number;
   cli_nombre: string;

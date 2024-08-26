@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { NextResponse, NextRequest } from "next/server";
 import cookie from "cookie";
-import { User } from "./types";
+import { User, UserWithToken } from "./types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
@@ -20,9 +20,10 @@ export const comparePassword = async (
   return bcrypt.compare(password, hash);
 };
 
-// Generar el token JWT
-export const generateToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "24h" });
+export const generateToken = (usu_id: string, usu_rol: string): string => {
+  return jwt.sign({ userId: usu_id, userRole: usu_rol }, JWT_SECRET, {
+    expiresIn: "24h",
+  });
 };
 
 // Verificar el token JWT
@@ -49,7 +50,7 @@ export const authenticate = (handler: any) => {
     }
 
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as User;
+      const decoded = jwt.verify(token, JWT_SECRET) as UserWithToken;
       req.user = decoded;
       return handler(req, res);
     } catch (error) {
