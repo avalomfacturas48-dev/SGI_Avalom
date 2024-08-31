@@ -34,14 +34,24 @@ import {
 } from "@/components/ui/card";
 import { X } from "lucide-react";
 import { ClientComboBox } from "./ClientComboBox";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import { toZonedTime, format as formatTz } from "date-fns-tz";
+import { cn } from "@/lib/utils";
 
-// Define schema using zod
 const rentalFormSchema = z.object({
   alq_monto: z
     .string()
     .min(1, "Monto es requerido")
     .max(20, "Monto no puede ser mayor a 20 caracteres"),
-  alq_fechapago: z.string().min(1, "Fecha de pago es requerida"),
+  alq_fechapago: z.string().optional(),
   alq_contrato: z.string().optional(),
   alq_estado: z.enum(["A", "F", "C"]),
 });
@@ -107,11 +117,17 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
           alq_contrato: "",
           alq_estado: "A" as "A",
         }
-      : selectedRental || {
-          alq_monto: "",
-          alq_fechapago: "",
-          alq_contrato: "",
-          alq_estado: "A" as "A",
+      : {
+          ...selectedRental,
+          alq_fechapago: selectedRental?.alq_fechapago
+            ? format(
+                toZonedTime(
+                  new Date(selectedRental.alq_fechapago),
+                  "America/Costa_Rica"
+                ),
+                "yyyy-MM-dd"
+              )
+            : "",
         };
 
   const form = useForm<z.infer<typeof rentalFormSchema>>({
@@ -119,12 +135,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
     defaultValues,
   });
 
-  const {
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset,
-  } = form;
+  const { handleSubmit, control, reset } = form;
 
   useEffect(() => {
     if (action === "edit") {
@@ -145,9 +156,14 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
         "Content-Type": "application/json",
       };
 
-      // Incluir los clientes relacionados en el objeto de datos
       const updatedRentalData = {
         ...formData,
+        alq_fechapago: formData.alq_fechapago
+          ? toZonedTime(
+              formData.alq_fechapago,
+              "America/Costa_Rica"
+            ).toISOString()
+          : null,
         ava_clientexalquiler:
           selectedRental?.ava_clientexalquiler.map(({ ava_cliente }) => ({
             cli_id: ava_cliente.cli_id,
@@ -163,7 +179,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
         if (response.data) {
           addRental(response.data);
           onSuccess();
-          reset(); // Reset the form after success
+          reset();
         }
       } else if (action === "edit" && selectedRental?.alq_id) {
         const response = await axios.put(
@@ -184,12 +200,11 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
   };
 
   const handleClear = () => {
-    reset(); // Reset the form fields
-    setSelectedRental(null); // Clear the selected rental if creating
+    reset();
+    setSelectedRental(null);
   };
 
   const handleClientSelect = (client: Cliente) => {
-    // Verificar si el cliente ya está asociado
     if (
       client &&
       (selectedRental?.ava_clientexalquiler?.length ?? 0) < 2 &&
@@ -234,14 +249,48 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
           control={form.control}
           name="alq_fechapago"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Fecha de Pago</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  disabled={isFormDisabled || action === "view"}
-                />
-              </FormControl>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                      disabled={isFormDisabled || action === "view"}
+                    >
+                      {field.value ? (
+                        format(parseISO(field.value), "PPP", { locale: es })
+                      ) : (
+                        <span>Seleccione una fecha</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? parseISO(field.value) : undefined}
+                    onSelect={(date) =>
+                      field.onChange(
+                        date
+                          ? toZonedTime(date, "America/Costa_Rica")
+                              .toISOString()
+                              .split("T")[0]
+                          : ""
+                      )
+                    }
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}

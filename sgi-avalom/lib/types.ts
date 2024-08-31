@@ -90,16 +90,17 @@ export interface AvaTipoPropiedad {
 export interface AvaAlquiler {
   alq_id: number;
   alq_monto: string;
-  alq_fechapago: string;
+  alq_fechapago: Date;
   alq_contrato?: string;
   alq_estado: "A" | "F" | "C";
-  alq_fechacreacion?: string;
+  alq_fechacreacion?: Date;
   prop_id?: number;
   ava_propiedad?: AvaPropiedad;
   ava_alquilermensual: AvaAlquilerMensual[];
   ava_deposito: AvaDeposito[];
   ava_clientexalquiler: AvaClientexAlquiler[];
 }
+
 
 export interface AvaAlquilerMensual {
   alqm_id: number;

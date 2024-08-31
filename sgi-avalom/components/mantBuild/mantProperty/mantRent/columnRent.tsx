@@ -15,6 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { parseISO, format } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { es } from "date-fns/locale";
 
 export const columnsRent: ColumnDef<AvaAlquiler>[] = [
   {
@@ -38,6 +41,13 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
   {
     accessorKey: "alq_fechapago",
     header: "Fecha de Pago",
+    cell: ({ getValue }) => {
+      const value = getValue<string | null>();
+      if (!value) return "Sin fecha";
+
+      const date = toZonedTime(parseISO(value), "America/Costa_Rica");
+      return format(date, "PPP", { locale: es });
+    },
   },
   {
     accessorKey: "alq_estado",
@@ -85,7 +95,7 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={(event) => {
+              onClick={() => {
                 navigator.clipboard.writeText(rent.alq_id.toString());
               }}
             >
