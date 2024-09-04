@@ -1,10 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import axios from "axios";
-import cookie from "js-cookie";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,19 +17,15 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import usePropertyStore from "@/lib/zustand/propertyStore";
-import useClientStore from "@/lib/zustand/clientStore";
-import { Cliente } from "@/lib/types";
-import { useEffect } from "react";
+import { RentalFormProps } from "@/lib/typesForm";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { X } from "lucide-react";
+import { X, CalendarIcon } from "lucide-react";
 import { ClientComboBox } from "./ClientComboBox";
-import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -43,184 +34,21 @@ import {
 } from "@/components/ui/popover";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { toZonedTime, format as formatTz } from "date-fns-tz";
 import { cn } from "@/lib/utils";
-
-const rentalFormSchema = z.object({
-  alq_monto: z
-    .string()
-    .min(1, "Monto es requerido")
-    .max(20, "Monto no puede ser mayor a 20 caracteres"),
-  alq_fechapago: z.string().optional(),
-  alq_contrato: z.string().optional(),
-  alq_estado: z.enum(["A", "F", "C"]),
-});
-
-interface RentalFormProps {
-  action: "create" | "edit" | "view";
-  onSuccess: () => void;
-}
+import { useRentalForm } from "@/hooks/useRentalForm";
 
 const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
   const {
-    addRental,
-    updateRental,
-    selectedProperty,
+    form,
+    handleSubmit,
+    onSubmit,
+    handleClear,
+    handleClientSelect,
+    handleClientRemove,
+    isFormDisabled,
+    clients,
     selectedRental,
-    setSelectedRental,
-    addClientToRental,
-    removeClientFromRental,
-  } = usePropertyStore((state) => ({
-    addRental: state.addRental,
-    updateRental: state.updateRental,
-    selectedProperty: state.selectedProperty,
-    selectedRental: state.selectedRental,
-    setSelectedRental: state.setSelectedRental,
-    addClientToRental: state.addClientToRental,
-    removeClientFromRental: state.removeClientFromRental,
-  }));
-
-  const { clients, setClients } = useClientStore((state) => ({
-    clients: state.clients,
-    setClients: state.setClients,
-  }));
-
-  useEffect(() => {
-    const fetchClients = async () => {
-      const token = cookie.get("token");
-      if (!token) {
-        console.error("No hay token disponible");
-        return;
-      }
-
-      try {
-        const response = await axios.get("/api/client", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        setClients(response.data);
-      } catch (error) {
-        console.error("Error al buscar clientes: " + error);
-      }
-    };
-
-    fetchClients();
-  }, [setClients]);
-
-  const defaultValues =
-    action === "create"
-      ? {
-          alq_monto: "",
-          alq_fechapago: "",
-          alq_contrato: "",
-          alq_estado: "A" as "A",
-        }
-      : {
-          ...selectedRental,
-          alq_fechapago: selectedRental?.alq_fechapago
-            ? format(
-                toZonedTime(
-                  new Date(selectedRental.alq_fechapago),
-                  "America/Costa_Rica"
-                ),
-                "yyyy-MM-dd"
-              )
-            : "",
-        };
-
-  const form = useForm<z.infer<typeof rentalFormSchema>>({
-    resolver: zodResolver(rentalFormSchema),
-    defaultValues,
-  });
-
-  const { handleSubmit, control, reset } = form;
-
-  useEffect(() => {
-    if (action === "edit") {
-      reset(defaultValues);
-    }
-  }, [selectedRental, action, reset]);
-
-  const onSubmit = async (formData: z.infer<typeof rentalFormSchema>) => {
-    try {
-      const token = cookie.get("token");
-      if (!token) {
-        console.error("No hay token disponible");
-        return;
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-
-      const updatedRentalData = {
-        ...formData,
-        alq_fechapago: formData.alq_fechapago
-          ? toZonedTime(
-              formData.alq_fechapago,
-              "America/Costa_Rica"
-            ).toISOString()
-          : null,
-        ava_clientexalquiler:
-          selectedRental?.ava_clientexalquiler.map(({ ava_cliente }) => ({
-            cli_id: ava_cliente.cli_id,
-          })) || [],
-      };
-
-      if (action === "create") {
-        const newRental = {
-          ...updatedRentalData,
-          prop_id: selectedProperty?.prop_id,
-        };
-        const response = await axios.post("/api/rent", newRental, { headers });
-        if (response.data) {
-          addRental(response.data);
-          onSuccess();
-          reset();
-        }
-      } else if (action === "edit" && selectedRental?.alq_id) {
-        const response = await axios.put(
-          `/api/rent/${selectedRental.alq_id}`,
-          updatedRentalData,
-          { headers }
-        );
-        if (response.data) {
-          updateRental(selectedRental.alq_id, response.data);
-          onSuccess();
-        }
-      }
-    } catch (error: any) {
-      console.error("Error al guardar el alquiler:", error);
-      const errorMessage = error.response?.data?.error || "Error desconocido";
-      console.error("Error al guardar el alquiler: " + errorMessage);
-    }
-  };
-
-  const handleClear = () => {
-    reset();
-    setSelectedRental(null);
-  };
-
-  const handleClientSelect = (client: Cliente) => {
-    if (
-      client &&
-      (selectedRental?.ava_clientexalquiler?.length ?? 0) < 2 &&
-      !selectedRental?.ava_clientexalquiler.some(
-        (relation) => relation.cli_id === client.cli_id
-      )
-    ) {
-      addClientToRental(client);
-    }
-  };
-
-  const handleClientRemove = (clientId: number) => {
-    removeClientFromRental(clientId);
-  };
-
-  const isFormDisabled = action === "edit" && !selectedRental;
+  } = useRentalForm({ action, onSuccess });
 
   return (
     <Form {...form}>
@@ -277,11 +105,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
                     selected={field.value ? parseISO(field.value) : undefined}
                     onSelect={(date) =>
                       field.onChange(
-                        date
-                          ? toZonedTime(date, "America/Costa_Rica")
-                              .toISOString()
-                              .split("T")[0]
-                          : ""
+                        date ? date.toISOString().split("T")[0] : ""
                       )
                     }
                     disabled={(date) =>

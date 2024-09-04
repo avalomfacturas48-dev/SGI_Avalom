@@ -13,7 +13,7 @@ export interface User {
 }
 
 export interface UserWithToken extends User {
-  userId: string; // O el tipo que corresponda, si es un número, cambiar a number
+  userId: string;
   userRole: string;
 }
 

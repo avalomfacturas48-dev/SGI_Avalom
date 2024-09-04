@@ -3,7 +3,7 @@ import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { AvaAlquiler } from "@/lib/types"; // Importa AvaProperty si lo defines
+import { AvaAlquiler } from "@/lib/types";
 import usePropertyStore from "@/lib/zustand/propertyStore";
 import AlertDialog from "@/components/alertDialog";
 import {
