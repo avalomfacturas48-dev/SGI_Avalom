@@ -13,7 +13,6 @@ import useClientStore from "@/lib/zustand/clientStore";
 import { Cliente } from "@/lib/types";
 import { RentalFormProps } from "@/lib/typesForm";
 
-// Definición del esquema de validación
 const rentalFormSchema = z.object({
   alq_monto: z
     .string()
@@ -24,7 +23,6 @@ const rentalFormSchema = z.object({
   alq_estado: z.enum(["A", "F", "C"]),
 });
 
-// Tipos derivados del esquema
 type RentalFormInputs = z.infer<typeof rentalFormSchema>;
 
 export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {

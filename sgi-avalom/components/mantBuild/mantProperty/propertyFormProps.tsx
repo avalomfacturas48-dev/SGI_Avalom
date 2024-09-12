@@ -1,10 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import axios from "axios";
-import cookie from "js-cookie";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,30 +17,8 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import usePropertyStore from "@/lib/zustand/propertyStore";
-import useBuildingStore from "@/lib/zustand/buildStore";
-import useTypeStore from "@/lib/zustand/typeStore";
-import { AvaPropiedad } from "@/lib/types";
-
-// Define schema using zod
-const propertyFormSchema = z.object({
-  prop_identificador: z
-    .string()
-    .min(1, "El identificador es obligatorio")
-    .max(15, "El identificador no puede tener más de 15 caracteres"),
-  prop_descripcion: z
-    .string()
-    .max(50, "La descripción no puede tener más de 50 caracteres"),
-  tipp_id: z.number().min(1, "Selecciona un tipo de propiedad"),
-});
-
-interface PropertyFormProps {
-  action: "create" | "edit" | "view";
-  property?: AvaPropiedad;
-  entity?: number;
-  onSuccess: () => void;
-}
+import { PropertyFormProps } from "@/lib/typesForm";
+import { usePropertyForm } from "@/hooks/mantBuild/usePropertyForm"; // Importa el hook personalizado
 
 const PropertyForm: React.FC<PropertyFormProps> = ({
   action,
@@ -53,85 +26,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
   entity,
   onSuccess,
 }) => {
-  const { setSelectedProperty, updateSelectedProperty } = usePropertyStore();
-  const { updateProperty, addProperty } = useBuildingStore();
-  const { types, fetchTypes } = useTypeStore();
-  const [error, setError] = useState<string | null>(null);
-
-  const defaultValues = property || {
-    prop_identificador: "",
-    prop_descripcion: "",
-    tipp_id: undefined,
-  };
-
-  const form = useForm<z.infer<typeof propertyFormSchema>>({
-    resolver: zodResolver(propertyFormSchema),
-    defaultValues,
-  });
-
-  const {
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = form;
-
-  useEffect(() => {
-    reset(property);
-  }, [property, reset]);
-
-  useEffect(() => {
-    const fetchPropertyTypes = async () => {
-      if (types.length === 0) {
-        await fetchTypes();
-      }
-    };
-    fetchPropertyTypes();
-  }, [fetchTypes, types]);
-
-  const onSubmit = async (data: z.infer<typeof propertyFormSchema>) => {
-    try {
-      const token = cookie.get("token");
-      if (!token) {
-        throw new Error("No hay token disponible");
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-
-      const propertyData = {
-        ...data,
-        tipp_id: data.tipp_id || undefined,
-        edi_id: entity,
-      };
-
-      if (action === "create") {
-        const response = await axios.post(`/api/property`, propertyData, {
-          headers,
-        });
-        if (response.data) {
-          setSelectedProperty(response.data);
-          addProperty(entity || 0, response.data);
-          onSuccess();
-        }
-      } else if (action === "edit" && property?.prop_id) {
-        const response = await axios.put(
-          `/api/property/${property.prop_id}`,
-          propertyData,
-          { headers }
-        );
-        if (response.data) {
-          updateSelectedProperty(response.data);
-          updateProperty(property?.edi_id || 0, response.data);
-          onSuccess();
-        }
-      }
-    } catch (error: any) {
-      console.error("Error al guardar propiedad:", error);
-      setError("Hubo un error al guardar la propiedad.");
-    }
-  };
+  const { form, handleSubmit, onSubmit, handleClear, error, types } =
+    usePropertyForm({ action, property, entity, onSuccess });
 
   return (
     <Form {...form}>
@@ -201,8 +97,14 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
             <Button type="submit">
               {action === "create" ? "Crear Propiedad" : "Guardar Cambios"}
             </Button>
+            {action !== "edit" && (
+              <Button type="button" onClick={handleClear} className="ml-4">
+                Limpiar
+              </Button>
+            )}
           </div>
         )}
+        {error && <p className="text-red-500">{error}</p>}
       </form>
     </Form>
   );

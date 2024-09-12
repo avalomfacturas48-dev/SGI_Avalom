@@ -35,7 +35,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useRentalForm } from "@/hooks/useRentalForm";
+import { useRentalForm } from "@/hooks/mantBuild/useRentalForm";
 
 const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
   const {

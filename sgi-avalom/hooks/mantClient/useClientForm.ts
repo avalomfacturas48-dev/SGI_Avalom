@@ -1,0 +1,131 @@
+"use client";
+
+import { useEffect, useMemo } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import cookie from "js-cookie";
+import axios from "axios";
+import useClientStore from "@/lib/zustand/clientStore";
+import { ClienteFormProps } from "@/lib/typesForm";
+
+const clienteFormSchema = z.object({
+  cli_nombre: z
+    .string()
+    .min(1, "El nombre es requerido")
+    .max(30, "El nombre no puede tener más de 30 caracteres"),
+  cli_papellido: z
+    .string()
+    .min(1, "El primer apellido es requerido")
+    .max(30, "El primer apellido no puede tener más de 30 caracteres"),
+  cli_sapellido: z
+    .string()
+    .max(30, "El segundo apellido no puede tener más de 30 caracteres"),
+  cli_cedula: z
+    .string()
+    .min(1, "La cédula es requerida")
+    .max(15, "La cédula no puede tener más de 15 caracteres"),
+  cli_telefono: z
+    .string()
+    .min(1, "El teléfono es requerido")
+    .max(15, "El teléfono no puede tener más de 15 caracteres"),
+  cli_correo: z
+    .string()
+    .min(1, "El correo es requerido")
+    .email("Correo inválido")
+    .max(50, "El correo no puede tener más de 50 caracteres"),
+});
+
+type ClienteFormInputs = z.infer<typeof clienteFormSchema>;
+
+export const useClientForm = ({
+  action,
+  entity,
+  onSuccess,
+}: ClienteFormProps) => {
+  const { addClient, updateClient } = useClientStore((state) => ({
+    addClient: state.addClient,
+    updateClient: state.updateClient,
+  }));
+
+  const defaultValues = useMemo(() => {
+    return entity
+      ? {
+          cli_nombre: entity.cli_nombre || "",
+          cli_papellido: entity.cli_papellido || "",
+          cli_sapellido: entity.cli_sapellido || "",
+          cli_cedula: entity.cli_cedula || "",
+          cli_telefono: entity.cli_telefono || "",
+          cli_correo: entity.cli_correo || "",
+        }
+      : {
+          cli_nombre: "",
+          cli_papellido: "",
+          cli_sapellido: "",
+          cli_cedula: "",
+          cli_telefono: "",
+          cli_correo: "",
+        };
+  }, [entity]);
+
+  const form = useForm<ClienteFormInputs>({
+    resolver: zodResolver(clienteFormSchema),
+    defaultValues,
+  });
+
+  const { handleSubmit, reset } = form;
+
+  useEffect(() => {
+    if (action === "edit") {
+      reset(defaultValues);
+    }
+  }, [entity, action, reset, defaultValues]);
+
+  const onSubmit: SubmitHandler<ClienteFormInputs> = async (formData) => {
+    try {
+      const token = cookie.get("token");
+      if (!token) {
+        console.error("No hay token disponible");
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      };
+
+      if (action === "create") {
+        const response = await axios.post("/api/client", formData, { headers });
+        if (response.data) {
+          addClient(response.data);
+          onSuccess();
+          reset(defaultValues);
+        }
+      } else if (action === "edit" && entity?.cli_id) {
+        const response = await axios.put(
+          `/api/client/${entity.cli_id}`,
+          formData,
+          { headers }
+        );
+        if (response.data) {
+          updateClient(response.data);
+          onSuccess();
+          reset(defaultValues);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error al guardar el cliente:", error);
+    }
+  };
+
+  const handleClear = () => {
+    reset(defaultValues);
+  };
+
+  return {
+    form,
+    handleSubmit,
+    onSubmit,
+    handleClear,
+  };
+};
