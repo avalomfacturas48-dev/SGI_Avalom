@@ -37,6 +37,17 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
   {
     accessorKey: "alq_monto",
     header: "Monto",
+    cell: ({ getValue }) => {
+      const value = getValue<string | null>();
+      if (!value) return "Sin monto";
+
+      const bigIntValue = BigInt(value);
+      return new Intl.NumberFormat("es-CR", {
+        style: "currency",
+        currency: "CRC",
+        maximumFractionDigits: 0,
+      }).format(Number(bigIntValue));
+    },
   },
   {
     accessorKey: "alq_fechapago",
@@ -45,8 +56,13 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
       const value = getValue<string | null>();
       if (!value) return "Sin fecha";
 
-      const date = toZonedTime(parseISO(value), "America/Costa_Rica");
-      return format(date, "PPP", { locale: es });
+      try {
+        // Ajusta a la zona horaria local
+        const zonedDate = toZonedTime(parseISO(value), "America/Costa_Rica");
+        return format(zonedDate, "PPP", { locale: es }); // Formatea la fecha
+      } catch {
+        return "Formato inválido";
+      }
     },
   },
   {

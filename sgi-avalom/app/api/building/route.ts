@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -14,10 +15,13 @@ export async function GET(request: NextRequest) {
           },
         },
       });
-      return NextResponse.json(buildings);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(buildings) },
+        { status: 200 }
+      );
     } catch (error) {
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }
@@ -31,7 +35,7 @@ export async function POST(request: NextRequest) {
 
       if (!body.edi_identificador) {
         return NextResponse.json(
-          { error: "Faltan campos relevantes" },
+          { error: "El identificador del edificio es requerido" },
           { status: 400 }
         );
       }
@@ -43,10 +47,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(building);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(building) },
+        { status: 201 }
+      );
     } catch (error) {
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

@@ -6,11 +6,11 @@ interface BuildingState {
   setBuildings: (buildings: AvaEdificio[]) => void;
   addBuilding: (building: AvaEdificio) => void;
   updateBuilding: (building: AvaEdificio) => void;
-  removeBuilding: (edi_id: number) => void;
+  removeBuilding: (edi_id: string) => void;
 
-  addProperty: (edi_id: number, property: AvaPropiedad) => void;
-  updateProperty: (edi_id: number, updatedProperty: AvaPropiedad) => void;
-  removeProperty: (edi_id: number, prop_id: number) => void;
+  addProperty: (edi_id: string, property: AvaPropiedad) => void;
+  updateProperty: (edi_id: string, updatedProperty: AvaPropiedad) => void;
+  removeProperty: (edi_id: string, prop_id: string) => void;
 }
 
 const useBuildingStore = create<BuildingState>((set) => ({

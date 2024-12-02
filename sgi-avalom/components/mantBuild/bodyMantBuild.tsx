@@ -43,8 +43,8 @@ const BodyMantBuild: React.FC = () => {
         "Content-Type": "application/json",
       };
       const response = await axios.get("/api/building", { headers });
-      if (response.data) {
-        setBuildings(response.data);
+      if (response.data.data) {
+        setBuildings(response.data.data);
       }
     };
     fetchBuildings();

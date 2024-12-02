@@ -40,7 +40,7 @@ interface ManageActionsProps<T> {
     | undefined;
   classn?: string;
   icon?: React.ReactNode;
-  propId: number;
+  propId: string;
   onSuccess?: () => void;
 }
 

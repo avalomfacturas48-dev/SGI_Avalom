@@ -68,8 +68,8 @@ export const useBuildForm = ({
 
       if (action === "create") {
         const response = await axios.post("/api/building", data, { headers });
-        if (response.data) {
-          addBuilding(response.data);
+        if (response.data.data) {
+          addBuilding(response.data.data);
           onSuccess();
           reset(defaultValues);
         }
@@ -79,8 +79,8 @@ export const useBuildForm = ({
           data,
           { headers }
         );
-        if (response.data) {
-          updateBuilding(response.data);
+        if (response.data.data) {
+          updateBuilding(response.data.data);
           onSuccess();
           reset(defaultValues);
         }

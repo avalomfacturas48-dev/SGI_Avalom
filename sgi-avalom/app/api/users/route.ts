@@ -4,6 +4,7 @@ import { authenticate } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { UserWithToken } from "@/lib/types";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -21,7 +22,10 @@ export async function GET(request: NextRequest) {
         rolesToFetch = ["E", "R"];
       } else {
         return NextResponse.json(
-          { error: "No tiene permiso para realizar esta acción" },
+          {
+            success: false,
+            error: "No tiene permiso para realizar esta acción",
+          },
           { status: 403 }
         );
       }
@@ -32,10 +36,17 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(users);
-    } catch (error) {
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: true, data: stringifyWithBigInt(users) },
+        { status: 200 }
+      );
+    } catch (error: any) {
+      console.error(
+        "Error inesperado en GET /api/users:",
+        error?.message || error
+      );
+      return NextResponse.json(
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }
@@ -57,12 +68,11 @@ export async function POST(request: NextRequest) {
         !body.usu_rol
       ) {
         return NextResponse.json(
-          { error: "Faltan campos relevantes" },
+          { success: false, error: "Faltan campos relevantes" },
           { status: 400 }
         );
       }
 
-      // Hashear la contraseña
       const hashedPassword = await bcrypt.hash(body.usu_contrasena, 10);
       const emailLowerCase = body.usu_correo.toLowerCase();
 
@@ -75,25 +85,34 @@ export async function POST(request: NextRequest) {
           usu_correo: emailLowerCase,
           usu_contrasena: hashedPassword,
           usu_telefono: body.usu_telefono,
-          // usu_fechacreacion se establecerá automáticamente debido a la configuración en el modelo
           usu_estado: body.usu_estado,
           usu_rol: body.usu_rol,
         },
       });
 
-      return NextResponse.json(user);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(user) },
+        { status: 200 }
+      );
     } catch (error: any) {
-      console.error("Error creating user:", error);
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === "P2002") {
           return NextResponse.json(
-            { error: "Existe un usuario con datos relevantes repetidos" },
+            {
+              success: false,
+              error: "Ya existe un usuario con campos duplicados",
+            },
             { status: 409 }
           );
         }
       }
+
+      console.error(
+        "Error inesperado en POST /api/users:",
+        error?.message || error
+      );
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

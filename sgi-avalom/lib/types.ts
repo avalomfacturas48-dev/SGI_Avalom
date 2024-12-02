@@ -1,5 +1,5 @@
 export interface User {
-  usu_id: number;
+  usu_id: string;
   usu_nombre: string;
   usu_papellido: string;
   usu_sapellido?: string;
@@ -18,7 +18,7 @@ export interface UserWithToken extends User {
 }
 
 export interface Cliente {
-  cli_id: number;
+  cli_id: string;
   cli_nombre: string;
   cli_papellido: string;
   cli_sapellido?: string;
@@ -30,50 +30,49 @@ export interface Cliente {
 }
 
 export interface AvaClientexAlquiler {
-  alq_id: number;
-  cli_id: number;
+  alq_id: string;
+  cli_id: string;
   ava_alquiler: AvaAlquiler;
   ava_cliente: Cliente;
 }
 
 export interface AvaDeposito {
-  depo_id: number;
+  depo_id: string;
   depo_montoactual: string;
   depo_total: string;
   depo_descripcion?: string;
-  alq_id?: number;
+  alq_id?: string;
   ava_alquiler?: AvaAlquiler;
   ava_pago: AvaPago[];
 }
 
 export interface AvaPago {
-  pag_id: number;
+  pag_id: string;
   pag_monto: string;
   pag_descripcion?: string;
   pag_cuenta?: string;
   pag_fechapago: string;
-  res_id?: number;
-  alqm_id?: number;
-  depo_id?: number;
+  res_id?: string;
+  alqm_id?: string;
+  depo_id?: string;
   ava_reservacion?: AvaReservacion;
   ava_alquilermensual?: AvaAlquilerMensual;
   ava_deposito?: AvaDeposito;
 }
 
 export interface AvaEdificio {
-  edi_id: number;
+  edi_id: string;
   edi_identificador: string;
   edi_descripcion?: string;
-  ava_pagoservicio: AvaPagoServicio[];
   ava_propiedad: AvaPropiedad[];
 }
 
 export interface AvaPropiedad {
-  prop_id: number;
+  prop_id: string;
   prop_identificador: string;
   prop_descripcion?: string;
-  edi_id?: number;
-  tipp_id?: number;
+  edi_id?: string;
+  tipp_id?: string;
   ava_alquiler: AvaAlquiler[];
   ava_pagoservicio: AvaPagoServicio[];
   ava_edificio?: AvaEdificio;
@@ -82,71 +81,69 @@ export interface AvaPropiedad {
 }
 
 export interface AvaTipoPropiedad {
-  tipp_id: number;
+  tipp_id: string;
   tipp_nombre: string;
   ava_propiedad: AvaPropiedad[];
 }
 
 export interface AvaAlquiler {
-  alq_id: number;
+  alq_id: string;
   alq_monto: string;
   alq_fechapago: Date;
   alq_contrato?: string;
   alq_estado: "A" | "F" | "C";
   alq_fechacreacion?: Date;
-  prop_id?: number;
+  prop_id?: string;
   ava_propiedad?: AvaPropiedad;
   ava_alquilermensual: AvaAlquilerMensual[];
   ava_deposito: AvaDeposito[];
   ava_clientexalquiler: AvaClientexAlquiler[];
 }
 
-
 export interface AvaAlquilerMensual {
-  alqm_id: number;
+  alqm_id: string;
   alqm_anio: string;
   alqm_mes: string;
   alqm_montototal: string;
   alqm_montopagado: string;
   alqm_fechapago?: string;
-  alqm_estado: string;
+  alqm_estado: "A" | "P" | "I";
   alqm_fechacreacion?: string;
-  alq_id?: number;
+  alq_id?: string;
   ava_alquiler?: AvaAlquiler;
   ava_pago: AvaPago[];
 }
 
 export interface AvaReservacion {
-  res_id: number;
+  res_id: string;
   res_nombrecliente: string;
   res_telefonocliente?: string;
   res_correocliente?: string;
   res_fechacreacion?: string;
   res_fechaentrada: string;
   res_fechasalida: string;
-  res_estado: string;
-  prop_id?: number;
+  res_estado: "R" | "A" | "C" | "F";
+  prop_id?: string;
   ava_pago: AvaPago[];
   ava_propiedad?: AvaPropiedad;
 }
 
 export interface AvaServicio {
-  ser_id: number;
+  ser_id: string;
   ser_nombre: string;
-  ser_descripcion?: string;
-  ser_estado: string;
-  ser_fechacreacion?: string;
+  ser_servicio?: string;
+  ser_mediopago?: string;
   ava_pagoservicio: AvaPagoServicio[];
 }
 
 export interface AvaPagoServicio {
-  pser_id: number;
+  pser_id: string;
   pser_monto: string;
   pser_fecha: string;
   pser_descripcion?: string;
-  ser_id?: number;
-  edi_id?: number;
-  ava_edificio?: AvaEdificio;
+  ser_id?: string;
+  prop_id?: string;
+  ava_propiedad?: AvaPropiedad;
   ava_servicio?: AvaServicio;
 }
 

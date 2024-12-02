@@ -12,9 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useClientForm } from "@/hooks/mantClient/useClientForm";
 import { ClienteFormProps } from "@/lib/typesForm";
-import { Alert } from "@/components/ui/alert";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const ClienteForm: React.FC<ClienteFormProps> = ({
   action,
@@ -28,22 +28,29 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const { toast } = useToast();
 
   const handleFormSubmit = async (data: any) => {
     setIsLoading(true);
-    setMessage(null);
 
     try {
       await onSubmit(data);
-      setMessage({ type: "success", text: "¡Cliente guardado exitosamente!" });
-    } catch (error) {
-      setMessage({
-        type: "error",
-        text: "Hubo un error al guardar el cliente. Inténtalo de nuevo.",
+
+      toast({
+        title: "Éxito",
+        description:
+          action === "create"
+            ? "Cliente creado exitosamente."
+            : "Cliente actualizado exitosamente.",
+        typet: "success",
+      });
+
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Ocurrió un error al guardar el cliente.",
+        typet: "error",
       });
     } finally {
       setIsLoading(false);
@@ -56,16 +63,6 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
         onSubmit={handleSubmit(handleFormSubmit)}
         className="grid grid-cols-2 gap-4"
       >
-        {message && (
-          <div className="col-span-2">
-            <Alert
-              variant={message.type === "success" ? "default" : "destructive"}
-            >
-              {message.text}
-            </Alert>
-          </div>
-        )}
-
         <FormField
           control={form.control}
           name="cli_nombre"
@@ -168,7 +165,6 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
             </FormItem>
           )}
         />
-
         {action !== "view" && (
           <div className="col-span-2 flex gap-4">
             <Button

@@ -14,10 +14,9 @@ import { Cliente } from "@/lib/types";
 import { RentalFormProps } from "@/lib/typesForm";
 
 const rentalFormSchema = z.object({
-  alq_monto: z
-    .string()
-    .min(1, "Monto es requerido")
-    .max(20, "Monto no puede ser mayor a 20 caracteres"),
+  alq_monto: z.string().refine((value) => !isNaN(Number(value)), {
+    message: "El monto debe ser un número",
+  }),
   alq_fechapago: z.string().optional(),
   alq_estado: z.enum(["A", "F", "C"]),
 });
@@ -73,12 +72,12 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
   const defaultValues = useMemo(() => {
     return action === "create"
       ? {
-          alq_monto: "",
+          alq_monto: "1000",
           alq_fechapago: "",
           alq_estado: "A" as const,
         }
       : {
-          alq_monto: selectedRental?.alq_monto || "",
+          alq_monto: selectedRental?.alq_monto || "1000",
           alq_fechapago: selectedRental?.alq_fechapago
             ? format(
                 toDate(
@@ -109,7 +108,7 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
 
   const clearForm = () => {
     reset({
-      alq_monto: "",
+      alq_monto: "1000",
       alq_fechapago: "",
       alq_estado: "A" as const,
     });
@@ -136,11 +135,12 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
           alq_fechapago: formData.alq_fechapago
             ? new Date(`${formData.alq_fechapago}T00:00:00`).toISOString()
             : null,
+          alq_monto: Number(formData.alq_monto) || 0,
           prop_id: selectedProperty?.prop_id,
         };
         const response = await axios.post("/api/rent", newRental, { headers });
-        if (response.data) {
-          addRental(response.data);
+        if (response.data.data) {
+          addRental(response.data.data);
           onSuccess();
           clearForm();
         }
@@ -160,9 +160,9 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
           updatedRentalData,
           { headers }
         );
-        if (response.data) {
-          updateRental(selectedRental.alq_id, response.data);
-          setSelectedRental(response.data);
+        if (response.data.data) {
+          updateRental(selectedRental.alq_id, response.data.data);
+          setSelectedRental(response.data.data);
           onSuccess();
           clearForm();
         }
@@ -188,7 +188,7 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
     }
   };
 
-  const handleClientRemove = (clientId: number) => {
+  const handleClientRemove = (clientId: string) => {
     setClientsInRental(
       clientsInRental.filter((client) => client.cli_id !== clientId)
     );
@@ -209,7 +209,7 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
             "Content-Type": "application/json",
           },
         });
-        setClients(response.data);
+        setClients(response.data.data);
       } catch (error) {
         console.error("Error al buscar clientes: " + error);
       }

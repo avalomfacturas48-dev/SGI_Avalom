@@ -80,7 +80,7 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
             { headers }
           );
           if (response.data) {
-            removeProperty(property.edi_id || 0, property.prop_id);
+            removeProperty(property.edi_id || "0", property.prop_id);
           }
         } catch (error: any) {
           console.error("Error al borrar la propiedad:", error);

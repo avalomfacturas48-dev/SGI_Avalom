@@ -29,7 +29,7 @@ const BodyAccounting: React.FC = () => {
             "Content-Type": "application/json",
           },
         });
-        setRentals(response.data);
+        setRentals(response.data.data);
       } catch (error) {
         console.error("Error al buscar alquileres: " + error);
       }

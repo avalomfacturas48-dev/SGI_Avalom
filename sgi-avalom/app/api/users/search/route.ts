@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -30,11 +31,14 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(users);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(users) },
+        { status: 200 }
+      );
     } catch (error) {
       console.error("Error searching users:", error);
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

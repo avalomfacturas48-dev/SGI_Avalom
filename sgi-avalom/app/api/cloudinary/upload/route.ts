@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
       if (!file) {
         return NextResponse.json(
-          { error: "Archivo no encontrado" },
+          { success: false, error: "Archivo no encontrado" },
           { status: 400 }
         );
       }
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error("Error al subir archivo:", error);
       return NextResponse.json(
-        { error: "Error subiendo archivo" },
+        { success: false, error: "Error subiendo el archivo" },
         { status: 500 }
       );
     }

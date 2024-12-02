@@ -9,28 +9,30 @@ export async function POST(request: NextRequest) {
 
       if (!publicId) {
         return NextResponse.json(
-          { error: "Public ID no proporcionado" },
+          { success: false, error: "Public ID no proporcionado" },
           { status: 400 }
         );
       }
 
-      console.log("Eliminando archivo con public ID:", publicId);
       const result = await cloudinary.uploader.destroy(publicId, {
         resource_type: "raw",
       });
 
       if (result.result !== "ok") {
         return NextResponse.json(
-          { error: "Error eliminando archivo" },
-          { status: 400 }
+          { success: false, error: "Error eliminando archivo" },
+          { status: 500 }
         );
       }
 
-      return NextResponse.json({ message: "Archivo eliminado correctamente" });
+      return NextResponse.json(
+        { success: true, message: "Archivo eliminado" },
+        { status: 200 }
+      );
     } catch (error) {
       console.error("Error al eliminar archivo:", error);
       return NextResponse.json(
-        { error: "Error eliminando archivo" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

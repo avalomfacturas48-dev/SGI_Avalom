@@ -24,7 +24,8 @@ const clienteFormSchema = z.object({
   cli_cedula: z
     .string()
     .min(1, "La cédula es requerida")
-    .max(15, "La cédula no puede tener más de 15 caracteres"),
+    .max(15, "La cédula no puede tener más de 15 caracteres")
+    .regex(/^\d+$/, "La cédula solo puede contener números"),
   cli_telefono: z
     .string()
     .min(1, "El teléfono es requerido")
@@ -85,8 +86,7 @@ export const useClientForm = ({
     try {
       const token = cookie.get("token");
       if (!token) {
-        console.error("No hay token disponible");
-        return;
+        throw new Error("No hay token disponible");
       }
 
       const headers = {
@@ -94,27 +94,29 @@ export const useClientForm = ({
         "Content-Type": "application/json",
       };
 
+      let response;
+
       if (action === "create") {
-        const response = await axios.post("/api/client", formData, { headers });
-        if (response.data) {
-          addClient(response.data);
-          onSuccess();
-          reset(defaultValues);
-        }
+        response = await axios.post("/api/client", formData, { headers });
       } else if (action === "edit" && entity?.cli_id) {
-        const response = await axios.put(
-          `/api/client/${entity.cli_id}`,
-          formData,
-          { headers }
-        );
-        if (response.data) {
-          updateClient(response.data);
-          onSuccess();
-          reset(defaultValues);
-        }
+        response = await axios.put(`/api/client/${entity.cli_id}`, formData, {
+          headers,
+        });
+      }
+
+      if (response?.data?.success) {
+        action === "create"
+          ? addClient(response.data.data)
+          : updateClient(response.data.data);
+        onSuccess();
+        reset(defaultValues);
+      } else {
+        throw new Error(response?.data?.error || "Error desconocido");
       }
     } catch (error: any) {
-      console.error("Error al guardar el cliente:", error);
+      const message =
+        error.response?.data?.error || error.message || "Error desconocido";
+      throw new Error(message);
     }
   };
 

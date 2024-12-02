@@ -3,8 +3,6 @@ import { Inter } from "next/font/google";
 import { UserProvider } from "../lib/UserContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { NotificationProvider } from "@/components/ui/notificacion";
-
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -22,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <UserProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
           <ThemeProvider
             attribute="class"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { comparePassword, generateToken } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   if (!user) {
     return NextResponse.json(
-      { error: "Invalid email or password" },
+      { success: false, error: "Email o contraseña invalidos" },
       { status: 401 }
     );
   }
@@ -21,17 +22,23 @@ export async function POST(req: NextRequest) {
   const isPasswordValid = await comparePassword(password, user.usu_contrasena);
   if (!isPasswordValid) {
     return NextResponse.json(
-      { error: "Invalid email or password" },
+      { success: false, error: "Email o contraseña invalidos" },
       { status: 401 }
     );
   }
 
-  // Incluye el rol del usuario al generar el token
   const token = generateToken(String(user.usu_id), user.usu_rol);
 
-  return NextResponse.json({
+  const response = {
     message: "Login successful",
     token: token,
-    user: user,
+    user: {
+      ...user,
+      usu_id: user.usu_id.toString(),
+    },
+  };
+
+  return NextResponse.json(response, {
+    headers: { "Content-Type": "application/json" },
   });
 }

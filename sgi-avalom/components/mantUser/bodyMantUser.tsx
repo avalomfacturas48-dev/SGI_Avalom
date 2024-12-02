@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import cookie from "js-cookie";
 import axios from "axios";
 import { Plus } from "lucide-react";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import UserForm from "./UserFormProps";
+import { Skeleton } from "../ui/skeleton";
 
 const BodyMantUser: React.FC = () => {
   const { users, setUsers } = useUserStore((state) => ({
@@ -20,6 +21,7 @@ const BodyMantUser: React.FC = () => {
     setUsers: state.setUsers,
     addUser: state.addUser,
   }));
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -36,9 +38,11 @@ const BodyMantUser: React.FC = () => {
             "Content-Type": "application/json",
           },
         });
-        setUsers(response.data);
+        setUsers(response.data.data);
       } catch (error) {
         console.error("Error al buscar usuarios: " + error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -50,7 +54,7 @@ const BodyMantUser: React.FC = () => {
       <Card className="bg-background flex flex-col sm:flex-row justify-between items-center">
         <CardHeader className="">
           <CardTitle className="text-2xl font-bold mb-4 sm:mb-0">
-            Gestión de Edificios
+            Gestión de Usuarios
           </CardTitle>
         </CardHeader>
         <div className="flex flex-wrap justify-center gap-2 p-4">
@@ -71,7 +75,22 @@ const BodyMantUser: React.FC = () => {
       </Card>
       <Card>
         <CardContent>
-          <DataTable data={users} columns={columns} />
+        {isLoading ? (
+            <div className="space-y-4">
+              {[...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-8 m-10"
+                >
+                  <Skeleton className="w-full sm:w-[200px] h-[20px] rounded-full" />
+                  <Skeleton className="w-full sm:w-[100px] h-[20px] rounded-full" />
+                  <Skeleton className="w-full sm:w-[150px] h-[20px] rounded-full" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <DataTable columns={columns} data={users} />
+          )}
         </CardContent>
       </Card>
     </div>

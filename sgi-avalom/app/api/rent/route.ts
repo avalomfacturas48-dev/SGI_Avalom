@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const rents = await prisma.ava_alquiler.findMany(
-        {
-          include: {
-            ava_alquilermensual: true,
-            ava_propiedad: true,
-          },
-        }
+      const rents = await prisma.ava_alquiler.findMany({
+        include: {
+          ava_alquilermensual: true,
+          ava_propiedad: true,
+        },
+      });
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(rents) },
+        { status: 200 }
       );
-      return NextResponse.json(rents);
     } catch (error) {
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }
@@ -27,15 +29,17 @@ export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const data = await req.json();
-      console.log(data);
       const rent = await prisma.ava_alquiler.create({
         data,
       });
-      return NextResponse.json(rent);
-    } catch (error) {
-      console.error("Error creating rent:", error);
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: true, data: stringifyWithBigInt(rent) },
+        { status: 201 }
+      );
+    } catch (error) {
+      console.error("Error:", error);
+      return NextResponse.json(
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

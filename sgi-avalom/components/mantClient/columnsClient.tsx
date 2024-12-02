@@ -16,8 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export const columnsClient: ColumnDef<Cliente>[] = [
   // {
@@ -92,6 +92,7 @@ export const columnsClient: ColumnDef<Cliente>[] = [
     id: "actions",
     cell: ({ row }) => {
       const cliente = row.original;
+      const { toast } = useToast();
       const { removeClient } = useClientStore((state) => ({
         removeClient: state.removeClient,
       }));
@@ -100,8 +101,7 @@ export const columnsClient: ColumnDef<Cliente>[] = [
         try {
           const token = cookie.get("token");
           if (!token) {
-            console.error("No hay token disponible");
-            return;
+            throw new Error("No hay token disponible");
           }
 
           const headers = {
@@ -112,11 +112,21 @@ export const columnsClient: ColumnDef<Cliente>[] = [
           const response = await axios.delete(`/api/client/${cliente.cli_id}`, {
             headers,
           });
-          if (response.data) {
+
+          if (response?.data?.success) {
             removeClient(cliente.cli_id);
+            toast({
+              title: "Cliente eliminado",
+              description: `El cliente ${cliente.cli_nombre} fue eliminado correctamente.`,
+              typet: "success",
+            });
           }
-        } catch (error) {
-          console.error("Error al borrar cliente:", error);
+        } catch (error: any) {
+          toast({
+            title: "Error",
+            description: error.message || "No se pudo eliminar el cliente.",
+            typet: "error",
+          });
         }
       };
 

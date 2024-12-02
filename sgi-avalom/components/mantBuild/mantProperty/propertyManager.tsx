@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
 interface PropertyManagerProps {
-  propertyId: number;
+  propertyId: string;
 }
 
 const PropertyManager: React.FC<PropertyManagerProps> = ({ propertyId }) => {
@@ -42,7 +42,7 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({ propertyId }) => {
     setIsLoading(true);
     try {
       const response = await axios.get(`/api/property/${propertyId}`);
-      setSelectedProperty(response.data);
+      setSelectedProperty(response.data.data);
     } catch (error) {
       console.error("Error fetching property:", error);
     } finally {

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { NextResponse, NextRequest } from "next/server";
-import cookie from "cookie";
+import { parse } from "cookie";
 import { User, UserWithToken } from "./types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "";
@@ -39,12 +39,12 @@ export const verifyToken = (token: string): User | null => {
 // Middleware para autenticar
 export const authenticate = (handler: any) => {
   return async (req: NextRequest, res: NextResponse) => {
-    const cookies = cookie.parse(req.headers.get("cookie") || "");
+    const cookies = parse(req.headers.get("cookie") || "");
     const token = cookies.token;
 
     if (!token) {
       return NextResponse.json(
-        { error: "Authentication token required" },
+        { success: false, error: "No hay token" },
         { status: 401 }
       );
     }
@@ -55,7 +55,7 @@ export const authenticate = (handler: any) => {
       return handler(req, res);
     } catch (error) {
       return NextResponse.json(
-        { error: "Invalid or expired token" },
+        { success: false, error: "Token inválido" },
         { status: 401 }
       );
     }

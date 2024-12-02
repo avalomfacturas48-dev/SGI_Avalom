@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const tiposPropiedad = await prisma.ava_tipopropiedad.findMany();
-      return NextResponse.json(tiposPropiedad);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(tiposPropiedad) },
+        { status: 200 }
+      );
     } catch (error) {
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }
@@ -23,7 +27,7 @@ export async function POST(request: NextRequest) {
 
       if (!body.tipp_nombre) {
         return NextResponse.json(
-          { error: "Faltan campos relevantes" },
+          { success: false, error: "Faltan campos obligatorios" },
           { status: 400 }
         );
       }
@@ -34,10 +38,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(tipoPropiedad);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(tipoPropiedad) },
+        { status: 201 }
+      );
     } catch (error) {
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

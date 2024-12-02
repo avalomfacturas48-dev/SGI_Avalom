@@ -21,7 +21,7 @@ const propertyFormSchema = z.object({
   prop_descripcion: z
     .string()
     .max(50, "La descripción no puede tener más de 50 caracteres"),
-  tipp_id: z.number().min(1, "Selecciona un tipo de propiedad"),
+  tipp_id: z.string().min(1, "Selecciona un tipo de propiedad"),
 });
 
 type PropertyFormInputs = z.infer<typeof propertyFormSchema>;
@@ -87,9 +87,9 @@ export const usePropertyForm = ({ action, property, entity, onSuccess }: Propert
         const response = await axios.post(`/api/property`, propertyData, {
           headers,
         });
-        if (response.data) {
-          setSelectedProperty(response.data);
-          addProperty(entity || 0, response.data);
+        if (response.data.data) {
+          setSelectedProperty(response.data.data);
+          addProperty(entity?.toString() || "0", response.data.data);
           onSuccess();
           reset(defaultValues);
         }
@@ -99,9 +99,9 @@ export const usePropertyForm = ({ action, property, entity, onSuccess }: Propert
           propertyData,
           { headers }
         );
-        if (response.data) {
-          updateSelectedProperty(response.data);
-          updateProperty(property?.edi_id || 0, response.data);
+        if (response.data.data) {
+          updateSelectedProperty(response.data.data);
+          updateProperty(property?.edi_id || "0", response.data.data);
           onSuccess();
           reset(defaultValues);
           setSelectedProperty(null);

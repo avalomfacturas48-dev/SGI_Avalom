@@ -20,15 +20,8 @@ import {
 import { PropertyFormProps } from "@/lib/typesForm";
 import { usePropertyForm } from "@/hooks/mantBuild/usePropertyForm";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PropertyForm: React.FC<PropertyFormProps> = ({
   action,
@@ -87,7 +80,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                   <Select
                     value={field.value?.toString() || ""}
                     onValueChange={(value) =>
-                      field.onChange(parseInt(value, 10))
+                      field.onChange(value)
                     }
                     disabled={action === "view"}
                   >
@@ -98,7 +91,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                       {types.map((type) => (
                         <SelectItem
                           key={type.tipp_id}
-                          value={type.tipp_id.toString()}
+                          value={type.tipp_id}
                         >
                           {type.tipp_nombre}
                         </SelectItem>

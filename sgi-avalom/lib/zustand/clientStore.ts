@@ -6,7 +6,7 @@ interface ClientState {
   setClients: (clients: Cliente[]) => void;
   addClient: (client: Cliente) => void;
   updateClient: (client: Cliente) => void;
-  removeClient: (cli_id: number) => void;
+  removeClient: (cli_id: string) => void;
 }
 
 const useClientStore = create<ClientState>((set) => ({

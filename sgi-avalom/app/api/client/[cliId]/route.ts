@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(
   request: NextRequest,
@@ -10,19 +11,25 @@ export async function GET(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const client = await prisma.ava_cliente.findUnique({
-        where: { cli_id: parseInt(params.cliId) },
+        where: { cli_id: BigInt(params.cliId) },
       });
       if (!client) {
         return NextResponse.json(
-          { error: "Cliente no encontrado" },
+          { success: false, error: "Cliente no encontrado" },
           { status: 404 }
         );
       }
-      return NextResponse.json(client);
-    } catch (error) {
-      console.error("Error:", error);
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: true, data: stringifyWithBigInt(client) },
+        { status: 200 }
+      );
+    } catch (error: any) {
+      console.error(
+        "Error inesperado en GET /api/client/[cliId]:",
+        error?.message || error
+      );
+      return NextResponse.json(
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }
@@ -37,9 +44,14 @@ export async function PUT(
     try {
       const body = await request.json();
 
-      const cliId = parseInt(params.cliId);
-      if (isNaN(cliId)) {
-        return NextResponse.json({ error: "Id Invalido" }, { status: 400 });
+      let cliId: bigint;
+      try {
+        cliId = BigInt(params.cliId);
+      } catch (error) {
+        return NextResponse.json(
+          { success: false, error: "Id Invalido" },
+          { status: 400 }
+        );
       }
 
       const updatedClient = await prisma.ava_cliente.update({
@@ -53,19 +65,29 @@ export async function PUT(
           cli_correo: body.cli_correo,
         },
       });
-      return NextResponse.json(updatedClient);
-    } catch (error) {
-      console.error("Error:", error);
+      return NextResponse.json(
+        { success: true, data: stringifyWithBigInt(updatedClient) },
+        { status: 200 }
+      );
+    } catch (error: any) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === "P2002") {
           return NextResponse.json(
-            { error: "La cedula ya está registrada" },
+            {
+              success: false,
+              error: "Ya existe un cliente con campos duplicados",
+            },
             { status: 409 }
           );
         }
       }
+
+      console.error(
+        "Error inesperado en PUT /api/client/[cliId]:",
+        error?.message || error
+      );
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }
@@ -79,13 +101,19 @@ export async function DELETE(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       await prisma.ava_cliente.delete({
-        where: { cli_id: parseInt(params.cliId) },
+        where: { cli_id: BigInt(params.cliId) },
       });
-      return NextResponse.json({ status: 204 });
-    } catch (error) {
-      console.error("Error:", error);
       return NextResponse.json(
-        { error: "Error interno del servidor" },
+        { status: 204, message: "Cliente eliminado" },
+        { status: 200 }
+      );
+    } catch (error: any) {
+      console.error(
+        "Error inesperado en DELETE /api/client/[cliId]:",
+        error?.message || error
+      );
+      return NextResponse.json(
+        { success: false, error: "Error interno del servidor" },
         { status: 500 }
       );
     }

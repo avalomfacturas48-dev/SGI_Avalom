@@ -9,7 +9,7 @@ export interface RentalFormProps {
 export interface PropertyFormProps {
   action: "create" | "edit" | "view";
   property?: AvaPropiedad;
-  entity?: number;
+  entity?: string;
   onSuccess: () => void;
 }
 

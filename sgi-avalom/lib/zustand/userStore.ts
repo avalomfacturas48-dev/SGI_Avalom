@@ -6,7 +6,7 @@ interface UserState {
   setUsers: (users: User[]) => void;
   addUser: (user: User) => void;
   updateUser: (user: User) => void;
-  removeUser: (usu_id: number) => void;
+  removeUser: (usu_id: string) => void;
 }
 
 const useUserStore = create<UserState>((set) => ({

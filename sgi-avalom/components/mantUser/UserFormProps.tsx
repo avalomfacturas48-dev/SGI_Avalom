@@ -17,15 +17,49 @@ import {
 } from "@/components/ui/select";
 import { useUserForm } from "@/hooks/mantUser/useUserForm";
 import { UserFormProps } from "@/lib/typesForm";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Loader2Icon } from "lucide-react";
+import Link from "next/link";
 
 const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
   const { form, handleSubmit, onSubmit, handleClear, disableRoleSelection } =
     useUserForm({ action, entity, onSuccess });
 
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleFormSubmit = async (data: any) => {
+    setIsLoading(true);
+
+    try {
+      await onSubmit(data);
+
+      toast({
+        title: "Éxito",
+        description:
+          action === "create"
+            ? "Usuario creado exitosamente."
+            : "Usuario actualizado exitosamente.",
+        typet: "success",
+      });
+
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Ocurrió un error al guardar el usuario.",
+        typet: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Form {...form}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(handleFormSubmit)}
         className="grid grid-cols-2 gap-4 m-3"
       >
         <FormField
@@ -106,21 +140,24 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
             </FormItem>
           )}
         />
-        {(action === "create" || action === "edit") && (
-          <FormField
-            control={form.control}
-            name="usu_contrasena"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contraseña</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" maxLength={30} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="usu_contrasena"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Contraseña</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  type="password"
+                  placeholder="Ingresa una contraseña"
+                  disabled={action === "view"}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="usu_estado"
@@ -174,12 +211,22 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
           )}
         />
         {action !== "view" && (
-          <div className="pt-4 m-3">
-            <Button type="submit">
+          <div className="col-span-2 flex gap-4">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              {isLoading && <Loader2Icon className="h-4 w-4 animate-spin" />}
               {action === "create" ? "Crear Usuario" : "Guardar Cambios"}
             </Button>
             {action !== "edit" && (
-              <Button type="button" onClick={handleClear} className="ml-4">
+              <Button
+                type="button"
+                onClick={handleClear}
+                disabled={isLoading}
+                variant="outline"
+              >
                 Limpiar
               </Button>
             )}

@@ -13,8 +13,8 @@ interface PropertyState {
   setSelectedRental: (rental: AvaAlquiler | null) => void;
   updateSelectedProperty: (property: Partial<AvaPropiedad>) => void;
   addRental: (rental: AvaAlquiler) => void;
-  updateRental: (id: number, updatedRental: AvaAlquiler) => void;
-  removeRental: (id: number) => void;
+  updateRental: (id: string, updatedRental: AvaAlquiler) => void;
+  removeRental: (id: string) => void;
 }
 
 const usePropertyStore = create<PropertyState>((set) => ({

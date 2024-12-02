@@ -13,7 +13,6 @@ import cookie from "js-cookie";
 import ClienteForm from "@/components/mantClient/clienteFormProps";
 import { Cliente } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
 
 const BodyMantClient: React.FC = () => {
   const { clients, setClients } = useClientStore((state) => ({
@@ -22,8 +21,6 @@ const BodyMantClient: React.FC = () => {
     addClient: state.addClient,
   }));
   const [isLoading, setIsLoading] = useState(true);
-
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -40,7 +37,7 @@ const BodyMantClient: React.FC = () => {
             "Content-Type": "application/json",
           },
         });
-        setClients(response.data);
+        setClients(response.data.data);
       } catch (error) {
         console.error("Error al buscar clientes: " + error);
       } finally {
@@ -50,29 +47,6 @@ const BodyMantClient: React.FC = () => {
 
     fetchClients();
   }, [setClients]);
-
-  const handleExportClients = async () => {
-    // Para crear una notificación de éxito
-    // toast({
-    //   title: "¡Éxito!",
-    //   description: "La operación se completó correctamente.",
-    //   typet: "success",
-    // });
-
-    // Para crear una notificación de error
-    // toast({
-    //   title: "Error",
-    //   description: "Ocurrió un error al procesar la solicitud.",
-    //   typet: "error",
-    // });
-
-    // Para crear una notificación de información
-    toast({
-      title: "Información",
-      description: "Aquí tienes algunos detalles importantes.",
-      typet: "info",
-    });
-  };
 
   return (
     <div className="mx-auto p-4 space-y-8">
@@ -92,9 +66,7 @@ const BodyMantClient: React.FC = () => {
             action={"create"}
             FormComponent={ClienteForm}
           />
-          <Button variant="outline" onClick={() => handleExportClients()}>
-            Exportar Clientes
-          </Button>
+          <Button variant="outline">Exportar Clientes</Button>
           <Button variant="outline">Descargar Plantilla</Button>
           <Button variant="outline">Importar</Button>
           <ModeToggle />

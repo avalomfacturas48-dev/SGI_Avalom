@@ -23,7 +23,7 @@ const useTypeStore = create<TypeStore>((set) => ({
         "Content-Type": "application/json",
       };
       const response = await axios.get("/api/propertytypes", { headers });
-      set({ types: response.data });
+      set({ types: response.data.data });
     } catch (error) {
       console.error("Error al obtener tipos de propiedad:", error);
     }
