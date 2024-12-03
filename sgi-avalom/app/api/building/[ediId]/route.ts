@@ -5,10 +5,12 @@ import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { ediId: string } }
+  context: { params: Promise<{ ediId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       const building = await prisma.ava_edificio.findFirst({
         where: { edi_id: BigInt(params.ediId) },
         include: {
@@ -37,11 +39,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { ediId: string } }
+  context: { params: Promise<{ ediId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
       const data = await req.json();
+
       const building = await prisma.ava_edificio.update({
         where: { edi_id: BigInt(params.ediId) },
         data: {
@@ -64,10 +68,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { ediId: string } }
+  context: { params: Promise<{ ediId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       await prisma.ava_edificio.delete({
         where: { edi_id: BigInt(params.ediId) },
       });

@@ -4,10 +4,12 @@ import { authenticate } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tippId: string } }
+  context: { params: Promise<{ tippId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       const tipoPropiedad = await prisma.ava_tipopropiedad.findFirst({
         where: { tipp_id: Number(params.tippId) },
       });
@@ -31,10 +33,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { tippId: string } }
+  context: { params: Promise<{ tippId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
       const body = await request.json();
 
       if (!body.tipp_id || !body.tipp_nombre) {
@@ -63,10 +66,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { tippId: string } }
+  context: { params: Promise<{ tippId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
       const body = await request.json();
 
       if (!body.tipp_id) {

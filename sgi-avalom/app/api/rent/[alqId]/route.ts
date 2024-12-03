@@ -5,10 +5,12 @@ import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { alqId: string } }
+  context: { params: Promise<{ alqId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       const rent = await prisma.ava_alquiler.findFirst({
         where: { alq_id: BigInt(params.alqId) },
       });
@@ -96,10 +98,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { alqId: string } }
+  context: { params: Promise<{ alqId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       await prisma.ava_alquiler.delete({
         where: { alq_id: BigInt(params.alqId) },
       });

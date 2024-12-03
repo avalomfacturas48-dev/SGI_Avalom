@@ -114,10 +114,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       await prisma.ava_usuario.delete({
         where: { usu_id: BigInt(params.userId) },
       });
