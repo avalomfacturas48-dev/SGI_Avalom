@@ -49,11 +49,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  context: { params: Promise<{ propId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
       const data = await req.json();
+
       const property = await prisma.ava_propiedad.update({
         where: { prop_id: BigInt(params.propId) },
         data: {
@@ -78,10 +80,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { propId: string } }
+  context: { params: Promise<{ propId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
+      const params = await context.params;
+
       await prisma.ava_propiedad.delete({
         where: { prop_id: BigInt(params.propId) },
       });
