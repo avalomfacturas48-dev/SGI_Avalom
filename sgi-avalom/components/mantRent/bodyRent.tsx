@@ -7,9 +7,9 @@ import cookie from "js-cookie";
 import { ModeToggle } from "../modeToggle";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { DataTable } from "./data_table_filter";
-import { columns } from "./columnsAccounting";
+import { columns } from "./columnsRent";
 
-const BodyAccounting: React.FC = () => {
+const BodyRent: React.FC = () => {
   const { rentals, setRentals } = useRentalStore();
   const [statusFilter, setStatusFilter] = useState<string>("A");
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>("all");
@@ -43,7 +43,7 @@ const BodyAccounting: React.FC = () => {
       <Card className="bg-background flex flex-col sm:flex-row justify-between items-center">
         <CardHeader>
           <CardTitle className="text-2xl font-bold mb-4 sm:mb-0">
-            Contabilidad
+            Mantenimiento de Alquileres
           </CardTitle>
         </CardHeader>
         <div className="flex flex-wrap justify-center gap-2 p-4">
@@ -67,4 +67,4 @@ const BodyAccounting: React.FC = () => {
   );
 };
 
-export default BodyAccounting;
+export default BodyRent;

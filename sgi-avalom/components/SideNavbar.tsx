@@ -10,6 +10,7 @@ import {
   Building2,
   LineChart,
   Settings,
+  FilePen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -94,6 +95,7 @@ export default function SideNavbar() {
         <NavItem href="/mantClient" icon={BookUser} title="Clientes" />
         <NavItem href="/mantUser" icon={Users} title="Usuarios" />
         <NavItem href="/mantBuild" icon={Building2} title="Edificios" />
+        <NavItem href="/mantRent" icon={FilePen} title="Alquileres" />
         <NavItem href="/accounting" icon={LineChart} title="Contabilidad" />
       </nav>
       <div className="mt-auto flex flex-col items-center gap-4 p-4">

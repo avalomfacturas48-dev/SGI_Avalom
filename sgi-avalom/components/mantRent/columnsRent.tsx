@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { AvaAlquiler } from "@/lib/types";
+import Link from "next/link";
 
 export const columns: ColumnDef<AvaAlquiler>[] = [
   {
@@ -83,7 +84,13 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
               : ""
           }`}
         >
-          {status === "A" ? "Activo" : status === "F" ? "Finalizado" : status === "C" ? "Cancelado" : "Desconocido"}
+          {status === "A"
+            ? "Activo"
+            : status === "F"
+            ? "Finalizado"
+            : status === "C"
+            ? "Cancelado"
+            : "Desconocido"}
         </div>
       );
     },
@@ -122,11 +129,9 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
             >
               Copiar ID alquiler
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {}}
-            >
-              Realizar movimiento
-            </DropdownMenuItem>
+            <Link href={`/mantRent/edit/${rental.alq_id}`}>
+              <DropdownMenuItem>Editar</DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       );

@@ -70,6 +70,8 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({ propertyId }) => {
     );
   }
 
+  const isAirbnb = selectedProperty.tipp_id === "1";
+
   return (
     <CardContent className="space-y-2">
       <PropertyForm
@@ -78,33 +80,35 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({ propertyId }) => {
         onSuccess={() => {}}
       />
       <Separator className="my-6" />
-      <Tabs defaultValue="view" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="view">Ver Alquileres</TabsTrigger>
-          <TabsTrigger value="create" onClick={handleNewRental}>
-            Crear Alquiler
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="view" className="space-y-4">
-          <RentalForm action="edit" onSuccess={handleSuccess} />
-          <Separator className="my-4" />
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Historial de alquileres</h2>
-          </div>
-          <Card>
-            <CardContent className="p-0">
-              <DataTable
-                columns={columnsRent}
-                data={selectedProperty.ava_alquiler}
-                onRowClick={handleSelectRental}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="create">
-          <RentalForm action="create" onSuccess={handleSuccess} />
-        </TabsContent>
-      </Tabs>
+      {!isAirbnb && (
+        <Tabs defaultValue="view" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="view">Ver Alquileres</TabsTrigger>
+            <TabsTrigger value="create" onClick={handleNewRental}>
+              Crear Alquiler
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="view" className="space-y-4">
+            <RentalForm action="edit" onSuccess={handleSuccess} />
+            <Separator className="my-4" />
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Historial de alquileres</h2>
+            </div>
+            <Card>
+              <CardContent className="p-0">
+                <DataTable
+                  columns={columnsRent}
+                  data={selectedProperty.ava_alquiler}
+                  onRowClick={handleSelectRental}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="create">
+            <RentalForm action="create" onSuccess={handleSuccess} />
+          </TabsContent>
+        </Tabs>
+      )}
     </CardContent>
   );
 };
