@@ -58,14 +58,13 @@ const BodyMantUser: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <div className="flex flex-wrap justify-center gap-2 p-4">
-          <ManageActions<User>
+          <ManageActions
             variant="default"
             titleButton={"Nuevo Usuario"}
             icon={<Plus className="mr-2 h-4 w-4" />}
             title={"Nuevo Usuario"}
             description={"Ingresa un nuevo Usuario"}
-            action={"create"}
-            FormComponent={UserForm}
+            FormComponent={<UserForm action={"create"} onSuccess={() => {}} />}
           />
           <Button variant="outline">Exportar Usuarios</Button>
           <Button variant="outline">Descargar Plantilla</Button>
@@ -75,7 +74,7 @@ const BodyMantUser: React.FC = () => {
       </Card>
       <Card>
         <CardContent>
-        {isLoading ? (
+          {isLoading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, index) => (
                 <div

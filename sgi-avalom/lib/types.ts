@@ -10,6 +10,7 @@ export interface User {
   usu_fechacreacion?: string;
   usu_estado: "A" | "I";
   usu_rol: "A" | "J" | "E" | "R";
+  ava_anulacionpago?: AvaAnulacionPago[];
 }
 
 export interface UserWithToken extends User {
@@ -40,7 +41,12 @@ export interface AvaDeposito {
   depo_id: string;
   depo_montoactual: string;
   depo_total: string;
-  depo_descripcion?: string;
+  depo_montodevuelto?: string;
+  depo_montocastigo?: string;
+  depo_descmontodevuelto?: string;
+  depo_descrmontocastigo?: string;
+  depo_fechadevolucion?: string;
+  depo_fechacreacion?: string;
   alq_id?: string;
   ava_alquiler?: AvaAlquiler;
   ava_pago: AvaPago[];
@@ -51,6 +57,7 @@ export interface AvaPago {
   pag_monto: string;
   pag_descripcion?: string;
   pag_cuenta?: string;
+  pag_estado: "A" | "D";
   pag_fechapago: string;
   res_id?: string;
   alqm_id?: string;
@@ -58,6 +65,7 @@ export interface AvaPago {
   ava_reservacion?: AvaReservacion;
   ava_alquilermensual?: AvaAlquilerMensual;
   ava_deposito?: AvaDeposito;
+  ava_anulacionpago?: AvaAnulacionPago[];
 }
 
 export interface AvaEdificio {
@@ -89,21 +97,23 @@ export interface AvaTipoPropiedad {
 export interface AvaAlquiler {
   alq_id: string;
   alq_monto: string;
-  alq_fechapago: Date;
+  alq_fechapago: string;
   alq_contrato?: string;
   alq_estado: "A" | "F" | "C";
-  alq_fechacreacion?: Date;
+  alq_fechacreacion?: string;
   prop_id?: string;
   ava_propiedad?: AvaPropiedad;
   ava_alquilermensual: AvaAlquilerMensual[];
   ava_deposito: AvaDeposito[];
   ava_clientexalquiler: AvaClientexAlquiler[];
+  ava_alquilercancelado?: AvaAlquilerCancelado[];
 }
 
 export interface AvaAlquilerMensual {
   alqm_id: string;
-  alqm_anio: string;
-  alqm_mes: string;
+  alqm_identificador: string;
+  alqm_fechainicio: string;
+  alqm_fechafin: string;
   alqm_montototal: string;
   alqm_montopagado: string;
   alqm_fechapago?: string;
@@ -119,10 +129,10 @@ export interface AvaReservacion {
   res_nombrecliente: string;
   res_telefonocliente?: string;
   res_correocliente?: string;
-  res_fechacreacion?: string;
   res_fechaentrada: string;
   res_fechasalida: string;
   res_estado: "R" | "A" | "C" | "F";
+  res_fechacreacion?: string;
   prop_id?: string;
   ava_pago: AvaPago[];
   ava_propiedad?: AvaPropiedad;
@@ -145,6 +155,32 @@ export interface AvaPagoServicio {
   prop_id?: string;
   ava_propiedad?: AvaPropiedad;
   ava_servicio?: AvaServicio;
+}
+
+export interface AvaAnulacionPago {
+  anp_id: string;
+  anp_motivo: string;
+  anp_descripcion: string;
+  anp_montooriginal: string;
+  anp_montofinal: string;
+  anp_fechaanulacion: string;
+  pag_id?: string;
+  usu_id?: string;
+  ava_pago?: AvaPago;
+  ava_usuario?: User;
+}
+
+export interface AvaAlquilerCancelado {
+  alqc_id: string;
+  alqc_motivo: string;
+  alqc_montodevuelto?: string;
+  alqc_castigo?: string;
+  alqc_motivomontodevuelto?: string;
+  alqc_motivocastigo?: string;
+  alqc_fecha_cancelacion: string;
+  alqc_fechacreacion?: string;
+  alq_id?: string;
+  ava_alquiler?: AvaAlquiler;
 }
 
 declare module "next/server" {

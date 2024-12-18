@@ -58,14 +58,15 @@ const BodyMantClient: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <div className="flex flex-wrap justify-center gap-2 p-4">
-          <ManageActions<Cliente>
+          <ManageActions
             variant="default"
             titleButton={"Nuevo Cliente"}
             icon={<Plus className="mr-2 h-4 w-4" />}
             title={"Nuevo Cliente"}
             description={"Ingresa un nuevo cliente"}
-            action={"create"}
-            FormComponent={ClienteForm}
+            FormComponent={
+              <ClienteForm action={"create"} onSuccess={() => {}} />
+            }
           />
           <Button variant="outline">Exportar Clientes</Button>
           <Button variant="outline">Descargar Plantilla</Button>

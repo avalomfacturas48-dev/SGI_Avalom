@@ -11,7 +11,7 @@ interface RentalState {
 
   addMonthlyRent: (rent: AvaAlquilerMensual) => void;
   updateMonthlyRent: (updatedRent: AvaAlquilerMensual) => void;
-  deleteMonthlyRent: (alqm_id: string) => void;
+  deleteMonthlyRent: (alqm_id: string) => { success: boolean; message: string };
 
   resetRentalState: () => void;
 }
@@ -39,12 +39,35 @@ const useRentalStore = create<RentalState>((set) => ({
       ),
     })),
 
-  deleteMonthlyRent: (alqm_id) =>
-    set((state) => ({
-      monthlyRents: state.monthlyRents.filter(
-        (rent) => rent.alqm_id !== alqm_id
-      ),
-    })),
+  deleteMonthlyRent: (alqm_id) => {
+    let result = { success: false, message: "" };
+    set((state) => {
+      const rentToDelete = state.monthlyRents.find(
+        (rent) => rent.alqm_id === alqm_id
+      );
+
+      if (rentToDelete?.ava_pago?.length) {
+        result = {
+          success: false,
+          message:
+            "No se puede eliminar un alquiler mensual con pagos relacionados.",
+        };
+        return state;
+      }
+
+      result = {
+        success: true,
+        message: "Alquiler mensual eliminado correctamente.",
+      };
+
+      return {
+        monthlyRents: state.monthlyRents.filter(
+          (rent) => rent.alqm_id !== alqm_id
+        ),
+      };
+    });
+    return result;
+  },
 
   resetRentalState: () =>
     set({

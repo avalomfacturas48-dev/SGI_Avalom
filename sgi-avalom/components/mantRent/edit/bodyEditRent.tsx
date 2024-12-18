@@ -2,10 +2,11 @@
 
 import { useEffect } from "react";
 import RentalForm from "@/components/mantRent/edit/rentalForm";
-import { ModeToggle } from "../../modeToggle";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
 import { useParams } from "next/navigation";
 import { DateRangeCalculator } from "./DateRangeCalculator";
+import MonthsBetween from "./MonthsBetween";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import axios from "axios";
 import cookie from "js-cookie";
@@ -13,7 +14,7 @@ import { toast } from "sonner";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();
-  const { setSelectedRental } = useRentalStore();
+  const { setSelectedRental, monthlyRents } = useRentalStore();
 
   useEffect(() => {
     const fetchRental = async () => {
@@ -39,6 +40,7 @@ const BodyEditRent: React.FC = () => {
 
     if (alqId) {
       fetchRental();
+      console.log("fetchRental", monthlyRents.length);
     }
   }, [alqId, setSelectedRental]);
 
@@ -50,18 +52,33 @@ const BodyEditRent: React.FC = () => {
             Modificar alquiler
           </CardTitle>
         </CardHeader>
-        <div className="flex flex-wrap justify-center gap-2 p-4">
-          <ModeToggle />
-        </div>
       </Card>
 
-      <Card>
-        <CardContent>
+      <RentalForm
+        action="edit"
+        onSuccess={() => toast.success("Alquiler actualizado correctamente")}
+      />
+
+      <Tabs defaultValue={monthlyRents.length === 0 ? "create" : "view"}>
+        <TabsList>
+          <TabsTrigger value="view" disabled={monthlyRents.length === 0}>
+            Alquileres Mensuales Existentes
+          </TabsTrigger>
+          <TabsTrigger value="create">Crear Alquileres Mensuales</TabsTrigger>
+        </TabsList>
+        <TabsContent value="view">
+          {monthlyRents.length > 0 ? (
+            <MonthsBetween /> // Cambia según tu lógica
+          ) : (
+            <p className="text-center text-muted-foreground">
+              No hay alquileres mensuales registrados.
+            </p>
+          )}
+        </TabsContent>
+        <TabsContent value="create">
           <DateRangeCalculator />
-        </CardContent>
-      </Card>
-
-      <RentalForm action="edit" onSuccess={() => {}} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -143,27 +143,35 @@ export const columns: ColumnDef<User>[] = [
             {canEdit && (
               <>
                 <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-                  <ManageActions<User>
+                  <ManageActions
                     title={"Ver usuario"}
                     titleButton="Ver Usuario"
                     description={"Visualiza los datos del usuario"}
-                    action={"view"}
                     classn={"p-4 m-0 h-8 w-full"}
                     variant={"ghost"}
-                    entity={user}
-                    FormComponent={UserForm}
+                    FormComponent={
+                      <UserForm
+                        entity={user}
+                        action={"view"}
+                        onSuccess={() => {}}
+                      />
+                    }
                   />
                 </div>
                 <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-                  <ManageActions<User>
+                  <ManageActions
                     title={"Editar Usuario"}
                     titleButton="Editar Usuario"
                     description={"Edita los datos del usuario"}
-                    action={"edit"}
                     classn={"p-4 m-0 h-8 w-full"}
                     variant={"ghost"}
-                    entity={user}
-                    FormComponent={UserForm}
+                    FormComponent={
+                      <UserForm
+                        entity={user}
+                        action={"edit"}
+                        onSuccess={() => {}}
+                      />
+                    }
                   />
                 </div>
                 <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">

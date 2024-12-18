@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
-import { MonthsBetween } from "@/components/mantRent/edit/MonthsBetween";
+import MonthsBetween from "@/components/mantRent/edit/MonthsBetween";
 
 export function DateRangeCalculator() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -24,7 +24,7 @@ export function DateRangeCalculator() {
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </CardContent>
       </Card>
-      <MonthsBetween dateRange={dateRange} />
+      <MonthsBetween />
     </div>
   );
 }

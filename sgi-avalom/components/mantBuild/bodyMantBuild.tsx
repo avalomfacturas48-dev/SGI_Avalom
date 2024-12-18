@@ -86,14 +86,13 @@ const BodyMantBuild: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <div className="flex flex-wrap justify-center gap-2 p-4">
-          <ManageActions<AvaEdificio>
+          <ManageActions
             variant="default"
             titleButton="Nuevo Edificio"
             icon={<Plus className="mr-2 h-4 w-4" />}
             title="Nuevo Edificio"
             description="Ingresa un nuevo Edificio"
-            action="create"
-            FormComponent={BuildForm}
+            FormComponent={<BuildForm action={"create"} onSuccess={() => {}} />}
           />
           <Button variant="outline">Exportar Edificios</Button>
           <Button variant="outline">Descargar Plantilla</Button>
@@ -162,9 +161,13 @@ const BodyMantBuild: React.FC = () => {
                         icon={<Plus className="mr-2 h-4 w-4" />}
                         title="Nueva Propiedad"
                         description="Ingresa una nueva propiedad"
-                        action="create"
-                        FormComponent={PropertyForm}
-                        entity={selectedBuilding?.edi_id}
+                        FormComponent={
+                          <PropertyForm
+                            action={"create"}
+                            onSuccess={() => {}}
+                            entity={selectedBuilding?.edi_id}
+                          />
+                        }
                       />
                       <div className="overflow-x-auto">
                         <DataTable
