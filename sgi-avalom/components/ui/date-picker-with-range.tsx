@@ -134,6 +134,7 @@ export function DatePickerWithRange({
                   initialFocus
                   mode="range"
                   defaultMonth={date?.from}
+                  className="h-[340px]"
                   selected={{
                     from: date?.from
                       ? toDate(toZonedTime(date.from, COSTA_RICA_TZ))

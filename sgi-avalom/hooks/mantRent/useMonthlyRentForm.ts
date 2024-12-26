@@ -4,13 +4,9 @@ import { useEffect, useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { addMonths, format } from "date-fns";
-import { toDate, toZonedTime } from "date-fns-tz";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import { AvaAlquilerMensual } from "@/lib/types";
-import { toast } from "sonner";
-import { convertToCostaRicaTime, convertToUTC } from "@/utils/dateUtils";
-import { FORMERR } from "dns";
+import { convertToUTC } from "@/utils/dateUtils";
 
 const monthlyRentSchema = z.object({
   alqm_identificador: z.string().min(1, { message: "Identificador requerido" }),
@@ -34,29 +30,42 @@ export type MonthlyRentFormInputs = z.infer<typeof monthlyRentSchema>;
 export const useMonthlyRentForm = ({
   action,
   alqm_id,
+  mode,
   onSuccess,
 }: {
-  action: "create" | "edit" | "view";
+  action: "create" | "edit";
   alqm_id?: string | null;
+  mode: "view" | "create"; // Modo en el que el formulario está operando
   onSuccess: () => void;
 }) => {
   const {
     monthlyRents,
+    createMonthlyRents,
     addMonthlyRent,
     updateMonthlyRent,
     validateRentDates,
     selectedRental,
     calculateNextDates,
+    calculateCreateNextDates,
+    updateCreateMonthlyRent,
+    addCreateMonthlyRent,
+    validateCreateRentDates,
   } = useRentalStore();
 
+  const rents = mode === "create" ? createMonthlyRents : monthlyRents;
+
   const rent = useMemo(
-    () => monthlyRents.find((r) => r.alqm_id === alqm_id),
-    [alqm_id, monthlyRents]
+    () => rents.find((r) => r.alqm_id === alqm_id),
+    [alqm_id, rents]
   );
 
   const defaultValues = useMemo(() => {
-    const { startDate, endDate } = calculateNextDates();
-    console.log("End Date: ", endDate);
+    let startDate, endDate;
+    if (action === "edit") {
+      ({ startDate, endDate } = calculateNextDates());
+    } else {
+      ({ startDate, endDate } = calculateCreateNextDates());
+    }
     return rent
       ? {
           alqm_identificador: rent.alqm_identificador,
@@ -74,7 +83,7 @@ export const useMonthlyRentForm = ({
           alqm_fechapago: selectedRental?.alq_fechapago || "",
           alqm_estado: "A" as "A" | "P" | "I",
         };
-  }, [calculateNextDates, rent, monthlyRents.length]);
+  }, [calculateNextDates, monthlyRents.length, rent, rents]);
 
   const form = useForm<MonthlyRentFormInputs>({
     resolver: zodResolver(monthlyRentSchema),
@@ -91,10 +100,20 @@ export const useMonthlyRentForm = ({
 
   const onSubmit: SubmitHandler<MonthlyRentFormInputs> = (formData) => {
     try {
-      const isValid = validateRentDates(
-        formData.alqm_fechainicio,
-        formData.alqm_fechafin
-      );
+      let isValid;
+      if (mode === "view") {
+        isValid = validateRentDates(
+          formData.alqm_fechainicio,
+          formData.alqm_fechafin,
+          formData.alqm_identificador
+        );
+      } else {
+        isValid = validateCreateRentDates(
+          formData.alqm_fechainicio,
+          formData.alqm_fechafin,
+          formData.alqm_identificador
+        );
+      }
 
       if (!isValid) {
         throw new Error(
@@ -102,8 +121,10 @@ export const useMonthlyRentForm = ({
         );
       }
 
+      let Rent: AvaAlquilerMensual | undefined;
+
       if (action === "edit" && rent) {
-        const updatedRent: AvaAlquilerMensual = {
+        Rent = {
           ...rent,
           alqm_identificador: formData.alqm_identificador,
           alqm_montototal: formData.alqm_montototal,
@@ -114,12 +135,10 @@ export const useMonthlyRentForm = ({
             : undefined,
           alqm_estado: formData.alqm_estado,
         };
-
-        updateMonthlyRent(updatedRent);
       } else if (action === "create") {
-        const newRent: AvaAlquilerMensual = {
-          alqm_id: formData.alqm_identificador, // or set an appropriate default value
-          ava_pago: [], // or set an appropriate default value
+        Rent = {
+          alqm_id: formData.alqm_identificador,
+          ava_pago: [],
           alqm_identificador: formData.alqm_identificador,
           alqm_montototal: formData.alqm_montototal,
           alqm_fechainicio: convertToUTC(formData.alqm_fechainicio),
@@ -128,10 +147,15 @@ export const useMonthlyRentForm = ({
             ? convertToUTC(formData.alqm_fechapago)
             : undefined,
           alqm_estado: formData.alqm_estado,
-          alqm_montopagado: "",
+          alqm_montopagado: "0",
         };
-
-        addMonthlyRent(newRent);
+      }
+      if (action === "edit" && Rent) {
+        mode === "create"
+          ? updateCreateMonthlyRent(Rent)
+          : updateMonthlyRent(Rent);
+      } else if (action === "create" && Rent) {
+        mode === "create" ? addCreateMonthlyRent(Rent) : addMonthlyRent(Rent);
       }
       onSuccess();
     } catch (error: any) {

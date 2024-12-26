@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -8,11 +8,32 @@ import { toast } from "sonner";
 import ManageActions from "@/components/dataTable/manageActions";
 import { convertToCostaRicaTime } from "@/utils/dateUtils";
 
-const MonthsBetween: React.FC = () => {
-  const { monthlyRents, deleteMonthlyRent } = useRentalStore();
+interface MonthsBetweenProps {
+  mode: "view" | "create"; // Diferenciar entre los modos
+}
+
+const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
+  const {
+    monthlyRents,
+    deleteMonthlyRent,
+    createMonthlyRents,
+    deleteCreateMonthlyRent,
+  } = useRentalStore();
+
+  const [rents, setRents] = useState(
+    mode === "create" ? createMonthlyRents : monthlyRents
+  );
+
+  // Actualizar `rents` cuando los datos de Zustand cambien
+  useEffect(() => {
+    setRents(mode === "create" ? createMonthlyRents : monthlyRents);
+  }, [createMonthlyRents, monthlyRents, mode]);
 
   const handleDelete = (alqm_id: string) => {
-    const { success, message } = deleteMonthlyRent(alqm_id);
+    const { success, message } =
+      mode === "create"
+        ? deleteCreateMonthlyRent(alqm_id)
+        : deleteMonthlyRent(alqm_id);
 
     if (success) {
       toast.success("Éxito", { description: message });
@@ -23,19 +44,27 @@ const MonthsBetween: React.FC = () => {
 
   return (
     <>
-      <ManageActions
-        titleButton="Crear Alquiler Mensual"
-        title="Crear Alquiler Mensual"
-        description="Ingrese los datos del alquiler mensual."
-        variant="default"
-        classn="ml-4 mb-4"
-        icon={<PencilIcon className="h-4 w-4" />}
-        FormComponent={
-          <MonthlyRentForm action="create" alqmId={null} onSuccess={() => {}} />
-        }
-      />
+      {mode === "view" && (
+        <ManageActions
+          titleButton="Crear Alquiler Mensual"
+          title="Crear Alquiler Mensual"
+          description="Ingrese los datos del alquiler mensual."
+          variant="default"
+          classn="ml-4 mb-4"
+          icon={<PencilIcon className="h-4 w-4" />}
+          FormComponent={
+            <MonthlyRentForm
+              action="create"
+              alqmId={null}
+              mode={mode} // Pasar el modo al formulario
+              onSuccess={() => {}}
+            />
+          }
+        />
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-        {monthlyRents.map((rent) => (
+        {rents.map((rent) => (
           <Card key={rent.alqm_id} className="bg-background relative">
             <div className="absolute top-2 left-2 z-10">
               <ManageActions
@@ -47,8 +76,9 @@ const MonthsBetween: React.FC = () => {
                 icon={<PencilIcon className="h-4 w-4" />}
                 FormComponent={
                   <MonthlyRentForm
-                    action="edit"
+                    action={"edit"}
                     alqmId={rent.alqm_id}
+                    mode={mode} // Pasar el modo al formulario
                     onSuccess={() => {}}
                   />
                 }

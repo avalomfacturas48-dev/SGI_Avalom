@@ -37,13 +37,15 @@ import { cn } from "@/lib/utils";
 import { convertToCostaRicaTime, convertToUTC } from "@/utils/dateUtils";
 
 const MonthlyRentForm: React.FC<{
-  action: "create" | "edit" | "view";
+  action: "create" | "edit";
   alqmId?: string | null;
+  mode: "view" | "create"; // Nuevo parámetro
   onSuccess: () => void;
-}> = ({ action, alqmId, onSuccess }) => {
+}> = ({ action, alqmId, mode, onSuccess }) => {
   const { form, handleSubmit, onSubmit } = useMonthlyRentForm({
     action,
     alqm_id: alqmId,
+    mode, // Pasar el modo al hook
     onSuccess,
   });
 
@@ -138,7 +140,7 @@ const MonthlyRentForm: React.FC<{
                         )
                       }
                       disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
+                        date < new Date("1900-01-01")
                       }
                       initialFocus
                       defaultMonth={
@@ -190,7 +192,7 @@ const MonthlyRentForm: React.FC<{
                         )
                       }
                       disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
+                        date < new Date("1900-01-01")
                       }
                       initialFocus
                       defaultMonth={
@@ -228,10 +230,7 @@ const MonthlyRentForm: React.FC<{
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent
-                    className="w-auto p-0"
-                    align="start"
-                  >
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value ? parseISO(field.value) : undefined}
@@ -241,7 +240,7 @@ const MonthlyRentForm: React.FC<{
                         )
                       }
                       disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
+                        date < new Date("1900-01-01")
                       }
                       initialFocus
                       defaultMonth={

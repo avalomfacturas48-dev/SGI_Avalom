@@ -11,10 +11,11 @@ import useRentalStore from "@/lib/zustand/useRentalStore";
 import axios from "axios";
 import cookie from "js-cookie";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();
-  const { setSelectedRental, monthlyRents, isLoading, setLoadingState } =
+  const { setSelectedRental, monthlyRents, isLoading, setLoadingState, setMonthlyRents, createMonthlyRents } =
     useRentalStore();
   const [selectedTab, setSelectedTab] = useState<"view" | "create">("create");
 
@@ -105,13 +106,17 @@ const BodyEditRent: React.FC = () => {
               >
                 Alquileres Mensuales Existentes
               </TabsTrigger>
-              <TabsTrigger value="create" className="flex-1">
+              <TabsTrigger
+                value="create"
+                className="flex-1"
+                disabled={monthlyRents.length > 0}
+              >
                 Crear Alquileres Mensuales
               </TabsTrigger>
             </TabsList>
             <TabsContent value="view" className="mt-4">
               {monthlyRents.length > 0 ? (
-                <MonthsBetween />
+                <MonthsBetween mode={"view"} />
               ) : (
                 <p className="text-center text-muted-foreground">
                   No hay alquileres mensuales registrados.
@@ -120,6 +125,18 @@ const BodyEditRent: React.FC = () => {
             </TabsContent>
             <TabsContent value="create" className="mt-4">
               <DateRangeCalculator />
+              <div className="flex justify-end mt-4">
+                <Button
+                  onClick={() => {
+                    setMonthlyRents(createMonthlyRents); // Sincronizar los alquileres creados
+                    toast.success(
+                      "Alquileres creados guardados correctamente."
+                    );
+                  }}
+                >
+                  Guardar Todos
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>

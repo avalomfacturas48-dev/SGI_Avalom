@@ -71,6 +71,7 @@ export function safeParseISO(dateString: string): Date | null {
     if (!isValid(date)) {
       throw new Error("Fecha inválida.");
     }
+    date.setHours(0, 0, 0, 0);
     return date;
   } catch (error) {
     console.error("Error al analizar fecha ISO:", error, { dateString });
