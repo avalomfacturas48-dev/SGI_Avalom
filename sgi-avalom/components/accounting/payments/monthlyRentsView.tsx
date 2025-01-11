@@ -21,6 +21,7 @@ import {
 import { convertToCostaRicaTime } from "@/utils/dateUtils";
 import { cn } from "@/lib/utils";
 import { StatusFilter } from "@/components/dataTable/status-filter";
+import Link from "next/link";
 
 const MonthlyRentsView: React.FC = () => {
   const { monthlyRents } = useRentalStore();
@@ -31,10 +32,6 @@ const MonthlyRentsView: React.FC = () => {
   useEffect(() => {
     setRents(monthlyRents);
   }, [monthlyRents]);
-
-  const handlePayment = (alqm_id: string) => {
-    console.log(`Realizar pago para el alquiler mensual con ID: ${alqm_id}`);
-  };
 
   const handleCancelPayment = (alqm_id: string) => {
     console.log(`Anular pago para el alquiler mensual con ID: ${alqm_id}`);
@@ -156,16 +153,18 @@ const MonthlyRentsView: React.FC = () => {
               </p>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePayment(rent.alqm_id)}
-                className="flex items-center bg-white hover:bg-gray-100 hover:text-green-700 w-full sm:w-auto"
-                disabled={rent.alqm_estado === "P"}
-              >
-                <HandCoins className="h-4 w-4 mr-1" />
-                Pagar
-              </Button>
+              <Link href={`/accounting/payments/payment/${rent.alqm_id}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center bg-white hover:bg-gray-100 hover:text-green-700 w-full sm:w-auto"
+                  disabled={rent.alqm_estado === "P"}
+                >
+                  <HandCoins className="h-4 w-4 mr-1" />
+                  Pagar
+                </Button>
+              </Link>
+              <Link href={`/accounting/payments/cancelpayment/${rent.alqm_id}`}>
               <Button
                 variant="outline"
                 size="sm"
@@ -175,6 +174,7 @@ const MonthlyRentsView: React.FC = () => {
                 <BanIcon className="h-4 w-4 mr-1" />
                 Anular
               </Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}

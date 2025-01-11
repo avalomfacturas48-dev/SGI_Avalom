@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { AvaPago, AvaAnulacionPago } from "@/lib/types";
+import { AvaPago, AvaAnulacionPago, AvaAlquilerMensual } from "@/lib/types";
 
 interface PaymentState {
-  selectedMonthlyRentId: string | null;
+  selectedMonthlyRent: AvaAlquilerMensual | null;
   payments: AvaPago[];
   setPayments: (payments: AvaPago[]) => void;
   addPayment: (payment: AvaPago) => void;
@@ -13,11 +13,11 @@ interface PaymentState {
   updateAnulacionPago: (pag_id: string, updatedAnulacion: AvaAnulacionPago) => void;
   deleteAnulacionPago: (pag_id: string, anp_id: string) => void;
 
-  selectMonthlyRent: (alqm_id: string | null) => void;
+  selectMonthlyRent: (alqm_id: AvaAlquilerMensual | null) => void;
 }
 
 const usePaymentStore = create<PaymentState>((set) => ({
-  selectedMonthlyRentId: null,
+  selectedMonthlyRent: null,
   payments: [],
 
   setPayments: (payments) => set({ payments }),
@@ -79,7 +79,7 @@ const usePaymentStore = create<PaymentState>((set) => ({
       ),
     })),
 
-  selectMonthlyRent: (alqm_id) => set({ selectedMonthlyRentId: alqm_id }),
+  selectMonthlyRent: (monthlyrent) => set({ selectedMonthlyRent: monthlyrent }),
 }));
 
 export default usePaymentStore;
