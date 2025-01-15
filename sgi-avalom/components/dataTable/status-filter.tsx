@@ -25,19 +25,15 @@ interface StatusOption {
 interface StatusFilterProps {
   selectedStatuses: string[];
   onStatusChange: (statuses: string[]) => void;
+  statuses: StatusOption[];
 }
 
 export function StatusFilter({
   selectedStatuses,
   onStatusChange,
+  statuses,
 }: StatusFilterProps) {
   const [open, setOpen] = React.useState(false);
-
-  const statuses: StatusOption[] = [
-    { label: "Pagados", value: "pagados" },
-    { label: "Atrasados", value: "atrasados" },
-    { label: "Incompletos", value: "incompletos" },
-  ];
 
   const toggleStatus = (value: string) => {
     if (selectedStatuses.includes(value)) {

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -14,42 +13,43 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { X, DollarSign, Hash, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatCurrency } from "@/utils/currencyConverter";
+import { usePaymentForm } from "@/hooks/accounting/usePaymentForm";
 import usePaymentStore from "@/lib/zustand/monthlyRentStore";
+import { useEffect, useState } from "react";
 
 interface PaymentTableProps {
-  onAmountChange: (amount: string) => void;
+  amountToPay: string;
+  setAmountToPay: React.Dispatch<React.SetStateAction<string>>;
 }
-
-export function PaymentTable({ onAmountChange }: PaymentTableProps) {
+export function PaymentTable({
+  amountToPay,
+  setAmountToPay,
+}: PaymentTableProps) {
   const selectedMonthlyRent = usePaymentStore(
     (state) => state.selectedMonthlyRent
   );
-  const [amountToPay, setAmountToPay] = useState<string>("");
   const [payFull, setPayFull] = useState(false);
-  const [finalBalance, setFinalBalance] = useState(0);
 
   const currentBalance = selectedMonthlyRent
     ? Number(selectedMonthlyRent.alqm_montototal) -
       Number(selectedMonthlyRent.alqm_montopagado)
     : 0;
 
-  useEffect(() => {
-    const amount = payFull ? currentBalance : Number(amountToPay) || 0;
-    setFinalBalance(currentBalance - amount);
-    onAmountChange(amount.toString());
-  }, [amountToPay, payFull, currentBalance, onAmountChange]);
+  const finalBalance = currentBalance - Number(amountToPay || "0");
 
   useEffect(() => {
     if (payFull) {
       setAmountToPay(currentBalance.toString());
     }
-  }, [payFull, currentBalance]);
+  }, [payFull, currentBalance, setAmountToPay]);
 
   const handleAmountChange = (value: string) => {
     const sanitizedValue = value.replace(/[^\d.]/g, "");
     const parts = sanitizedValue.split(".");
     const formattedValue = parts[0] + (parts.length > 1 ? "." + parts[1] : "");
     const numValue = Number(formattedValue);
+
     if (numValue <= currentBalance) {
       setAmountToPay(formattedValue);
       setPayFull(numValue === currentBalance);
@@ -59,15 +59,6 @@ export function PaymentTable({ onAmountChange }: PaymentTableProps) {
   const clearAmount = () => {
     setAmountToPay("");
     setPayFull(false);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CR", {
-      style: "currency",
-      currency: "CRC",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 5,
-    }).format(amount);
   };
 
   if (!selectedMonthlyRent) return null;
@@ -194,7 +185,6 @@ export function PaymentTable({ onAmountChange }: PaymentTableProps) {
                 className="pr-8"
                 placeholder="0.00"
               />
-
               {amountToPay && (
                 <Button
                   variant="destructive"

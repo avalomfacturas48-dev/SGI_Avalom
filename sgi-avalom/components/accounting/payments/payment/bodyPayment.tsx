@@ -1,133 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { ModeToggle } from "@/components/modeToggle";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import axios from "axios";
-import cookie from "js-cookie";
-import { useParams } from "next/navigation";
-import { toast } from "sonner";
-import usePaymentStore from "@/lib/zustand/monthlyRentStore";
-import { PaymentTable } from "./paymentTable";
-import { PaymentForm } from "./paymentForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePayment } from "@/hooks/accounting/usePayment";
+import { formatCurrency } from "@/utils/currencyConverter";
+import { useParams } from "next/navigation";
+import { PaymentForm } from "./paymentForm";
+import { PaymentTable } from "./paymentTable";
+import { useState, useEffect } from "react";
 
 const BodyPayment: React.FC = () => {
-  const { alqmId } = useParams();
-  const { selectedMonthlyRent, selectMonthlyRent, setPayments, addPayment } =
-    usePaymentStore();
-  const [amountToPay, setAmountToPay] = useState("0");
-  const [isLoading, setIsLoading] = useState(true);
+  const { alqmId } = useParams<{ alqmId: string }>();
+  const { isLoading, selectedMonthlyRent } = usePayment(alqmId);
 
-  const fetchRental = async () => {
-    try {
-      setIsLoading(true);
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
-      const response = await axios.get(
-        `/api/accounting/monthlyrent/${alqmId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (response?.data?.success) {
-        selectMonthlyRent(response.data.data);
-        setPayments(response.data.data.ava_pagos || []);
-      } else {
-        throw new Error(
-          response?.data?.error || "Error al cargar alquiler mensual."
-        );
-      }
-    } catch (error: any) {
-      toast.error("Error", {
-        description: error.message || "Error al cargar el alquiler mensual.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [amountToPay, setAmountToPay] = useState<string>("");
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
+  const [newBalance, setNewBalance] = useState<number>(0);
 
   useEffect(() => {
-    if (alqmId) {
-      fetchRental();
+    if (selectedMonthlyRent) {
+      const calculatedCurrentBalance =
+        Number(selectedMonthlyRent.alqm_montototal) -
+        Number(selectedMonthlyRent.alqm_montopagado);
+
+      setCurrentBalance(calculatedCurrentBalance);
+      setNewBalance(calculatedCurrentBalance - Number(amountToPay || 0));
     }
-  }, [alqmId, selectMonthlyRent, setPayments]);
-
-  const handlePaymentSubmit = async (formData: {
-    pag_descripcion: string;
-    pag_cuenta: string;
-  }) => {
-    try {
-      const paymentAmount = Number(amountToPay);
-
-      if (paymentAmount <= 0) {
-        toast.error("El monto debe ser mayor a 0.");
-        return;
-      }
-
-      const currentBalance =
-        Number(selectedMonthlyRent?.alqm_montototal || 0) -
-        Number(selectedMonthlyRent?.alqm_montopagado || 0);
-
-      if (paymentAmount > currentBalance) {
-        toast.error("El monto no puede ser mayor al saldo pendiente.");
-        return;
-      }
-
-      setIsLoading(true);
-
-      const paymentData = {
-        ...formData,
-        pag_monto: paymentAmount,
-        pag_fechapago: new Date().toISOString(),
-        pag_estado: "A",
-        alqm_id: selectedMonthlyRent?.alqm_id,
-      };
-
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const response = await axios.post(
-        `/api/accounting/payment`,
-        paymentData,
-        { headers }
-      );
-
-      if (response?.data?.success) {
-        addPayment(response.data.data);
-        toast.success("Pago realizado con éxito.");
-        // Actualizar los datos del alquiler mensual después del pago
-        await fetchRental();
-      } else {
-        throw new Error(response?.data?.error || "Error desconocido.");
-      }
-    } catch (error: any) {
-      toast.error("Error", {
-        description: error.message || "Error al realizar el pago.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CR", {
-      style: "currency",
-      currency: "CRC",
-    }).format(amount);
-  };
-
-  const currentBalance = selectedMonthlyRent
-    ? Number(selectedMonthlyRent.alqm_montototal) -
-      Number(selectedMonthlyRent.alqm_montopagado)
-    : 0;
-
-  const newBalance = currentBalance - Number(amountToPay);
+  }, [selectedMonthlyRent, amountToPay]);
 
   return (
     <div className="mx-auto p-4 max-w-7xl space-y-8">
@@ -169,7 +70,10 @@ const BodyPayment: React.FC = () => {
       ) : (
         <Card className="bg-background">
           <CardContent className="p-6 overflow-x-auto">
-            <PaymentTable onAmountChange={setAmountToPay} />
+            <PaymentTable
+              amountToPay={amountToPay}
+              setAmountToPay={setAmountToPay}
+            />
           </CardContent>
         </Card>
       )}
@@ -183,7 +87,10 @@ const BodyPayment: React.FC = () => {
               </CardContent>
             </Card>
           ) : (
-            <PaymentForm onSubmit={handlePaymentSubmit} />
+            <PaymentForm
+              amountToPay={amountToPay}
+              setAmountToPay={setAmountToPay}
+            />
           )}
         </div>
 
@@ -224,20 +131,6 @@ const BodyPayment: React.FC = () => {
                         {formatCurrency(newBalance)}
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="pt-4 border-t">
-                  <div className="text-sm font-medium mb-2">
-                    Período de Alquiler:
-                  </div>
-                  <div className="text-sm">
-                    {new Date(
-                      selectedMonthlyRent.alqm_fechainicio
-                    ).toLocaleDateString("es-CR")}{" "}
-                    -{" "}
-                    {new Date(
-                      selectedMonthlyRent.alqm_fechafin
-                    ).toLocaleDateString("es-CR")}
                   </div>
                 </div>
               </div>

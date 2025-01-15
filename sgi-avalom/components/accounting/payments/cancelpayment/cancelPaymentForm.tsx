@@ -1,0 +1,140 @@
+"use client";
+
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useCancelPaymentForm } from "@/hooks/accounting/useCancelPaymentForm";
+import { formatCurrency } from "@/utils/currencyConverter";
+import { convertToCostaRicaTime } from "@/utils/dateUtils";
+import { AvaPago } from "@/lib/types";
+import { useUser } from "@/lib/UserContext";
+import { toast } from "sonner";
+
+interface CancelPaymentFormProps {
+  payment: AvaPago;
+  onClose: () => void;
+}
+
+export function CancelPaymentForm({
+  payment,
+  onClose,
+}: CancelPaymentFormProps) {
+  const { user } = useUser();
+  const { form, onSubmit, handleSubmit } = useCancelPaymentForm({
+    payment,
+    onSuccess: onClose,
+  });
+
+  const handleFormSubmit = async (data: any) => {
+    try {
+      await onSubmit({ ...data, usu_id: user?.usu_id });
+      toast.success("Pago anulado correctamente");
+    } catch (error: any) {
+      toast.success("Error", {
+        description: error.message ? error.message : error.message,
+      });
+    } finally {
+      onClose?.();
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold">
+              Detalles del Pago
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-semibold">ID del Pago:</span>{" "}
+                {payment.pag_id}
+              </div>
+              <div>
+                <span className="font-semibold">Monto:</span>{" "}
+                {formatCurrency(Number(payment.pag_monto))}
+              </div>
+              <div>
+                <span className="font-semibold">Fecha de Pago:</span>{" "}
+                {convertToCostaRicaTime(payment.pag_fechapago)}
+              </div>
+              <div>
+                <span className="font-semibold">Estado:</span>{" "}
+                {payment.pag_estado === "A" ? "Activo" : "Anulado"}
+              </div>
+              <div className="col-span-2">
+                <span className="font-semibold">Descripción Original:</span>
+                <p className="mt-1">{payment.pag_descripcion}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="anp_motivo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Motivo de Anulación *</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ingrese el motivo de la anulación"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="anp_descripcion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción de Anulación *</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Ingrese la descripción de la anulación"
+                      rows={4}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        <CardFooter className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" variant="destructive">
+            Anular Pago
+          </Button>
+        </CardFooter>
+      </form>
+    </Form>
+  );
+}

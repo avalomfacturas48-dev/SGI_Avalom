@@ -103,6 +103,11 @@ const MonthlyRentsView: React.FC = () => {
         <StatusFilter
           selectedStatuses={selectedStatuses}
           onStatusChange={setSelectedStatuses}
+          statuses={[
+            { label: "Pagados", value: "pagados" },
+            { label: "Atrasados", value: "atrasados" },
+            { label: "Incompletos", value: "incompletos" },
+          ]}
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -165,15 +170,15 @@ const MonthlyRentsView: React.FC = () => {
                 </Button>
               </Link>
               <Link href={`/accounting/payments/cancelpayment/${rent.alqm_id}`}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleCancelPayment(rent.alqm_id)}
-                className="flex items-center bg-white hover:bg-gray-100 hover:text-red-700 w-full sm:w-auto"
-              >
-                <BanIcon className="h-4 w-4 mr-1" />
-                Anular
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCancelPayment(rent.alqm_id)}
+                  className="flex items-center bg-white hover:bg-gray-100 hover:text-red-700 w-full sm:w-auto"
+                >
+                  <BanIcon className="h-4 w-4 mr-1" />
+                  Anular
+                </Button>
               </Link>
             </CardFooter>
           </Card>

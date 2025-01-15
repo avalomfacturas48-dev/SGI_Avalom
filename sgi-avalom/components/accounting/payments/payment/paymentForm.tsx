@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardHeader,
@@ -11,70 +7,111 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { CreditCard, FileText } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2Icon } from "lucide-react";
+import { z } from "zod";
+import { toast } from "sonner";
+import { usePaymentForm } from "@/hooks/accounting/usePaymentForm";
 
-interface PaymentFormProps {
-  onSubmit: (data: { pag_descripcion: string; pag_cuenta: string }) => void;
-}
+type PaymentFormProps = {};
 
-export function PaymentForm({ onSubmit }: PaymentFormProps) {
-  const [pag_descripcion, setPagDescripcion] = useState("");
-  const [pag_cuenta, setPagCuenta] = useState("");
+export function PaymentForm({
+  amountToPay,
+  setAmountToPay,
+}: {
+  amountToPay: string;
+  setAmountToPay: React.Dispatch<React.SetStateAction<string>>;
+}) {
+  const { form, handlePaymentSubmit, isSubmitting } = usePaymentForm();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit({ pag_descripcion, pag_cuenta });
+  const handleFormSubmit = async (data: any) => {
+    try {
+      const paymentAmount = Number(amountToPay);
+      console.log("paymentAmount", paymentAmount);
+      if (paymentAmount <= 0) {
+        throw new Error("El monto a pagar debe ser mayor a 0.");
+      }
+      await handlePaymentSubmit({ ...data, amountToPay: paymentAmount });
+      toast.success("Pago realizado con éxito.");
+      setAmountToPay("");
+      form.reset();
+    } catch (error: any) {
+      toast.error(error.message || "Error al realizar el pago.");
+    }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold">
-          Detalles del Pago
-        </CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label
-              htmlFor="pag_cuenta"
-              className="text-sm font-medium flex items-center"
-            >
-              <CreditCard className="mr-2 h-4 w-4" />
-              Cuenta
-            </label>
-            <Input
-              id="pag_cuenta"
-              value={pag_cuenta}
-              onChange={(e) => setPagCuenta(e.target.value)}
-              placeholder="Ingrese la cuenta"
-              className="w-full"
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="space-y-6"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold">
+              Detalles del Pago
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="pag_cuenta"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cuenta *</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ingrese la cuenta"
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="pag_descripcion"
-              className="text-sm font-medium flex items-center"
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Descripción
-            </label>
-            <Textarea
-              id="pag_descripcion"
-              value={pag_descripcion}
-              onChange={(e) => setPagDescripcion(e.target.value)}
-              placeholder="Ingrese la descripción del pago"
-              rows={4}
-              className="w-full"
+            <FormField
+              control={form.control}
+              name="pag_descripcion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción *</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Ingrese la descripción del pago"
+                      rows={4}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full sm:w-auto">
-            Guardar
+          </CardContent>
+        </Card>
+
+        <CardFooter className="flex justify-between items-center">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto flex items-center gap-2"
+          >
+            {isSubmitting && <Loader2Icon className="h-4 w-4 animate-spin" />}
+            Guardar Pago
           </Button>
         </CardFooter>
       </form>
-    </Card>
+    </Form>
   );
 }
