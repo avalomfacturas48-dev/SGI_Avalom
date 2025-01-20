@@ -238,7 +238,7 @@ export function CancelPaymentTable() {
           <StatusFilter
             statuses={[
               { label: "Activo", value: "A" },
-              { label: "Anulado", value: "I" },
+              { label: "Anulado", value: "D" },
             ]}
             selectedStatuses={selectedStatuses}
             onStatusChange={setSelectedStatuses}

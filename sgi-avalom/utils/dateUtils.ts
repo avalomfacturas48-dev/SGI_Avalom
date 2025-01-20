@@ -16,13 +16,11 @@ export function calculateMonthsBetween(
 ): { startDate: string; endDate: string }[] {
   const months: { startDate: string; endDate: string }[] = [];
   let currentStart = toDate(startDate, { timeZone });
-  const dayOfMonth = currentStart.getDate(); // Día del mes a respetar
+  const dayOfMonth = currentStart.getDate();
 
   while (isAfter(endDate, currentStart)) {
-    // Calcula el mes potencial siguiente.
     const potentialEndDate = addMonths(currentStart, 1);
 
-    // Ajusta el día final basado en el día de inicio o el último día del mes.
     const daysInMonth = new Date(
       potentialEndDate.getFullYear(),
       potentialEndDate.getMonth() + 1,
@@ -36,7 +34,6 @@ export function calculateMonthsBetween(
       adjustedDay
     );
 
-    // Si la fecha ajustada excede la fecha final, usa la fecha final directamente.
     if (isAfter(currentEndDate, endDate)) {
       months.push({
         startDate: currentStart.toISOString(),
@@ -45,13 +42,11 @@ export function calculateMonthsBetween(
       break;
     }
 
-    // Agrega el intervalo calculado al resultado.
     months.push({
       startDate: currentStart.toISOString(),
       endDate: currentEndDate.toISOString(),
     });
 
-    // Avanza al siguiente mes.
     currentStart = new Date(
       currentEndDate.getFullYear(),
       currentEndDate.getMonth(),
@@ -59,7 +54,6 @@ export function calculateMonthsBetween(
     );
   }
 
-  console.log("Meses calculados:", months);
   return months;
 }
 
