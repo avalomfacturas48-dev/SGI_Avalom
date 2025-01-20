@@ -61,9 +61,53 @@ export default function SideNavbar() {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     title: string;
+    allowedRoles: string[];
   }
 
-  const NavItem: React.FC<NavItemProps> = ({ href, icon: Icon, title }) => (
+  const navItems: NavItemProps[] = [
+    {
+      href: "/homePage",
+      icon: LayoutDashboard,
+      title: "Inicio",
+      allowedRoles: ["A", "J", "E", "R"],
+    },
+    {
+      href: "/mantClient",
+      icon: BookUser,
+      title: "Clientes",
+      allowedRoles: ["A", "J", "E"],
+    },
+    {
+      href: "/mantUser",
+      icon: Users,
+      title: "Usuarios",
+      allowedRoles: ["A", "J", "E"],
+    },
+    {
+      href: "/mantBuild",
+      icon: Building2,
+      title: "Edificios",
+      allowedRoles: ["A", "J", "E"],
+    },
+    {
+      href: "/mantRent",
+      icon: FilePen,
+      title: "Alquileres",
+      allowedRoles: ["A", "J", "E"],
+    },
+    {
+      href: "/accounting",
+      icon: LineChart,
+      title: "Contabilidad",
+      allowedRoles: ["A", "J", "E", "R"],
+    },
+  ];
+
+  const NavItem: React.FC<Omit<NavItemProps, "allowedRoles">> = ({
+    href,
+    icon: Icon,
+    title,
+  }) => (
     <Tooltip>
       <TooltipTrigger asChild>
         <Link
@@ -91,12 +135,11 @@ export default function SideNavbar() {
       onMouseLeave={() => isDesktop && setIsCollapsed(true)}
     >
       <nav className="flex flex-col items-center gap-4 p-4">
-        <NavItem href="/homePage" icon={LayoutDashboard} title="Inicio" />
-        <NavItem href="/mantClient" icon={BookUser} title="Clientes" />
-        <NavItem href="/mantUser" icon={Users} title="Usuarios" />
-        <NavItem href="/mantBuild" icon={Building2} title="Edificios" />
-        <NavItem href="/mantRent" icon={FilePen} title="Alquileres" />
-        <NavItem href="/accounting" icon={LineChart} title="Contabilidad" />
+        {navItems
+          .filter((item) => item.allowedRoles.includes(user?.usu_rol || ""))
+          .map(({ href, icon, title }) => (
+            <NavItem key={href} href={href} icon={icon} title={title} />
+          ))}
       </nav>
       <div className="mt-auto flex flex-col items-center gap-4 p-4">
         <NavItem href="/settings" icon={Settings} title="Ajustes" />

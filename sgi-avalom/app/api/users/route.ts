@@ -10,8 +10,6 @@ export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const currentUser = req.user as UserWithToken;
-
-      // Filtrar usuarios según el rol del usuario logueado
       let rolesToFetch: string[] = [];
 
       if (currentUser.userRole === "A") {

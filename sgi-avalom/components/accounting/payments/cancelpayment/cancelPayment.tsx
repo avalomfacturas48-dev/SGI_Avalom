@@ -5,7 +5,7 @@ import BodyCancelPayment from "./bodyCancelPayment";
 
 const CancelPayment: React.FC = () => {
   return (
-    <AuthRoute>
+    <AuthRoute allowedRoles={["J", "E"]}>
       <div className="flex min-h-screen bg-background">
         <SideNavbar />
         <main className="flex-1 pl-14 md:pl-16">

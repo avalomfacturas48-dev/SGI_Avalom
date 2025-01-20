@@ -20,12 +20,13 @@ import { UserFormProps } from "@/lib/typesForm";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
+import { useUser } from "@/lib/UserContext";
 
 const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
   const { form, handleSubmit, onSubmit, handleClear, disableRoleSelection } =
     useUserForm({ action, entity, onSuccess });
-
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
 
   const handleFormSubmit = async (data: any) => {
     setIsLoading(true);
@@ -193,9 +194,25 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
                     <SelectValue placeholder="Rol" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="A">Admin</SelectItem>
-                    <SelectItem value="J">Jefe</SelectItem>
-                    <SelectItem value="E">Empleado</SelectItem>
+                    <SelectItem
+                      disabled={user?.usu_rol === "E" || user?.usu_rol === "R"}
+                      value="A"
+                    >
+                      Admin
+                    </SelectItem>
+                    <SelectItem
+                      disabled={
+                        user?.usu_rol === "A" ||
+                        user?.usu_rol === "E" ||
+                        user?.usu_rol === "R"
+                      }
+                      value="J"
+                    >
+                      Jefe
+                    </SelectItem>
+                    <SelectItem disabled={user?.usu_rol === "R"} value="E">
+                      Empleado
+                    </SelectItem>
                     <SelectItem value="R">Auditor</SelectItem>
                   </SelectContent>
                 </Select>

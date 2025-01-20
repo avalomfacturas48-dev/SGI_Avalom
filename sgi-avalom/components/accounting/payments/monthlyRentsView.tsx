@@ -158,28 +158,34 @@ const MonthlyRentsView: React.FC = () => {
               </p>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-2">
-              <Link href={`/accounting/payments/payment/${rent.alqm_id}`}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center bg-white hover:bg-gray-100 hover:text-green-700 w-full sm:w-auto"
-                  disabled={rent.alqm_estado === "P"}
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center bg-white hover:bg-gray-100 hover:text-green-700 w-full sm:w-auto"
+                disabled={rent.alqm_estado === "P"}
+              >
+                <Link
+                  href={`/accounting/payments/payment/${rent.alqm_id}`}
+                  className="flex items-center"
                 >
                   <HandCoins className="h-4 w-4 mr-1" />
                   Pagar
-                </Button>
-              </Link>
-              <Link href={`/accounting/payments/cancelpayment/${rent.alqm_id}`}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCancelPayment(rent.alqm_id)}
-                  className="flex items-center bg-white hover:bg-gray-100 hover:text-red-700 w-full sm:w-auto"
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleCancelPayment(rent.alqm_id)}
+                className="flex items-center bg-white hover:bg-gray-100 hover:text-red-700 w-full sm:w-auto"
+              >
+                <Link
+                  href={`/accounting/payments/cancelpayment/${rent.alqm_id}`}
+                  className="flex items-center"
                 >
                   <BanIcon className="h-4 w-4 mr-1" />
                   Anular
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
         ))}
