@@ -5,8 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
 import cookie from "js-cookie";
-import usePaymentStore from "@/lib/zustand/monthlyRentStore";
-import { useEffect, useState } from "react";
+import usePaymentStore from "@/lib/zustand/monthlyPaymentStore";
+import { useState } from "react";
 
 const paymentFormSchema = z.object({
   pag_descripcion: z

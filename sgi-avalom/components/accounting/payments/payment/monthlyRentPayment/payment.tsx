@@ -1,6 +1,6 @@
 "use Client";
-import AuthRoute from "../../../AuthRoute";
-import SideNavbar from "../../../SideNavbar";
+import AuthRoute from "../../../../AuthRoute";
+import SideNavbar from "../../../../SideNavbar";
 import BodyPayment from "./bodyPayment";
 
 const Payment: React.FC = () => {

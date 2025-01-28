@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { ModeToggle } from "@/components/modeToggle";
+import DepositForm from "./depositForm";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();
@@ -24,6 +25,7 @@ const BodyEditRent: React.FC = () => {
     setLoadingState,
     setRents,
     createMonthlyRents,
+    setDeposit,
   } = useRentalStore();
   const [selectedTab, setSelectedTab] = useState<"view" | "create">("create");
 
@@ -72,6 +74,7 @@ const BodyEditRent: React.FC = () => {
               ? "view"
               : "create"
           );
+          setDeposit(response.data.data.ava_deposito[0]);
         } else {
           throw new Error(response?.data?.error || "Error al cargar alquiler.");
         }
@@ -139,6 +142,8 @@ const BodyEditRent: React.FC = () => {
       </Card>
 
       <RentalForm action="edit" onSuccess={() => {}} />
+
+      <DepositForm onSuccess={() => {}} />
 
       <Card className="bg-background">
         <CardHeader>

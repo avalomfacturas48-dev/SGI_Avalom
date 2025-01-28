@@ -20,17 +20,17 @@ export async function POST(request: NextRequest) {
 
       const pago = await prisma.ava_pago.findUnique({
         where: { pag_id: BigInt(pag_id) },
-        include: { ava_alquilermensual: true },
+        include: { ava_deposito: true },
       });
 
-      if (!pago || !pago.ava_alquilermensual) {
-        throw new Error("El pago o el alquiler mensual relacionado no existe.");
+      if (!pago || !pago.ava_deposito) {
+        throw new Error("El pago o el deposito relacionado no existe.");
       }
 
-      const alquilerMensualId = pago.ava_alquilermensual.alqm_id;
+      const depositoId = pago.ava_deposito.depo_id;
       const montoAnulado = pago.pag_monto;
 
-      const [anulacionPago, updatedAlquilerMensual] = await prisma.$transaction(
+      const [anulacionPago, updatedDeposito] = await prisma.$transaction(
         async (tx) => {
           const anulacionPago = await tx.ava_anulacionpago.create({
             data: {
@@ -44,30 +44,13 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          const alquilerMensual = await tx.ava_alquilermensual.update({
-            where: { alqm_id: alquilerMensualId },
+          const updatedDeposito = await tx.ava_deposito.update({
+            where: { depo_id: depositoId },
             data: {
-              alqm_montopagado: {
+              depo_montoactual: {
                 decrement: montoAnulado,
               },
             },
-            select: {
-              alqm_montototal: true,
-              alqm_montopagado: true,
-            },
-          });
-
-          const nuevoEstado =
-            alquilerMensual.alqm_montopagado === BigInt(0)
-              ? "I"
-              : alquilerMensual.alqm_montopagado <
-                alquilerMensual.alqm_montototal
-              ? "I"
-              : "P";
-
-          const updatedAlquilerMensual = await tx.ava_alquilermensual.update({
-            where: { alqm_id: alquilerMensualId },
-            data: { alqm_estado: nuevoEstado },
           });
 
           await tx.ava_pago.update({
@@ -75,14 +58,14 @@ export async function POST(request: NextRequest) {
             data: { pag_estado: "D" },
           });
 
-          return [anulacionPago, updatedAlquilerMensual];
+          return [anulacionPago, updatedDeposito];
         }
       );
 
       return NextResponse.json(
         {
           success: true,
-          data: stringifyWithBigInt({ anulacionPago, updatedAlquilerMensual }),
+          data: stringifyWithBigInt({ anulacionPago, updatedDeposito }),
         },
         { status: 201 }
       );

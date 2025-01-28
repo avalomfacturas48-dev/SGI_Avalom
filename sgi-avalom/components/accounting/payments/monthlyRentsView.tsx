@@ -22,6 +22,7 @@ import { convertToCostaRicaTime } from "@/utils/dateUtils";
 import { cn } from "@/lib/utils";
 import { StatusFilter } from "@/components/dataTable/status-filter";
 import Link from "next/link";
+import { formatCurrency } from "@/utils/currencyConverter";
 
 const MonthlyRentsView: React.FC = () => {
   const { monthlyRents } = useRentalStore();
@@ -134,10 +135,7 @@ const MonthlyRentsView: React.FC = () => {
                 <span className="font-medium">Total:</span>
                 <span>
                   {rent.alqm_montototal
-                    ? new Intl.NumberFormat("es-CR", {
-                        style: "currency",
-                        currency: "CRC",
-                      }).format(BigInt(rent.alqm_montototal))
+                    ? formatCurrency(Number(rent.alqm_montototal))
                     : "₡0"}
                 </span>
               </p>
@@ -145,10 +143,7 @@ const MonthlyRentsView: React.FC = () => {
                 <span className="font-medium">Pagado:</span>
                 <span>
                   {rent.alqm_montopagado
-                    ? new Intl.NumberFormat("es-CR", {
-                        style: "currency",
-                        currency: "CRC",
-                      }).format(BigInt(rent.alqm_montopagado))
+                    ? formatCurrency(Number(rent.alqm_montopagado))
                     : "₡0"}
                 </span>
               </p>

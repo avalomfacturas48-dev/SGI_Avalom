@@ -14,8 +14,7 @@ import { X, DollarSign, Hash, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/currencyConverter";
-import { usePaymentForm } from "@/hooks/accounting/usePaymentForm";
-import usePaymentStore from "@/lib/zustand/monthlyRentStore";
+import usePaymentStore from "@/lib/zustand/useDepositStore";
 import { useEffect, useState } from "react";
 
 interface PaymentTableProps {
@@ -26,14 +25,14 @@ export function PaymentTable({
   amountToPay,
   setAmountToPay,
 }: PaymentTableProps) {
-  const selectedMonthlyRent = usePaymentStore(
-    (state) => state.selectedMonthlyRent
+  const selectedDeposit = usePaymentStore(
+    (state) => state.selectedDeposit
   );
   const [payFull, setPayFull] = useState(false);
 
-  const currentBalance = selectedMonthlyRent
-    ? Number(selectedMonthlyRent.alqm_montototal) -
-      Number(selectedMonthlyRent.alqm_montopagado)
+  const currentBalance = selectedDeposit
+    ? Number(selectedDeposit.depo_total) -
+      Number(selectedDeposit.depo_montoactual)
     : 0;
 
   const finalBalance = currentBalance - Number(amountToPay || "0");
@@ -61,25 +60,19 @@ export function PaymentTable({
     setPayFull(false);
   };
 
-  if (!selectedMonthlyRent) return null;
+  if (!selectedDeposit) return null;
 
   const renderMobileView = () => (
     <Card className="mb-4">
       <CardContent className="p-4 space-y-4">
         <div className="flex justify-between">
           <span className="font-semibold">ID:</span>
-          <span>{selectedMonthlyRent.alqm_id}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">Identificador:</span>
-          <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-            {selectedMonthlyRent.alqm_identificador}
-          </span>
+          <span>{selectedDeposit.depo_id}</span>
         </div>
         <div className="flex justify-between">
           <span className="font-semibold">Monto Total:</span>
           <span>
-            {formatCurrency(Number(selectedMonthlyRent.alqm_montototal))}
+            {formatCurrency(Number(selectedDeposit.depo_total))}
           </span>
         </div>
         <div className="flex justify-between">
@@ -136,10 +129,6 @@ export function PaymentTable({
               ID
             </TableHead>
             <TableHead className="whitespace-nowrap">
-              <Tag className="inline-block mr-2 w-3" />
-              IDENTIFICADOR
-            </TableHead>
-            <TableHead className="whitespace-nowrap">
               <DollarSign className="inline-block mr-2 w-3" />
               MONTO TOTAL
             </TableHead>
@@ -160,14 +149,9 @@ export function PaymentTable({
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell>{selectedMonthlyRent.alqm_id}</TableCell>
+            <TableCell>{selectedDeposit.depo_id}</TableCell>
             <TableCell>
-              <span className="inline-flex items-center rounded-md bg-green-700 px-2 py-1 text-base font-medium text-green-100 ring-1 ring-inset ring-green-600/20">
-                {selectedMonthlyRent.alqm_identificador}
-              </span>
-            </TableCell>
-            <TableCell>
-              {formatCurrency(Number(selectedMonthlyRent.alqm_montototal))}
+              {formatCurrency(Number(selectedDeposit.depo_total))}
             </TableCell>
             <TableCell className="text-red-600 font-medium">
               {formatCurrency(currentBalance)}

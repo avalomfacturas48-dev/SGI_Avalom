@@ -5,11 +5,11 @@ import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { ModeToggle } from "@/components/modeToggle";
 import { CancelPaymentTable } from "./cancelPaymentTable";
 import { useParams } from "next/navigation";
-import { useCancelPayment } from "@/hooks/accounting/useCancelPayment";
+import { useCancelPayment } from "@/hooks/accounting/depositPayment/useCancelPayment";
 
 const BodyCancelPayment: React.FC = () => {
-  const { alqmId } = useParams<{ alqmId: string }>();
-  const { isLoading, selectedMonthlyRent } = useCancelPayment(alqmId);
+  const { depoId } = useParams<{ depoId: string }>();
+  const { isLoading, selectedDeposit } = useCancelPayment(depoId);
 
   return (
     <div className="mx-auto p-4 max-w-7xl space-y-8">
@@ -22,7 +22,7 @@ const BodyCancelPayment: React.FC = () => {
                 { label: "Contabilidad", href: "/accounting" },
                 {
                   label: "Realizar movimiento",
-                  href: `/accounting/payments/${selectedMonthlyRent?.alq_id}`,
+                  href: `/accounting/payments/${selectedDeposit?.alq_id}`,
                 },
                 { label: "Anular pago" },
               ]}

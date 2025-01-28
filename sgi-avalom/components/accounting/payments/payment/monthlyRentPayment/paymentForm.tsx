@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2Icon } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { usePaymentForm } from "@/hooks/accounting/usePaymentForm";
+import { usePaymentForm } from "@/hooks/accounting/monthlyRentPayment/usePaymentForm";
 
 type PaymentFormProps = {};
 
@@ -37,7 +37,6 @@ export function PaymentForm({
   const handleFormSubmit = async (data: any) => {
     try {
       const paymentAmount = Number(amountToPay);
-      console.log("paymentAmount", paymentAmount);
       if (paymentAmount <= 0) {
         throw new Error("El monto a pagar debe ser mayor a 0.");
       }

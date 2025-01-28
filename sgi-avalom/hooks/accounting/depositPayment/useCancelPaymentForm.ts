@@ -1,21 +1,19 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
 import cookie from "js-cookie";
-import { toast } from "sonner";
 import { AvaPago } from "@/lib/types";
 
 const cancelPaymentFormSchema = z.object({
   anp_motivo: z
     .string()
-    .min(5, { message: "El motivo debe tener al menos 5 caracteres." }),
+    .min(1, { message: "El motivo debe tener al menos 1 caracteres." }),
   anp_descripcion: z
     .string()
-    .min(10, { message: "La descripción debe tener al menos 10 caracteres." }),
+    .min(1, { message: "La descripción debe tener al menos 1 caracteres." }),
 });
 
 type CancelPaymentFormInputs = z.infer<typeof cancelPaymentFormSchema>;
@@ -45,7 +43,7 @@ export const useCancelPaymentForm = ({
       const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.post(
-        `/api/accounting/canceledpayment`,
+        `/api/accounting/deposit/canceledpayment`,
         {
           ...data,
           anp_montooriginal: "0",

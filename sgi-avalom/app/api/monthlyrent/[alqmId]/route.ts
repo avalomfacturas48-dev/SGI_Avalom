@@ -5,14 +5,14 @@ import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ alqm_id: string }> }
+  context: { params: Promise<{ alqmId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const { alqm_id } = await context.params;
+      const { alqmId } = await context.params;
 
       const monthlyRent = await prisma.ava_alquilermensual.findUnique({
-        where: { alqm_id: BigInt(alqm_id) },
+        where: { alqm_id: BigInt(alqmId) },
         include: { ava_alquiler: true },
       });
 
@@ -39,15 +39,15 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ alqm_id: string }> }
+  context: { params: Promise<{ alqmId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const { alqm_id } = await context.params;
+      const { alqmId } = await context.params;
       const data = await req.json();
 
       const updatedMonthlyRent = await prisma.ava_alquilermensual.update({
-        where: { alqm_id: BigInt(alqm_id) },
+        where: { alqm_id: BigInt(alqmId) },
         data: {
           alqm_identificador: data.alqm_identificador,
           alqm_fechainicio: new Date(data.alqm_fechainicio),
@@ -77,15 +77,15 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ alqm_id: string }> }
+  context: { params: Promise<{ alqmId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const { alqm_id } = await context.params;
+      const { alqmId } = await context.params;
 
       const rentWithPayments = await prisma.ava_alquilermensual.findFirst({
         where: {
-          alqm_id: BigInt(alqm_id),
+          alqm_id: BigInt(alqmId),
           ava_pago: { some: {} },
         },
       });
@@ -101,7 +101,7 @@ export async function DELETE(
       }
 
       await prisma.ava_alquilermensual.delete({
-        where: { alqm_id: BigInt(alqm_id) },
+        where: { alqm_id: BigInt(alqmId) },
       });
 
       return NextResponse.json(

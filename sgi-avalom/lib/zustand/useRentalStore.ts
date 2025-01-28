@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AvaAlquiler, AvaAlquilerMensual } from "@/lib/types";
+import { AvaAlquiler, AvaAlquilerMensual, AvaDeposito } from "@/lib/types";
 import { addMonths, endOfMonth, format, parseISO } from "date-fns";
 import { convertToUTC, safeParseISO } from "@/utils/dateUtils";
 import { toDate } from "date-fns-tz";
@@ -8,6 +8,7 @@ interface RentalState {
   selectedRental: AvaAlquiler | null;
   monthlyRents: AvaAlquilerMensual[];
   createMonthlyRents: AvaAlquilerMensual[];
+  deposit: AvaDeposito | null;
   isLoading: boolean;
 
   setSelectedRental: (rental: AvaAlquiler | null) => void;
@@ -40,6 +41,13 @@ interface RentalState {
     endDate: string;
   };
 
+  setDeposit: (deposit: AvaDeposito | null) => void;
+  addDeposit: (newDeposit: AvaDeposito) => void;
+  updateDeposit: (updatedDeposit: AvaDeposito) => {
+    success: boolean;
+    message: string;
+  };
+
   setLoadingState: (loading: boolean) => void;
   resetRentalState: () => void;
 }
@@ -48,6 +56,7 @@ const useRentalStore = create<RentalState>((set, get) => ({
   selectedRental: null,
   monthlyRents: [],
   createMonthlyRents: [],
+  deposit: null,
   isLoading: true,
 
   setSelectedRental: (rental) =>
@@ -197,6 +206,29 @@ const useRentalStore = create<RentalState>((set, get) => ({
     return {
       startDate: convertToUTC(nextStartDateCR.toISOString()),
       endDate: convertToUTC(nextEndDateCR.toISOString()),
+    };
+  },
+
+  setDeposit: (deposit) => set({ deposit }),
+
+  addDeposit: (newDeposit) =>
+    set({ deposit: newDeposit }),
+
+  updateDeposit: (updatedDeposit) => {
+    const state = get();
+
+    if (state.deposit?.ava_pago?.length) {
+      return {
+        success: false,
+        message: "No se puede editar el depósito porque tiene pagos relacionados.",
+      };
+    }
+
+    set({ deposit: updatedDeposit });
+
+    return {
+      success: true,
+      message: "Depósito actualizado correctamente.",
     };
   },
 

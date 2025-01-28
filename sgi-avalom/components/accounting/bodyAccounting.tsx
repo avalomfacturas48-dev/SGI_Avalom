@@ -12,8 +12,8 @@ import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 
 const BodyAccounting: React.FC = () => {
   const { rentals, setRentals } = useRentalStore();
-  const [statusFilter, setStatusFilter] = useState<string[]>(["A"]); // Cambia a string[]
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string[]>([]); // Cambia a string[]
+  const [statusFilter, setStatusFilter] = useState<string[]>(["A"]);
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchRentals = async () => {

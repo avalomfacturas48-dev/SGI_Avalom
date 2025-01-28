@@ -5,41 +5,34 @@ import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ alqId: string }> }
+  context: { params: Promise<{ depoId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const params = await context.params;
-      console.log(params.alqId);
+      const { depoId } = await context.params;
 
-      const rent = await prisma.ava_alquiler.findFirst({
-        where: { alq_id: BigInt(params.alqId) },
+      const deposite = await prisma.ava_deposito.findUnique({
+        where: { depo_id: BigInt(depoId) },
         include: {
-          ava_alquilermensual: true,
-          ava_clientexalquiler: {
-            include: {
-              ava_cliente: true,
-            },
-          },
-          ava_deposito: {
-            include: {
-              ava_pago: true,
-            },
+          ava_pago: {
+            include: { ava_anulacionpago: true },
           },
         },
       });
-      if (!rent) {
+
+      if (!deposite) {
         return NextResponse.json(
-          { success: false, error: "Alquiler no encontrado" },
+          { success: false, error: "Deposito no encontrado" },
           { status: 404 }
         );
       }
+
       return NextResponse.json(
-        { success: true, data: stringifyWithBigInt(rent) },
+        { success: true, data: stringifyWithBigInt(deposite) },
         { status: 200 }
       );
     } catch (error) {
-      console.error(error);
+      console.error("Error al obtener el deposito:", error);
       return NextResponse.json(
         { success: false, error: "Error interno del servidor" },
         { status: 500 }

@@ -10,36 +10,24 @@ export async function GET(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      console.log(params.alqId);
 
-      const rent = await prisma.ava_alquiler.findFirst({
+      const deposit = await prisma.ava_deposito.findFirst({
         where: { alq_id: BigInt(params.alqId) },
-        include: {
-          ava_alquilermensual: true,
-          ava_clientexalquiler: {
-            include: {
-              ava_cliente: true,
-            },
-          },
-          ava_deposito: {
-            include: {
-              ava_pago: true,
-            },
-          },
-        },
       });
-      if (!rent) {
+
+      if (!deposit) {
         return NextResponse.json(
-          { success: false, error: "Alquiler no encontrado" },
+          { success: false, error: "Depósito no encontrado" },
           { status: 404 }
         );
       }
+
       return NextResponse.json(
-        { success: true, data: stringifyWithBigInt(rent) },
+        { success: true, data: stringifyWithBigInt(deposit) },
         { status: 200 }
       );
     } catch (error) {
-      console.error(error);
+      console.error("Error al obtener el depósito:", error);
       return NextResponse.json(
         { success: false, error: "Error interno del servidor" },
         { status: 500 }

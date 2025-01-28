@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
 import { toast } from "sonner";
-import usePaymentStore from "@/lib/zustand/monthlyRentStore";
+import usePaymentStore from "@/lib/zustand/monthlyPaymentStore";
 
 export const usePayment = (alqmId: string | undefined) => {
   const { selectedMonthlyRent, selectMonthlyRent, setPayments } =

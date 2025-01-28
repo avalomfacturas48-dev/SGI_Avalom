@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
-import { toast } from "sonner";
-import usePaymentStore from "@/lib/zustand/monthlyRentStore";
+import usePaymentStore from "@/lib/zustand/monthlyPaymentStore";
 import { AvaPago } from "@/lib/types";
 
 export function useCancelPayment(alqmId: string | undefined) {
@@ -43,9 +42,7 @@ export function useCancelPayment(alqmId: string | undefined) {
         );
       }
     } catch (error: any) {
-      toast.error("Error", {
-        description: error.message || "Error al cargar el alquiler mensual.",
-      });
+      throw new Error(error.message ? error.message : error);
     } finally {
       setIsLoading(false);
     }

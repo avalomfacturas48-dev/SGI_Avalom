@@ -24,12 +24,10 @@ import { StatusFilter } from "@/components/dataTable/status-filter";
 import ManageActions from "@/components/dataTable/manageActions";
 import { CancelPaymentForm } from "./cancelPaymentForm";
 import { useParams } from "next/navigation";
-import { useCancelPayment } from "@/hooks/accounting/useCancelPayment";
-import { AvaPago } from "@/lib/types";
-import { toast } from "sonner";
+import { useCancelPayment } from "@/hooks/accounting/depositPayment/useCancelPayment";
 
 export function CancelPaymentTable() {
-  const { alqmId } = useParams<{ alqmId: string }>();
+  const { depoId } = useParams<{ depoId: string }>();
   const {
     filteredPayments,
     toggleDescription,
@@ -38,7 +36,7 @@ export function CancelPaymentTable() {
     selectedStatuses,
     setSelectedStatuses,
     fetchPayments,
-  } = useCancelPayment(alqmId);
+  } = useCancelPayment(depoId);
 
   const handleModalClose = async () => {
     await fetchPayments();

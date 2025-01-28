@@ -9,10 +9,16 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import MonthlyRentsView from "./monthlyRentsView";
+import { DepositView } from "./depositView";
 
 const BodyPayments: React.FC = () => {
-  const { setSelectedRental, monthlyRents, isLoading, setLoadingState } =
-    useRentalStore();
+  const {
+    setSelectedRental,
+    monthlyRents,
+    isLoading,
+    setLoadingState,
+    setDeposit,
+  } = useRentalStore();
   const { alqId } = useParams();
 
   useEffect(() => {
@@ -28,6 +34,7 @@ const BodyPayments: React.FC = () => {
 
         if (response?.data?.success) {
           setSelectedRental(response.data.data);
+          setDeposit(response.data.data.ava_deposito[0]);
         } else {
           throw new Error(response?.data?.error || "Error al cargar alquiler.");
         }
@@ -65,6 +72,8 @@ const BodyPayments: React.FC = () => {
         </div>
       </Card>
 
+      <DepositView></DepositView>
+
       <Card className="bg-background">
         <CardHeader>
           <CardTitle className="text-xl font-semibold">
@@ -73,7 +82,7 @@ const BodyPayments: React.FC = () => {
         </CardHeader>
         <CardContent>
           {monthlyRents.length > 0 ? (
-            <MonthlyRentsView/>
+            <MonthlyRentsView />
           ) : (
             <p className="text-center text-muted-foreground">
               No hay alquileres mensuales registrados.

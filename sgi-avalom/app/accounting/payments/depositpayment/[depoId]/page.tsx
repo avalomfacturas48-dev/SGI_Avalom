@@ -1,4 +1,4 @@
-import Payment from "@/components/accounting/payments/payment/monthlyRentPayment/payment";
+import Payment from "@/components/accounting/payments/payment/depositPayment/payment";
 
 function page() {
   return (

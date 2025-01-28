@@ -67,10 +67,10 @@ export const useRentalForm = ({
         ),
         alq_estado: ["A", "F", "C"].includes(selectedRental.alq_estado)
           ? (selectedRental.alq_estado as "A" | "F" | "C")
-          : "A", // Valor por defecto seguro
+          : "A",
       };
 
-      reset(formattedValues); // Sincroniza el formulario con el estado de Zustand
+      reset(formattedValues);
       setClientsInRental(
         selectedRental.ava_clientexalquiler?.map((rel) => rel.ava_cliente) || []
       );

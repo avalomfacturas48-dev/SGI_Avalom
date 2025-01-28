@@ -1,4 +1,4 @@
-import CancelPayment from "@/components/accounting/payments/cancelpayment/cancelPayment";
+import CancelPayment from "@/components/accounting/payments/cancelpayment/monthlyRentCancelPayment/cancelPayment";
 
 function page() {
   return (

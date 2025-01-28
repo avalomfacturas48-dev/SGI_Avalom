@@ -4,7 +4,7 @@ import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { ModeToggle } from "@/components/modeToggle";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { usePayment } from "@/hooks/accounting/usePayment";
+import { usePayment } from "@/hooks/accounting/depositPayment/usePayment";
 import { formatCurrency } from "@/utils/currencyConverter";
 import { useParams } from "next/navigation";
 import { PaymentForm } from "./paymentForm";
@@ -12,23 +12,23 @@ import { PaymentTable } from "./paymentTable";
 import { useState, useEffect } from "react";
 
 const BodyPayment: React.FC = () => {
-  const { alqmId } = useParams<{ alqmId: string }>();
-  const { isLoading, selectedMonthlyRent } = usePayment(alqmId);
+  const { depoId } = useParams<{ depoId: string }>();
+  const { isLoading, selectedDeposit } = usePayment(depoId);
 
   const [amountToPay, setAmountToPay] = useState<string>("");
   const [currentBalance, setCurrentBalance] = useState<number>(0);
   const [newBalance, setNewBalance] = useState<number>(0);
 
   useEffect(() => {
-    if (selectedMonthlyRent) {
+    if (selectedDeposit) {
       const calculatedCurrentBalance =
-        Number(selectedMonthlyRent.alqm_montototal) -
-        Number(selectedMonthlyRent.alqm_montopagado);
+        Number(selectedDeposit.depo_total) -
+        Number(selectedDeposit.depo_montoactual);
 
       setCurrentBalance(calculatedCurrentBalance);
       setNewBalance(calculatedCurrentBalance - Number(amountToPay || 0));
     }
-  }, [selectedMonthlyRent, amountToPay]);
+  }, [selectedDeposit, amountToPay]);
 
   return (
     <div className="mx-auto p-4 max-w-7xl space-y-8">
@@ -41,7 +41,7 @@ const BodyPayment: React.FC = () => {
                 { label: "Contabilidad", href: "/accounting" },
                 {
                   label: "Realizar movimiento",
-                  href: `/accounting/payments/${selectedMonthlyRent?.alq_id}`,
+                  href: `/accounting/payments/${selectedDeposit?.alq_id}`,
                 },
                 { label: "Realizar Pago" },
               ]}
@@ -49,13 +49,6 @@ const BodyPayment: React.FC = () => {
             <CardTitle className="text-2xl font-bold mt-4">
               Realizar Pago
             </CardTitle>
-            {new Date(
-              selectedMonthlyRent?.alqm_fechainicio ?? ""
-            ).toLocaleDateString("es-CR")}{" "}
-            -{" "}
-            {new Date(
-              selectedMonthlyRent?.alqm_fechafin ?? ""
-            ).toLocaleDateString("es-CR")}
           </div>
           <ModeToggle />
         </CardHeader>
@@ -94,7 +87,7 @@ const BodyPayment: React.FC = () => {
           )}
         </div>
 
-        {selectedMonthlyRent && !isLoading && (
+        {selectedDeposit && !isLoading && (
           <Card className="bg-background">
             <CardHeader>
               <CardTitle className="text-xl font-semibold">
@@ -106,15 +99,11 @@ const BodyPayment: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-sm font-medium">Monto Total:</div>
                   <div className="text-sm font-bold text-right">
-                    {formatCurrency(
-                      Number(selectedMonthlyRent.alqm_montototal)
-                    )}
+                    {formatCurrency(Number(selectedDeposit.depo_total))}
                   </div>
                   <div className="text-sm font-medium">Abono Total:</div>
                   <div className="text-sm font-bold text-right">
-                    {formatCurrency(
-                      Number(selectedMonthlyRent.alqm_montopagado)
-                    )}
+                    {formatCurrency(Number(selectedDeposit.depo_montoactual))}
                   </div>
                   <div className="text-sm font-medium">Saldo Pendiente:</div>
                   <div className="text-sm font-bold text-right text-red-600">
