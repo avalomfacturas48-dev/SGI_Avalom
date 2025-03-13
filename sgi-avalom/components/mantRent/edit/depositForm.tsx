@@ -105,7 +105,7 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
           <div className="flex gap-4">
             <Button type="submit" disabled={isLoading}>
               {isLoading && <Loader2Icon className="h-4 w-4 animate-spin" />}
-              Guardar
+              {isEditing ? "Guardar deposito" : "Crear deposito"}
             </Button>
           </div>
         )}
