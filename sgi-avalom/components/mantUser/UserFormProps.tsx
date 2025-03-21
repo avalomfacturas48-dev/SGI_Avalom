@@ -19,12 +19,20 @@ import { useUserForm } from "@/hooks/mantUser/useUserForm";
 import { UserFormProps } from "@/lib/typesForm";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Loader2Icon } from "lucide-react";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  Loader2Icon,
+  LockIcon,
+  UnlockIcon,
+} from "lucide-react";
 import { useUser } from "@/lib/UserContext";
 
 const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
   const { form, handleSubmit, onSubmit, handleClear, disableRoleSelection } =
     useUserForm({ action, entity, onSuccess });
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
 
@@ -49,6 +57,17 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const togglePasswordInput = () => {
+    setShowPasswordInput(!showPasswordInput);
+    if (!showPasswordInput) {
+      setPasswordVisible(false);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
   };
 
   return (
@@ -141,14 +160,59 @@ const UserForm: React.FC<UserFormProps> = ({ action, entity, onSuccess }) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Contraseña</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="password"
-                  placeholder="Ingresa una contraseña"
-                  disabled={action === "view"}
-                />
-              </FormControl>
+              <div className="relative flex items-center">
+                {!showPasswordInput && (
+                  <button
+                    type="button"
+                    onClick={togglePasswordInput}
+                    disabled={action === "view"}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    {showPasswordInput ? (
+                      <UnlockIcon className="h-4 w-4" />
+                    ) : (
+                      <LockIcon className="h-4 w-4" />
+                    )}
+                  </button>
+                )}
+                {showPasswordInput && (
+                  <div className="relative flex-1">
+                    <Input
+                      {...field}
+                      type={passwordVisible ? "text" : "password"}
+                      placeholder="Ingresa una contraseña"
+                      disabled={action === "view"}
+                      className="pr-8"
+                    />
+                    <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        {passwordVisible ? (
+                          <EyeIcon className="h-4 w-4" />
+                        ) : (
+                          <EyeOffIcon className="h-4 w-4" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={togglePasswordInput}
+                        disabled={action === "view"}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        {showPasswordInput ? (
+                          <UnlockIcon className="h-4 w-4" />
+                        ) : (
+                          <LockIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
               <FormMessage />
             </FormItem>
           )}

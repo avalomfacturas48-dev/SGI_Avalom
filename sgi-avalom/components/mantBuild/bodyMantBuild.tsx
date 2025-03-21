@@ -128,67 +128,69 @@ const BodyMantBuild: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-background">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">
-              Detalles del Edificio
-            </CardTitle>
-            <CardDescription>
-              Información y propiedades del edificio seleccionado.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4">
-            <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="info">Información</TabsTrigger>
-                <TabsTrigger value="properties">Propiedades</TabsTrigger>
-              </TabsList>
-              <div className="mt-4">
-                <TabsContent value="info" className="mt-0">
-                  <BuildForm
-                    building={selectedBuilding ?? undefined}
-                    action="edit"
-                    onSuccess={() => {}}
-                  />
-                </TabsContent>
-                <TabsContent value="properties" className="mt-0">
-                  <Card className="bg-background">
-                    <CardHeader>
-                      <CardTitle className="text-xl font-semibold">
-                        Propiedades
-                      </CardTitle>
-                      <CardDescription>
-                        Listado de propiedades del edificio seleccionado.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ManageActions
-                        variant="default"
-                        titleButton="Nueva propiedad"
-                        icon={<Plus className="mr-2 h-4 w-4" />}
-                        title="Nueva Propiedad"
-                        description="Ingresa una nueva propiedad"
-                        FormComponent={
-                          <PropertyForm
-                            action={"create"}
-                            onSuccess={() => {}}
-                            entity={selectedBuilding?.edi_id}
-                          />
-                        }
-                      />
-                      <div className="overflow-x-auto">
-                        <DataTable
-                          columns={columnsProperty}
-                          data={selectedBuilding?.ava_propiedad || []}
+        {selectedBuilding && (
+          <Card className="bg-background">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">
+                Detalles del Edificio
+              </CardTitle>
+              <CardDescription>
+                Información y propiedades del edificio seleccionado.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4">
+              <Tabs defaultValue="info" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="info">Información</TabsTrigger>
+                  <TabsTrigger value="properties">Propiedades</TabsTrigger>
+                </TabsList>
+                <div className="mt-4">
+                  <TabsContent value="info" className="mt-0">
+                    <BuildForm
+                      building={selectedBuilding ?? undefined}
+                      action="edit"
+                      onSuccess={() => {}}
+                    />
+                  </TabsContent>
+                  <TabsContent value="properties" className="mt-0">
+                    <Card className="bg-background">
+                      <CardHeader>
+                        <CardTitle className="text-xl font-semibold">
+                          Propiedades
+                        </CardTitle>
+                        <CardDescription>
+                          Listado de propiedades del edificio seleccionado.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ManageActions
+                          variant="default"
+                          titleButton="Nueva propiedad"
+                          icon={<Plus className="mr-2 h-4 w-4" />}
+                          title="Nueva Propiedad"
+                          description="Ingresa una nueva propiedad"
+                          FormComponent={
+                            <PropertyForm
+                              action={"create"}
+                              onSuccess={() => {}}
+                              entity={selectedBuilding?.edi_id}
+                            />
+                          }
                         />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
+                        <div className="overflow-x-auto">
+                          <DataTable
+                            columns={columnsProperty}
+                            data={selectedBuilding?.ava_propiedad || []}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

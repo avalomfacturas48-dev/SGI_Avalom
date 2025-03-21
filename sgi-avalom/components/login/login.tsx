@@ -41,7 +41,8 @@ const Login: React.FC = () => {
         setUser(user);
         router.push("/homePage");
       } else {
-        setError("Revisa el correo y la contraseña ingresados");
+        const errorData = await response.json();
+        setError(errorData.error || "Ocurrió un error desconocido.");
       }
     } catch (error) {
       setError("Hubo un error al intentar iniciar sesión. Intenta nuevamente.");

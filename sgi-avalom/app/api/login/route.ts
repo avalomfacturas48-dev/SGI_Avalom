@@ -27,6 +27,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const isUserActive = user.usu_estado === "A";
+  if (!isUserActive) {
+    return NextResponse.json(
+      { success: false, error: "Usuario inactivo" },
+      { status: 401 }
+    );
+  }
+
   const token = generateToken(String(user.usu_id), user.usu_rol);
 
   const response = {
