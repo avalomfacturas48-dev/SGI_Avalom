@@ -5,7 +5,7 @@ import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { alqId: string } }
+  context: { params: Promise<{ alqId: string }> }
 ) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
