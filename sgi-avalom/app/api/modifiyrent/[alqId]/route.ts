@@ -10,7 +10,6 @@ export async function GET(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      console.log(params.alqId);
 
       const rent = await prisma.ava_alquiler.findFirst({
         where: { alq_id: BigInt(params.alqId) },

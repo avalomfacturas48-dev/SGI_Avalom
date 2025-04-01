@@ -84,7 +84,13 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
               : ""
           }`}
         >
-          {status === "A" ? "Activo" : status === "F" ? "Finalizado" : status === "C" ? "Cancelado" : "Desconocido"}
+          {status === "A"
+            ? "Activo"
+            : status === "F"
+            ? "Finalizado"
+            : status === "C"
+            ? "Cancelado"
+            : "Desconocido"}
         </div>
       );
     },
@@ -105,6 +111,8 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
     id: "actions",
     cell: ({ row }) => {
       const rental = row.original;
+      const isActive = rental.alq_estado === "A";
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -123,9 +131,19 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
             >
               Copiar ID alquiler
             </DropdownMenuItem>
-            <Link href={`/accounting/payments/${rental.alq_id}`}>
-              <DropdownMenuItem>Realizar movimiento</DropdownMenuItem>
-            </Link>
+            {isActive && (
+              <>
+                <Link href={`/accounting/payments/${rental.alq_id}`}>
+                  <DropdownMenuItem>Realizar movimiento</DropdownMenuItem>
+                </Link>
+                <Link href={`/accounting/finishedrent/${rental.alq_id}`}>
+                  <DropdownMenuItem>Finalizar Alquiler</DropdownMenuItem>
+                </Link>
+                <Link href={`/accounting/canceledrent/${rental.alq_id}`}>
+                  <DropdownMenuItem>Cancelar Alquiler</DropdownMenuItem>
+                </Link>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

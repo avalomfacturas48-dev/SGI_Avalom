@@ -10,13 +10,7 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const { alqId } = await context.params;
-      const {
-        montoDevuelto,
-        descripcionDevuelto,
-        montoCastigo,
-        descripcionCastigo,
-        fechaDevolucion,
-      } = await request.json();
+      const data = await request.json();
 
       const rental = await prisma.ava_alquiler.findUnique({
         where: { alq_id: BigInt(alqId) },
@@ -57,11 +51,13 @@ export async function PUT(
         await tx.ava_deposito.update({
           where: { depo_id: rental.ava_deposito?.[0]?.depo_id },
           data: {
-            depo_montodevuelto: BigInt(montoDevuelto),
-            depo_descmontodevuelto: descripcionDevuelto,
-            depo_montocastigo: BigInt(montoCastigo),
-            depo_descrmontocastigo: descripcionCastigo,
-            depo_fechadevolucion: new Date(fechaDevolucion),
+            depo_montodevuelto: BigInt(data.depo_montodevuelto),
+            depo_descmontodevuelto: data.depo_descmontodevuelto,
+            depo_montocastigo: BigInt(data.depo_montocastigo),
+            depo_descrmontocastigo: data.depo_descrmontocastigo,
+            depo_fechadevolucion: data.depo_fechadevolucion
+              ? new Date(data.depo_fechadevolucion)
+              : null,
           },
         });
 

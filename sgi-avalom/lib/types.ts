@@ -183,6 +183,29 @@ export interface AvaAlquilerCancelado {
   ava_alquiler?: AvaAlquiler;
 }
 
+export interface FinalizarAlquilerPayload {
+  depo_montodevuelto: string;
+  depo_descmontodevuelto?: string;
+  depo_montocastigo?: string;
+  depo_descrmontocastigo?: string;
+  depo_fechadevolucion: string;
+}
+
+export interface CancelarAlquilerPayload {
+  depo_montodevuelto: string;
+  depo_descmontodevuelto?: string;
+  depo_montocastigo?: string;
+  depo_descrmontocastigo?: string;
+  depo_fechadevolucion: string;
+
+  alqc_motivo: string;
+  alqc_montodevuelto?: string;
+  alqc_castigo?: string;
+  alqc_motivomontodevuelto?: string;
+  alqc_motivocastigo?: string;
+  alqc_fecha_cancelacion: string;
+}
+
 declare module "next/server" {
   interface NextRequest {
     user?: User;
