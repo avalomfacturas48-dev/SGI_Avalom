@@ -63,7 +63,9 @@ export async function PUT(
             depo_descmontodevuelto,
             depo_montocastigo: BigInt(depo_montocastigo),
             depo_descrmontocastigo,
-            depo_fechadevolucion: new Date(depo_fechadevolucion),
+            depo_fechadevolucion: depo_fechadevolucion
+            ? new Date(depo_fechadevolucion)
+            : null,
           },
         });
 
@@ -74,7 +76,9 @@ export async function PUT(
             alqc_castigo: BigInt(alqc_castigo),
             alqc_motivomontodevuelto,
             alqc_motivocastigo,
-            alqc_fecha_cancelacion: new Date(alqc_fecha_cancelacion),
+            alqc_fecha_cancelacion: alqc_fecha_cancelacion
+            ? new Date(alqc_fecha_cancelacion)
+            : "",
             alq_id: BigInt(alqId),
           },
         });
