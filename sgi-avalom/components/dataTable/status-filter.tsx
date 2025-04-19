@@ -56,7 +56,7 @@ export function StatusFilter({
     <div className="flex flex-col space-y-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-10 border-dashed">
+          <Button variant="borderOrange" size="sm" className="h-10 border-dashed">
             <Search className="mr-2 h-4 w-4" />
             {selectedStatuses.length > 0
               ? "Filtros aplicados"

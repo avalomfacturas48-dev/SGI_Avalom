@@ -20,7 +20,7 @@ export function DepositView() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Depósito</CardTitle>
+          <CardTitle className="text-primary">Depósito</CardTitle>
         </CardHeader>
         <CardContent>
           <Alert variant="default" className="mb-4">
@@ -48,29 +48,38 @@ export function DepositView() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-xl font-semibold">Depósito</CardTitle>
-        <div className="flex gap-2">
+      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between pb-2">
+        <CardTitle className="text-xl text-primary font-semibold">
+          Depósito
+        </CardTitle>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
           <Link
             href={`/accounting/payments/depositpayment/${deposit.depo_id}/`}
+            className="w-full sm:w-auto"
           >
-            <Button variant="default" size="sm">
+            <Button variant="default" size="sm" className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Ingresar Pago
             </Button>
           </Link>
           <Link
             href={`/accounting/payments/depositcancelpayment/${deposit.depo_id}/`}
+            className="w-full sm:w-auto"
           >
-            <Button variant="destructive" size="sm">
+            <Button
+              variant="destructive"
+              size="sm"
+              className="w-full sm:w-auto"
+            >
               <Ban className="h-4 w-4 mr-2" />
               Anular
             </Button>
           </Link>
         </div>
       </CardHeader>
+
       <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <div>
             <p className="text-sm font-medium text-muted-foreground">
               Monto Total

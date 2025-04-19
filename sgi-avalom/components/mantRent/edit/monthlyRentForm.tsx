@@ -70,8 +70,8 @@ const MonthlyRentForm: React.FC<{
 
   return (
     <Form {...form}>
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        <div className="bg-background grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 p-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="alqm_identificador"

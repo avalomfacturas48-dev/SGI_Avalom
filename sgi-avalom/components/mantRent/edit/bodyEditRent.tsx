@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { ModeToggle } from "@/components/modeToggle";
 import DepositForm from "./depositForm";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();
@@ -92,106 +93,153 @@ const BodyEditRent: React.FC = () => {
     }
   }, [alqId, setSelectedRental, setLoadingState]);
 
-  if (isLoading) {
-    return (
-      <div className="mx-auto p-4 max-w-7xl">
-        <Card>
-          <CardHeader>
-            <BreadcrumbResponsive
-              items={[
-                { label: "Inicio", href: "/homePage" },
-                { label: "Gestión de alquileres", href: "/mantRent" },
-                { label: "Modificar alquiler" },
-              ]}
-            />
-            <CardTitle className="text-2xl font-bold">
-              Modificar alquiler
-            </CardTitle>
-          </CardHeader>
-          <div className="flex flex-wrap justify-center gap-2 p-4">
-            <ModeToggle />
-          </div>
-          <CardContent>
-            <p className="text-center text-muted-foreground">
-              Cargando datos...
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="mx-auto p-4 max-w-7xl space-y-8">
-      <Card className="flex flex-col sm:flex-row justify-between items-center">
-        <CardHeader>
-          <BreadcrumbResponsive
-            items={[
-              { label: "Inicio", href: "/homePage" },
-              { label: "Gestión de alquileres", href: "/mantRent" },
-              { label: "Modificar alquiler" },
-            ]}
-          />
-          <CardTitle className="text-2xl font-bold mb-4 sm:mb-0">
-            Modificar alquiler
-          </CardTitle>
-        </CardHeader>
-        <div className="flex flex-wrap justify-center gap-2 p-4">
-          <ModeToggle />
-        </div>
-      </Card>
+      {isLoading ? (
+        <div className="space-y-6 p-4 max-w-5xl mx-auto">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-10 w-40" />
+          </div>
 
-      <RentalForm action="edit" onSuccess={() => {}} />
-
-      <DepositForm onSuccess={() => {}} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">
-            Alquileres Mensuales
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs
-            value={selectedTab}
-            onValueChange={(value) =>
-              setSelectedTab(value as "view" | "create")
-            }
-          >
-            <TabsList className="w-full">
-              <TabsTrigger
-                value="view"
-                className="flex-1"
-                disabled={monthlyRents.length === 0}
-              >
-                Alquileres Mensuales Existentes
-              </TabsTrigger>
-              <TabsTrigger
-                value="create"
-                className="flex-1"
-                disabled={monthlyRents.length > 0}
-              >
-                Crear Alquileres Mensuales
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="view" className="mt-4">
-              {monthlyRents.length > 0 ? (
-                <MonthsBetween mode={"view"} />
-              ) : (
-                <p className="text-center text-muted-foreground">
-                  No hay alquileres mensuales registrados.
-                </p>
-              )}
-            </TabsContent>
-            <TabsContent value="create" className="mt-4">
-              <DateRangeCalculator />
-              <div className="flex justify-end mt-4">
-                <Button onClick={handleSaveAll}>Guardar Todos</Button>
+          <div className="space-y-6 p-4">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-64 mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-5 w-32 md:justify-self-end" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+
+              <div className="space-y-2">
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-10 w-full md:w-1/2" />
+              </div>
+
+              <div className="space-y-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-10 w-60" />
+                <Skeleton className="h-16 w-full md:w-1/2 rounded-md" />
+              </div>
+            </CardContent>
+          </div>
+
+          <div className="space-y-6 p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-12 w-1/2" />
+          </div>
+
+          <div className="space-y-4 p-4">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-5 w-64" />
+            <Skeleton className="h-28 w-full rounded-md" />
+          </div>
+
+          <div className="space-y-6 p-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-40 mt-4" />
+          </div>
+
+          <div className="space-y-4 p-4">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-10 w-52" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              {[...Array(10)].map((_, i) => (
+                <Skeleton key={i} className="h-40 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <Card className="flex flex-col sm:flex-row justify-between items-center">
+            <CardHeader>
+              <BreadcrumbResponsive
+                items={[
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Gestión de alquileres", href: "/mantRent" },
+                  { label: "Modificar alquiler" },
+                ]}
+              />
+              <CardTitle className="text-2xl text-primary font-bold mb-4 sm:mb-0">
+                Modificar alquiler
+              </CardTitle>
+            </CardHeader>
+            <div className="flex flex-wrap justify-center gap-2 p-4">
+              <ModeToggle />
+            </div>
+          </Card>
+
+          <RentalForm action="edit" onSuccess={() => {}} />
+
+          <DepositForm onSuccess={() => {}} />
+
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-xl text-primary font-semibold text-center sm:text-left">
+                Alquileres Mensuales
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <Tabs
+                value={selectedTab}
+                onValueChange={(value) =>
+                  setSelectedTab(value as "view" | "create")
+                }
+              >
+                <TabsList className="flex flex-col sm:flex-row w-full gap-2 sm:gap-0">
+                  <TabsTrigger
+                    value="view"
+                    className="flex-1"
+                    disabled={monthlyRents.length === 0}
+                  >
+                    Alquileres Existentes
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="create"
+                    className="flex-1"
+                    disabled={monthlyRents.length > 0}
+                  >
+                    Crear Alquileres
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="view" className="mt-4">
+                  {monthlyRents.length > 0 ? (
+                    <MonthsBetween mode="view" />
+                  ) : (
+                    <p className="text-center text-muted-foreground">
+                      No hay alquileres mensuales registrados.
+                    </p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="create" className="mt-4">
+                  <DateRangeCalculator />
+                  <div className="flex justify-end mt-4">
+                    <Button onClick={handleSaveAll}>Guardar Todos</Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };

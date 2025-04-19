@@ -49,7 +49,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 
-// Define the globalFilterFn function
 const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
   const { alq_monto, ava_propiedad } = row.original;
   const propertyId = ava_propiedad?.prop_identificador;
@@ -89,7 +88,7 @@ export function DataTable({
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(0);
 
   const filteredData = useMemo(() => {
@@ -164,7 +163,7 @@ export function DataTable({
 
   return (
     <div className="w-full space-y-4 p-4 sm:p-6">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 space-y-4 border-b">
+      <div className="sticky top-0 z-10 backdrop-blur p-4 space-y-4 border-b">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
           <Input
             placeholder="Buscar por identificador, monto, edificio..."
@@ -195,7 +194,7 @@ export function DataTable({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full md:w-auto">
+              <Button variant="borderOrange" className="w-full md:w-auto">
                 Columnas <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -244,7 +243,7 @@ export function DataTable({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     onClick={() => onRowClick?.(row.original)}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-muted"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
@@ -373,19 +372,21 @@ export function DataTable({
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
           <Button
-            variant="outline"
+            variant="green"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
             <ChevronLeft className="h-4 w-4" />
+            Anterior
           </Button>
           <Button
-            variant="outline"
+            variant="green"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
+            Siguiente
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

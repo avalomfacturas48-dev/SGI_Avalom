@@ -84,7 +84,7 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
           )
           .map((rent) => (
             <Card key={rent.alqm_id} className="bg-background relative">
-              <div className="absolute top-2 left-2 z-10">
+              <div className="absolute text-primary top-2 left-2 z-10">
                 <ManageActions
                   titleButton=""
                   title="Editar Alquiler Mensual"
@@ -96,13 +96,13 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                     <MonthlyRentForm
                       action={"edit"}
                       alqmId={rent.alqm_id}
-                      mode={mode} // Pasar el modo al formulario
+                      mode={mode}
                       onSuccess={() => {}}
                     />
                   }
                 />
               </div>
-              <div className="absolute top-2 right-2 z-10">
+              <div className="absolute text-destructive top-2 right-2 z-10">
                 <Button
                   variant="ghost"
                   onClick={() => handleDelete(rent.alqm_id)}
@@ -112,11 +112,11 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                 </Button>
               </div>
               <CardHeader>
-                <CardTitle className="text-sm font-semibold truncate mt-6">
+                <CardTitle className="text-base text-primary font-semibold truncate mt-6">
                   {rent.alqm_identificador}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-xs">
+              <CardContent className="text-sm">
                 <p>
                   <strong>Inicio:</strong>{" "}
                   {convertToCostaRicaTime(rent.alqm_fechainicio)}

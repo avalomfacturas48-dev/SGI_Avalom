@@ -41,8 +41,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AvaAlquiler } from "@/lib/types";
+import { StatusFilter } from "../dataTable/status-filter";
 
-// Define the globalFilterFn function
 const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
   const { alq_monto, ava_propiedad } = row.original;
   const propertyId = ava_propiedad?.prop_identificador;
@@ -60,12 +60,12 @@ const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
 };
 
 interface DataTableProps {
-  columns: ColumnDef<AvaAlquiler, any>[]; // Ensure the correct type for columns
+  columns: ColumnDef<AvaAlquiler, any>[];
   data: AvaAlquiler[];
-  statusFilter: string;
-  propertyTypeFilter: string;
-  onStatusChange: (value: string) => void;
-  onPropertyTypeChange: (value: string) => void;
+  statusFilter: string[];
+  propertyTypeFilter: string[];
+  onStatusChange: (value: string[]) => void;
+  onPropertyTypeChange: (value: string[]) => void;
   onRowClick?: (row: AvaAlquiler) => void;
 }
 
@@ -83,15 +83,17 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  // Use memoization to prevent unnecessary re-renders
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       const matchesStatus =
-        statusFilter === "all" || item.alq_estado === statusFilter;
+        statusFilter.length === 0 || statusFilter.includes(item.alq_estado);
+
       const matchesPropertyType =
-        propertyTypeFilter === "all" ||
-        item.ava_propiedad?.ava_tipopropiedad?.tipp_nombre ===
-          propertyTypeFilter;
+        propertyTypeFilter.length === 0 ||
+        propertyTypeFilter.includes(
+          item.ava_propiedad?.ava_tipopropiedad?.tipp_nombre || ""
+        );
+
       return matchesStatus && matchesPropertyType;
     });
   }, [data, statusFilter, propertyTypeFilter]);
@@ -116,65 +118,66 @@ export function DataTable({
     globalFilterFn,
   });
 
-  // Function to handle page size change
   const handlePageSizeChange = (size: number) => {
     table.setPageSize(size);
-    table.setPageIndex(0); // Reset to first page when page size changes
+    table.setPageIndex(0);
   };
 
   return (
     <div className="w-full space-y-4 p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <Input
-          placeholder="Buscar por identificador, monto, edificio..."
-          value={globalFilterValue}
-          onChange={(event) => setGlobalFilterValue(event.target.value)}
-          className="w-full sm:max-w-xs"
-          aria-label="Buscar en la tabla"
-        />
-        <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filtrar por estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="A">Activo</SelectItem>
-            <SelectItem value="C">Cancelado</SelectItem>
-            <SelectItem value="F">Finalizado</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={propertyTypeFilter} onValueChange={onPropertyTypeChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filtrar por tipo de propiedad" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="departamento">Departamento</SelectItem>
-            <SelectItem value="local">Local</SelectItem>
-          </SelectContent>
-        </Select>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-auto">
-              Columnas <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px]">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="sticky top-0 z-10 backdrop-blur p-4 space-y-4 border-b">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
+          <Input
+            placeholder="Buscar por identificador, monto, edificio..."
+            value={globalFilterValue}
+            onChange={(event) => setGlobalFilterValue(event.target.value)}
+            className="w-full sm:max-w-xs"
+            aria-label="Buscar en la tabla"
+          />
+          <StatusFilter
+            selectedStatuses={statusFilter}
+            onStatusChange={onStatusChange}
+            statuses={[
+              { label: "Activo", value: "A" },
+              { label: "Cancelado", value: "C" },
+              { label: "Finalizado", value: "F" },
+            ]}
+          />
+
+          <StatusFilter
+            selectedStatuses={propertyTypeFilter}
+            onStatusChange={onPropertyTypeChange}
+            statuses={[
+              { label: "Departamento", value: "departamento" },
+              { label: "Local", value: "local" },
+            ]}
+          />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="borderOrange" className="w-full sm:w-auto">
+                Columnas <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <div className="flex w-full flex-col rounded-md border">
         <main className="grid flex-1 items-start">
@@ -204,7 +207,7 @@ export function DataTable({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     onClick={() => onRowClick?.(row.original)}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-muted"
                   >
                     {row
                       .getVisibleCells()
@@ -256,7 +259,7 @@ export function DataTable({
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
           <Button
-            variant="outline"
+            variant="green"
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
@@ -265,7 +268,7 @@ export function DataTable({
             Anterior
           </Button>
           <Button
-            variant="outline"
+            variant="green"
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}

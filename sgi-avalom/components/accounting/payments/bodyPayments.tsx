@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import MonthlyRentsView from "./monthlyRentsView";
 import { DepositView } from "./depositView";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const BodyPayments: React.FC = () => {
   const {
@@ -53,43 +54,110 @@ const BodyPayments: React.FC = () => {
   }, [alqId, setSelectedRental, setLoadingState]);
 
   return (
-    <div className="mx-auto p-4 max-w-7xl space-y-8">
-      <Card className="flex flex-col sm:flex-row justify-between items-center">
-        <CardHeader>
-          <BreadcrumbResponsive
-            items={[
-              { label: "Inicio", href: "/homePage" },
-              { label: "Contabilidad", href: "/accounting" },
-              { label: "Realizar movimiento" },
-            ]}
-          />
-          <CardTitle className="text-2xl font-bold mb-4 sm:mb-0">
-            Realizar movimiento
-          </CardTitle>
-        </CardHeader>
-        <div className="flex flex-wrap justify-center gap-2 p-4">
-          <ModeToggle />
-        </div>
-      </Card>
+    <div className="mx-auto p-4 space-y-8">
+      {isLoading ? (
+        <>
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <CardHeader>
+              <Skeleton className="h-4 w-[160px] mb-4" />
+              <CardTitle className="text-2xl">
+                <Skeleton className="h-6 w-[200px]" />
+              </CardTitle>
+            </CardHeader>
+            <div className="flex flex-wrap justify-center gap-2 p-4">
+              <Skeleton className="h-9 w-36 rounded-md" />
+            </div>
+          </div>
 
-      <DepositView></DepositView>
+          <div>
+            <CardHeader className="flex flex-col sm:flex-row justify-between">
+              <Skeleton className="h-6 w-[100px] mb-2" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-32 rounded-md" />
+                <Skeleton className="h-8 w-24 rounded-md" />
+              </div>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-6 w-36" />
+              </div>
+              <div>
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-6 w-36" />
+              </div>
+            </CardContent>
+          </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">
-            Alquileres Mensuales
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {monthlyRents.length > 0 ? (
-            <MonthlyRentsView />
-          ) : (
-            <p className="text-center text-muted-foreground">
-              No hay alquileres mensuales registrados.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          <div>
+            <CardHeader>
+              <CardTitle>
+                <Skeleton className="h-5 w-[200px]" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-start">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-8 w-36" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[...Array(8)].map((_, index) => (
+                  <div key={index} className="p-4 space-y-3">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-8 w-full sm:w-20" />
+                      <Skeleton className="h-8 w-full sm:w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </div>
+        </>
+      ) : (
+        <>
+          <Card className="flex flex-col sm:flex-row justify-between items-center">
+            <CardHeader>
+              <BreadcrumbResponsive
+                items={[
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Contabilidad", href: "/accounting" },
+                  { label: "Realizar movimiento" },
+                ]}
+              />
+              <CardTitle className="text-2xl text-primary font-bold mb-4 sm:mb-0">
+                Realizar movimiento
+              </CardTitle>
+            </CardHeader>
+            <div className="flex flex-wrap justify-center gap-2 p-4">
+              <ModeToggle />
+            </div>
+          </Card>
+
+          <DepositView></DepositView>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl text-primary font-semibold">
+                Alquileres Mensuales
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {monthlyRents.length > 0 ? (
+                <MonthlyRentsView />
+              ) : (
+                <p className="text-center text-muted-foreground">
+                  No hay alquileres mensuales registrados.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };

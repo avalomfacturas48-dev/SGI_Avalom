@@ -88,26 +88,29 @@ const MonthlyRentsView: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-start">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Button
           onClick={toggleSort}
-          variant="outline"
+          variant="borderOrange"
           className="flex items-center"
         >
           <ArrowUpDown className="h-4 w-4 mr-2" />
           Ordenar {sortOrder === "asc" ? "Descendente" : "Ascendente"}
         </Button>
-        <StatusFilter
-          selectedStatuses={selectedStatuses}
-          onStatusChange={setSelectedStatuses}
-          statuses={[
-            { label: "Pagados", value: "pagados" },
-            { label: "Atrasados", value: "atrasados" },
-            { label: "Incompletos", value: "incompletos" },
-          ]}
-        />
+
+        <div className="w-full sm:w-auto">
+          <StatusFilter
+            selectedStatuses={selectedStatuses}
+            onStatusChange={setSelectedStatuses}
+            statuses={[
+              { label: "Pagados", value: "pagados" },
+              { label: "Atrasados", value: "atrasados" },
+              { label: "Incompletos", value: "incompletos" },
+            ]}
+          />
+        </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredAndSortedRents.map((rent) => (
           <Card
             key={rent.alqm_id}
@@ -117,7 +120,7 @@ const MonthlyRentsView: React.FC = () => {
             )}
           >
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-semibold truncate flex items-center justify-between">
+              <CardTitle className="text-lg text-primary font-semibold truncate flex items-center justify-between">
                 {rent.alqm_identificador}
                 {getStatusIcon(rent)}
               </CardTitle>

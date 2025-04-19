@@ -80,9 +80,9 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        <Card className="bg-background">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl text-primary font-bold">
               Editar Alquiler
             </CardTitle>
             <CardDescription>
@@ -112,7 +112,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
               control={form.control}
               name="alq_fechapago"
               render={({ field }) => (
-                <FormItem className="flex flex-col">
+                <FormItem>
                   <FormLabel>Fecha de Pago</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -199,7 +199,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
                 {clientsInRental.map((client) => (
                   <Card
                     key={client.cli_id}
-                    className="relative p-3 bg-background"
+                    className="relative p-3"
                   >
                     <CardHeader className="p-0 mb-2">
                       <CardTitle className="text-sm font-medium">
@@ -225,9 +225,9 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
           )}
         </Card>
         {action !== "create" && (
-          <Card className="bg-background">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-xl font-semibold">Contrato</CardTitle>
+              <CardTitle className="text-xl text-primary font-semibold">Contrato</CardTitle>
               <CardDescription>Adjuntar contrato del alquiler</CardDescription>
             </CardHeader>
             <CardContent>
@@ -257,7 +257,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
                 type="button"
                 onClick={handleClear}
                 disabled={isLoading}
-                variant="outline"
+                variant="green"
               >
                 Limpiar
               </Button>

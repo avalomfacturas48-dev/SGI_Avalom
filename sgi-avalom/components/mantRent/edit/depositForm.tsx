@@ -51,9 +51,9 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
         onSubmit={form.handleSubmit(handleFormSubmit)}
         className="space-y-6"
       >
-        <Card className="bg-background">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-xl font-semibold">Depósito</CardTitle>
+            <CardTitle className="text-xl text-primary font-semibold">Depósito</CardTitle>
             <CardDescription>
               {isEditing ? "Edite el depósito" : "Cree un nuevo depósito"}
             </CardDescription>
