@@ -5,15 +5,15 @@ import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { alqmId: string } }
+  context: { params: Promise<{ alqmId: string }> }
 ) {
   return authenticate(async () => {
     try {
-      const { alqmId } = context.params;
+      const params = await context.params;
 
       const count = await prisma.ava_pago.count({
         where: {
-          alqm_id: BigInt(alqmId),
+          alqm_id: BigInt(params.alqmId),
         },
       });
 
