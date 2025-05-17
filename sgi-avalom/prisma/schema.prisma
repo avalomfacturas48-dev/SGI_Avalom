@@ -54,6 +54,8 @@ model ava_cliente {
   cli_telefono         String                 @db.String(15)
   cli_correo           String                 @unique(map: "ava_cliente_unq02") @db.String(50)
   cli_fechacreacion    DateTime               @default(now()) @db.Timestamp(6)
+  cli_direccion        String?                @db.String(200)
+  cli_estadocivil      String?                @db.String(20)
   ava_clientexalquiler ava_clientexalquiler[]
 }
 
@@ -87,6 +89,8 @@ model ava_edificio {
   edi_id            BigInt          @id(map: "pk_ava_edificio") @default(sequence(minValue: 0))
   edi_identificador String          @db.String(15)
   edi_descripcion   String?         @db.String(50)
+  edi_direccion     String?         @db.String(200)
+  edi_codigopostal  String?         @db.String(10)
   ava_propiedad     ava_propiedad[]
 }
 
@@ -100,6 +104,9 @@ model ava_pago {
   res_id              BigInt?
   alqm_id             BigInt?
   depo_id             BigInt?
+  pag_metodopago      String?              @db.String(30)
+  pag_banco           String?              @db.String(50)
+  pag_referencia      String?              @db.String(100)
   ava_anulacionpago   ava_anulacionpago[]
   ava_alquilermensual ava_alquilermensual? @relation(fields: [alqm_id], references: [alqm_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship22")
   ava_deposito        ava_deposito?        @relation(fields: [depo_id], references: [depo_id], onDelete: NoAction, onUpdate: NoAction, map: "relationship24")

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import UserForm from "./UserFormProps";
 import { Skeleton } from "../ui/skeleton";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
+import { ExportUsers } from "./exportUsers";
 
 const BodyMantUser: React.FC = () => {
   const { users, setUsers } = useUserStore((state) => ({
@@ -104,7 +105,7 @@ const BodyMantUser: React.FC = () => {
                   <UserForm action={"create"} onSuccess={() => {}} />
                 }
               />
-              <Button variant="outline">Exportar Usuarios</Button>
+              <ExportUsers />
               <Button variant="outline">Descargar Plantilla</Button>
               <Button variant="outline">Importar</Button>
               <ModeToggle />

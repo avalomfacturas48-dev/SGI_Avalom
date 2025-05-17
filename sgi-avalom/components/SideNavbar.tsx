@@ -142,7 +142,7 @@ export default function SideNavbar() {
           ))}
       </nav>
       <div className="mt-auto flex flex-col items-center gap-4 p-4">
-        <NavItem href="/settings" icon={Settings} title="Ajustes" />
+        {/* <NavItem href="/settings" icon={Settings} title="Ajustes" /> */}
         {user && (
           <Tooltip>
             <TooltipTrigger asChild>
