@@ -25,7 +25,9 @@ import PropertyForm from "./mantProperty/propertyFormProps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
-import { ExportBuildings } from './exportBuildings'
+import { ExportBuildings } from "./exportBuildings";
+import GenerateContractModal from "@/components/mantBuild/generateContractModal";
+
 
 const BodyMantBuild: React.FC = () => {
   const { setBuildings, buildings } = useBuildingStore();
@@ -145,8 +147,8 @@ const BodyMantBuild: React.FC = () => {
                   <BuildForm action={"create"} onSuccess={() => {}} />
                 }
               />
+              <GenerateContractModal />
               <ExportBuildings />
-              <Button variant="outline">Descargar Plantilla</Button>
               <Button variant="outline">Importar</Button>
               <ModeToggle />
             </div>
