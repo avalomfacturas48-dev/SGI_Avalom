@@ -27,6 +27,8 @@ export interface Cliente {
   cli_telefono: string;
   cli_correo: string;
   cli_fechacreacion?: string;
+  cli_direccion?: string;
+  cli_estadocivil?: string;
   ava_clientexalquiler: AvaClientexAlquiler[];
 }
 
@@ -57,6 +59,9 @@ export interface AvaPago {
   pag_monto: string;
   pag_descripcion?: string;
   pag_cuenta?: string;
+  pag_metodopago?: string;
+  pag_banco?: string;
+  pag_referencia?: string;
   pag_estado: "A" | "D";
   pag_fechapago: string;
   res_id?: string;
@@ -72,6 +77,8 @@ export interface AvaEdificio {
   edi_id: string;
   edi_identificador: string;
   edi_descripcion?: string;
+  edi_direccion?: string;
+  edi_codigopostal?: string;
   ava_propiedad: AvaPropiedad[];
 }
 
@@ -131,6 +138,8 @@ export interface AvaReservacion {
   res_correocliente?: string;
   res_fechaentrada: string;
   res_fechasalida: string;
+  res_montototal: string;
+  res_montoactual: string;
   res_estado: "R" | "A" | "C" | "F";
   res_fechacreacion?: string;
   prop_id?: string;
