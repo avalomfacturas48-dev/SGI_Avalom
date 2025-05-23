@@ -125,7 +125,7 @@ export function DataTable<TData, TValue>({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {column.id.replace(/^.*?_/, "")}
                   </DropdownMenuCheckboxItem>
                 );
               })}

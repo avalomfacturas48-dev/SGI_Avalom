@@ -1,4 +1,12 @@
 import { useState } from "react";
+import {
+  EyeIcon,
+  EyeOffIcon,
+  Loader2Icon,
+  LockIcon,
+  UnlockIcon,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,14 +24,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {
-  EyeIcon,
-  EyeOffIcon,
-  Loader2Icon,
-  LockIcon,
-  UnlockIcon,
-} from "lucide-react";
-import { toast } from "sonner";
 import { useUser } from "@/lib/UserContext";
 import { UserFormProps } from "@/lib/typesForm";
 import { useUserForm } from "@/hooks/mantUser/useUserForm";

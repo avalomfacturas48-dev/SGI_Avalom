@@ -51,6 +51,8 @@ export async function PUT(
         data: {
           edi_identificador: data.edi_identificador,
           edi_descripcion: data.edi_descripcion,
+          edi_direccion: data.edi_direccion,
+          edi_codigopostal: data.edi_codigopostal,
         },
       });
       return NextResponse.json(

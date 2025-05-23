@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
+import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,9 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { BuildFormProps } from "@/lib/typesForm";
 import { useBuildForm } from "@/hooks/mantBuild/useBuildForm";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Loader2Icon } from "lucide-react";
 
 const BuildForm: React.FC<BuildFormProps> = ({
   action,
@@ -77,6 +77,32 @@ const BuildForm: React.FC<BuildFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Descripción</FormLabel>
+              <FormControl>
+                <Input {...field} disabled={action === "view"} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="edi_direccion"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Dirección</FormLabel>
+              <FormControl>
+                <Input {...field} disabled={action === "view"} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="edi_codigopostal"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Código Postal</FormLabel>
               <FormControl>
                 <Input {...field} disabled={action === "view"} />
               </FormControl>

@@ -35,6 +35,14 @@ const clienteFormSchema = z.object({
     .min(1, "El correo es requerido")
     .email("Correo inválido")
     .max(50, "El correo no puede tener más de 50 caracteres"),
+  cli_direccion: z
+    .string()
+    .max(200, "La dirección no puede tener más de 200 caracteres")
+    .optional(),
+  cli_estadocivil: z
+    .string()
+    .max(20, "El estado civil no puede tener más de 20 caracteres")
+    .optional(),
 });
 
 type ClienteFormInputs = z.infer<typeof clienteFormSchema>;
@@ -58,6 +66,8 @@ export const useClientForm = ({
           cli_cedula: entity.cli_cedula || "",
           cli_telefono: entity.cli_telefono || "",
           cli_correo: entity.cli_correo || "",
+          cli_direccion: entity.cli_direccion || "",
+          cli_estadocivil: entity.cli_estadocivil || "",
         }
       : {
           cli_nombre: "",
@@ -66,6 +76,8 @@ export const useClientForm = ({
           cli_cedula: "",
           cli_telefono: "",
           cli_correo: "",
+          cli_direccion: "",
+          cli_estadocivil: "",
         };
   }, [entity]);
 

@@ -16,7 +16,17 @@ const buildingFormSchema = z.object({
     .max(15, "El identificador no puede tener más de 15 caracteres"),
   edi_descripcion: z
     .string()
-    .max(50, "La descripción no puede tener más de 50 caracteres"),
+    .max(50, "La descripción no puede tener más de 50 caracteres")
+    .optional(),
+  edi_direccion: z
+    .string()
+    .max(200, "La dirección no puede tener más de 200 caracteres")
+    .optional(),
+
+  edi_codigopostal: z
+    .string()
+    .max(10, "El código postal no puede tener más de 10 caracteres")
+    .optional(),
 });
 
 type BuildingFormInputs = z.infer<typeof buildingFormSchema>;
@@ -33,10 +43,14 @@ export const useBuildForm = ({
       ? {
           edi_identificador: "",
           edi_descripcion: "",
+          edi_direccion: "",
+          edi_codigopostal: "",
         }
       : {
           edi_identificador: building?.edi_identificador || "",
           edi_descripcion: building?.edi_descripcion || "",
+          edi_direccion: building?.edi_direccion || "",
+          edi_codigopostal: building?.edi_codigopostal || "",
         };
   }, [action, building]);
 

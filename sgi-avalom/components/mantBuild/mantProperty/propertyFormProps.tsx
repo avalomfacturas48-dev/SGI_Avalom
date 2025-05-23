@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
+import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,10 +22,6 @@ import {
 } from "@/components/ui/select";
 import { PropertyFormProps } from "@/lib/typesForm";
 import { usePropertyForm } from "@/hooks/mantBuild/usePropertyForm";
-import { CardFooter } from "@/components/ui/card";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Loader2Icon } from "lucide-react";
 
 const PropertyForm: React.FC<PropertyFormProps> = ({
   action,

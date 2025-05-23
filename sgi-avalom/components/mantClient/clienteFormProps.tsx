@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2Icon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,8 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { Loader2Icon } from "lucide-react";
 import { ClienteFormProps } from "@/lib/typesForm";
 import { useClientForm } from "@/hooks/mantClient/useClientForm";
 
@@ -152,6 +152,40 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
                     {...field}
                     disabled={isLoading || action === "view"}
                     maxLength={50}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cli_direccion"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Dirección</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={isLoading || action === "view"}
+                    maxLength={200}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cli_estadocivil"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estado Civil</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={isLoading || action === "view"}
+                    maxLength={20}
                   />
                 </FormControl>
                 <FormMessage />

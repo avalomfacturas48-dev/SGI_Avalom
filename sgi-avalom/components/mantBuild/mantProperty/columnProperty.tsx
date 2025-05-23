@@ -1,11 +1,10 @@
 "use client";
+import { useState } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import useBuildingStore from "@/lib/zustand/buildStore";
-import useTypeStore from "@/lib/zustand/typeStore";
-import { AvaPropiedad } from "@/lib/types";
+import { toast } from "sonner";
 import AlertDialog from "@/components/alertDialog";
 import {
   DropdownMenu,
@@ -16,9 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import PropertyManager from "./propertyManager";
 import ManageActions from "@/components/dataTable/manageActions";
+import useBuildingStore from "@/lib/zustand/buildStore";
+import useTypeStore from "@/lib/zustand/typeStore";
+import { AvaPropiedad } from "@/lib/types";
 
 export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
   {
@@ -61,6 +62,8 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
     cell: ({ row }) => {
       const property = row.original;
       const { removeProperty } = useBuildingStore();
+      const [dropdownOpen, setDropdownOpen] = useState(false);
+      const [openEdit, setOpenEdit] = useState(false);
 
       const handleAction = async () => {
         try {
@@ -94,36 +97,40 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
       };
 
       return (
-        <DropdownMenu>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir Menú</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuLabel className="text-center">
+              Acciones
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(event) => {
-                navigator.clipboard.writeText(property.prop_id.toString());
-              }}
-            >
-              Copiar ID Propiedad
-            </DropdownMenuItem>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+
+            <DropdownMenuItem asChild>
               <ManageActions
+                open={openEdit}
+                onOpenChange={setOpenEdit}
                 titleButton={"Editar Propiedad"}
                 title={"Editar Propiedad"}
                 description={"Editar la Propiedad seleccionada"}
                 variant={"ghost"}
                 classn={"p-4 m-0 h-8 w-full"}
                 FormComponent={
-                  <PropertyManager propertyId={property.prop_id} />
+                  <PropertyManager
+                    propertyId={property.prop_id}
+                    onSuccess={() => {
+                      setOpenEdit(false);
+                      setDropdownOpen(false);
+                    }}
+                  />
                 }
               />
-            </div>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
               <AlertDialog
                 title="Está seguro?"
                 description="Esta acción no se puede deshacer. Está seguro de que desea borrar esta Propiedad?"
@@ -134,7 +141,7 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
                 variant={"ghost"}
                 onAction={handleAction}
               />
-            </div>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

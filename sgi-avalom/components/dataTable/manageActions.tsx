@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ManageActionsProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   titleButton?: string;
   title: string;
   description: string;
@@ -44,6 +46,8 @@ interface ManageActionsProps {
 }
 
 const ManageActions: React.FC<ManageActionsProps> = ({
+  open: openProp,
+  onOpenChange,
   titleButton,
   title,
   description,
@@ -53,41 +57,28 @@ const ManageActions: React.FC<ManageActionsProps> = ({
   FormComponent,
   disabled,
 }) => {
-  const [open, setOpen] = useState(false);
+  const [openInternal, setOpenInternal] = useState(false);
   const onlyWidth = useWindowWidth();
   const isDesktop = onlyWidth >= 768;
 
-  const toggleOpen = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    setOpen((prevOpen) => !prevOpen);
-  };
+  const open = onOpenChange !== undefined ? openProp! : openInternal;
+  const setOpen = onOpenChange !== undefined ? onOpenChange : setOpenInternal;
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button
-            disabled={disabled}
-            variant={variant}
-            className={classn}
-            onClick={toggleOpen}
-          >
+          <Button variant={variant} disabled={disabled} className={classn}>
             {icon && <span className="mr-2">{icon}</span>}
             {titleButton}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px] md:max-w-xl lg:max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-primary">
-              {title}
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {description}
-            </DialogDescription>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="h-[60vh] rounded-md">
-            {FormComponent}
-          </ScrollArea>
+          <ScrollArea className="h-[60vh]">{FormComponent}</ScrollArea>
         </DialogContent>
       </Dialog>
     );
@@ -96,23 +87,18 @@ const ManageActions: React.FC<ManageActionsProps> = ({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button
-          disabled={disabled}
-          variant={variant}
-          className={classn}
-          onClick={toggleOpen}
-        >
+        <Button variant={variant} disabled={disabled} className={classn}>
           {icon && <span className="mr-2">{icon}</span>}
           {titleButton}
         </Button>
       </DrawerTrigger>
       <DrawerContent className="flex flex-col h-[85vh]">
-        <DrawerHeader className="text-left">
-          <DrawerTitle className="font-bold text-primary">{title}</DrawerTitle>
+        <DrawerHeader>
+          <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
         <ScrollArea className="flex-1 px-4">{FormComponent}</ScrollArea>
-        <DrawerFooter className="pt-2">
+        <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="secondary">Cerrar</Button>
           </DrawerClose>

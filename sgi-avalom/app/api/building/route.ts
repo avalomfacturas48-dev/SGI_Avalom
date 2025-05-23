@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
         data: {
           edi_identificador: body.edi_identificador,
           edi_descripcion: body.edi_descripcion,
+          edi_direccion: body.edi_direccion,
+          edi_codigopostal: body.edi_codigopostal,
         },
       });
 

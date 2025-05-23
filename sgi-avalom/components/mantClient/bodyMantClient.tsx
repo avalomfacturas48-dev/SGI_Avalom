@@ -1,57 +1,51 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { DataTable } from '@/components/dataTable/data-table'
-import { columnsClient } from '@/components/mantClient/columnsClient'
-import { ModeToggle } from '@/components/modeToggle'
-import axios from 'axios'
-import cookie from 'js-cookie'
-import useClientStore from '@/lib/zustand/clientStore'
-import ManageActions from '@/components/dataTable/manageActions'
-import { Plus } from 'lucide-react'
-import ClienteForm from '@/components/mantClient/clienteFormProps'
-import { Skeleton } from '@/components/ui/skeleton'
-import { toast } from 'sonner'
-import { BreadcrumbResponsive } from '../breadcrumbResponsive'
-import { ExportButton } from './exportButton'
-import { ImportClients } from './importClients'
+import { useState, useEffect } from "react";
+import axios from "axios";
+import cookie from "js-cookie";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable } from "@/components/dataTable/data-table";
+import { columnsClient } from "@/components/mantClient/columnsClient";
+import { ModeToggle } from "@/components/modeToggle";
+import ManageActions from "@/components/dataTable/manageActions";
+import ClienteForm from "@/components/mantClient/clienteFormProps";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BreadcrumbResponsive } from "../breadcrumbResponsive";
+import { ExportButton } from "./exportButton";
+import { ImportClients } from "./importClients";
+import useClientStore from "@/lib/zustand/clientStore";
 
 const BodyMantClient: React.FC = () => {
   const { clients, setClients } = useClientStore((state) => ({
     clients: state.clients,
     setClients: state.setClients,
-  }))
-  const [isLoading, setIsLoading] = useState(true)
+  }));
+  const [isLoading, setIsLoading] = useState(true);
+  const [openNew, setOpenNew] = useState(false);
 
-  // Función para obtener clientes del backend
   const fetchClients = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const token = cookie.get('token')
-      if (!token) return
-      const response = await axios.get('/api/client', {
+      const token = cookie.get("token");
+      if (!token) return;
+      const response = await axios.get("/api/client", {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      setClients(response.data.data)
+      });
+      setClients(response.data.data);
     } catch (err) {
-      console.error('Error al buscar clientes:', err)
-      toast.error('No se pudo cargar la lista de clientes')
+      console.error("Error al buscar clientes:", err);
+      toast.error("No se pudo cargar la lista de clientes");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  // Carga inicial
   useEffect(() => {
-    fetchClients()
-  }, [])
+    fetchClients();
+  }, []);
 
   return (
     <div className="mx-auto p-4 space-y-8">
@@ -91,8 +85,8 @@ const BodyMantClient: React.FC = () => {
             <CardHeader>
               <BreadcrumbResponsive
                 items={[
-                  { label: 'Inicio', href: '/homePage' },
-                  { label: 'Gestión de clientes' },
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Gestión de clientes" },
                 ]}
               />
               <CardTitle className="text-2xl font-bold text-primary mb-4 sm:mb-0">
@@ -107,10 +101,14 @@ const BodyMantClient: React.FC = () => {
                 icon={<Plus className="mr-2 h-4 w-4" />}
                 title="Nuevo Cliente"
                 description="Ingresa un nuevo cliente"
+                open={openNew}
+                onOpenChange={setOpenNew}
                 FormComponent={
                   <ClienteForm
                     action="create"
-                    onSuccess={fetchClients}
+                    onSuccess={() => {
+                      setOpenNew(false);
+                    }}
                   />
                 }
               />
@@ -138,7 +136,7 @@ const BodyMantClient: React.FC = () => {
         </>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default BodyMantClient
+export default BodyMantClient;

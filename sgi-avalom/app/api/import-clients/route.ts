@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
       cedula,
       telefono,
       correo,
+      dirección,
+      estadocivil,
     ] = r
     return {
       cli_nombre: String(nombre || '').trim(),
@@ -35,6 +37,8 @@ export async function POST(req: NextRequest) {
       cli_cedula: String(cedula || '').trim(),
       cli_telefono: String(telefono || '').trim(),
       cli_correo: String(correo || '').trim(),
+      cli_direccion: String(dirección || '').trim() || null,
+      cli_estadocivil: String(estadocivil || '').trim() || null,
     }
   })
 
@@ -51,6 +55,8 @@ export async function POST(req: NextRequest) {
           cli_sapellido: c.cli_sapellido,
           cli_telefono: c.cli_telefono,
           cli_correo: c.cli_correo,
+          cli_direccion: c.cli_direccion,
+          cli_estadocivil: c.cli_estadocivil,
         },
       })
       imported++

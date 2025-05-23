@@ -37,6 +37,8 @@ const useBuildingStore = create<BuildingState>((set) => ({
               ...building,
               edi_identificador: updatedBuilding.edi_identificador,
               edi_descripcion: updatedBuilding.edi_descripcion,
+              edi_direccion: updatedBuilding.edi_direccion,
+              edi_codigopostal: updatedBuilding.edi_codigopostal,
             }
           : building
       ),

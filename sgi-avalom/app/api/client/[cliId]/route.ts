@@ -66,6 +66,8 @@ export async function PUT(
           cli_sapellido: body.cli_sapellido,
           cli_telefono: body.cli_telefono,
           cli_correo: body.cli_correo,
+          cli_direccion: body.cli_direccion,
+          cli_estadocivil: body.cli_estadocivil,
         },
       });
       return NextResponse.json(

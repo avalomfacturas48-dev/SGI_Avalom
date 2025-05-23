@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export const columns: ColumnDef<AvaEdificio>[] = [
   {
@@ -37,10 +38,19 @@ export const columns: ColumnDef<AvaEdificio>[] = [
     header: "Descripción",
   },
   {
+    accessorKey: "edi_direccion",
+    header: "Dirección",
+  },
+  {
+    accessorKey: "edi_codigopostal",
+    header: "Código Postal",
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const building = row.original;
       const { removeBuilding } = useBuildingStore();
+      const [dropdownOpen, setDropdownOpen] = useState(false);
 
       const handleAction = async () => {
         try {
@@ -81,24 +91,19 @@ export const columns: ColumnDef<AvaEdificio>[] = [
       };
 
       return (
-        <DropdownMenu>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">Abrir Menú</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuLabel className="text-center">
+              Acciones
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(event) => {
-                navigator.clipboard.writeText(building.edi_id.toString());
-              }}
-            >
-              Copiar ID Edificio
-            </DropdownMenuItem>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+            <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
               <AlertDialog
                 title="Está seguro?"
                 description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Edificio?"
@@ -109,7 +114,7 @@ export const columns: ColumnDef<AvaEdificio>[] = [
                 variant={"ghost"}
                 onAction={handleAction}
               />
-            </div>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

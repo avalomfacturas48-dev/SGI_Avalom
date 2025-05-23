@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import cookie from "js-cookie";
 import axios from "axios";
 import { Plus } from "lucide-react";
-import useBuildingStore from "@/lib/zustand/buildStore";
-import useTypeStore from "@/lib/zustand/typeStore";
-import { AvaEdificio } from "@/lib/types";
 import { ModeToggle } from "@/components/modeToggle";
 import { columns } from "./columnBuild";
 import { DataTable } from "@/components/dataTable/data-table";
@@ -27,7 +24,9 @@ import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
 import { ExportBuildings } from "./exportBuildings";
 import GenerateContractModal from "@/components/mantBuild/generateContractModal";
-
+import useBuildingStore from "@/lib/zustand/buildStore";
+import useTypeStore from "@/lib/zustand/typeStore";
+import { AvaEdificio } from "@/lib/types";
 
 const BodyMantBuild: React.FC = () => {
   const { setBuildings, buildings } = useBuildingStore();
@@ -36,6 +35,8 @@ const BodyMantBuild: React.FC = () => {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [openNew, setOpenNew] = useState(false);
+  const [openNewP, setOpenNewP] = useState(false);
 
   useEffect(() => {
     const fetchBuildings = async () => {
@@ -138,13 +139,20 @@ const BodyMantBuild: React.FC = () => {
             </CardHeader>
             <div className="flex flex-wrap justify-center gap-2 p-4">
               <ManageActions
+                open={openNew}
+                onOpenChange={setOpenNew}
                 variant="default"
                 titleButton="Nuevo Edificio"
                 icon={<Plus className="mr-2 h-4 w-4" />}
                 title="Nuevo Edificio"
                 description="Ingresa un nuevo Edificio"
                 FormComponent={
-                  <BuildForm action={"create"} onSuccess={() => {}} />
+                  <BuildForm
+                    action={"create"}
+                    onSuccess={() => {
+                      setOpenNew(false);
+                    }}
+                  />
                 }
               />
               <GenerateContractModal />
@@ -154,7 +162,11 @@ const BodyMantBuild: React.FC = () => {
             </div>
           </Card>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div
+            className={`grid grid-cols-1 ${
+              selectedBuilding ? "xl:grid-cols-2" : ""
+            } gap-8`}
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl text-primary font-semibold">
@@ -212,6 +224,8 @@ const BodyMantBuild: React.FC = () => {
                           </CardHeader>
                           <CardContent>
                             <ManageActions
+                              open={openNewP}
+                              onOpenChange={setOpenNewP}
                               variant="default"
                               titleButton="Nueva propiedad"
                               icon={<Plus className="mr-2 h-4 w-4" />}
@@ -220,7 +234,9 @@ const BodyMantBuild: React.FC = () => {
                               FormComponent={
                                 <PropertyForm
                                   action={"create"}
-                                  onSuccess={() => {}}
+                                  onSuccess={() => {
+                                    setOpenNewP(false);
+                                  }}
                                   entity={selectedBuilding?.edi_id}
                                 />
                               }
