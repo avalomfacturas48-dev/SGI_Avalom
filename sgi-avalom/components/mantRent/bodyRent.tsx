@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import useRentalStore from "@/lib/zustand/rentalStore";
 import axios from "axios";
 import cookie from "js-cookie";
 import { ModeToggle } from "../modeToggle";
@@ -10,6 +9,7 @@ import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsRent";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
+import useRentalStore from "@/lib/zustand/rentalStore";
 
 const BodyRent: React.FC = () => {
   const { rentals, setRentals } = useRentalStore();

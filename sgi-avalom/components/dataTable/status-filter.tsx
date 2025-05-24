@@ -23,6 +23,7 @@ interface StatusOption {
 }
 
 interface StatusFilterProps {
+  filterName: string;
   selectedStatuses: string[];
   onStatusChange: (statuses: string[]) => void;
   statuses: StatusOption[];
@@ -32,6 +33,7 @@ export function StatusFilter({
   selectedStatuses,
   onStatusChange,
   statuses,
+  filterName,
 }: StatusFilterProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -56,16 +58,20 @@ export function StatusFilter({
     <div className="flex flex-col space-y-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="borderOrange" size="sm" className="h-10 border-dashed">
+          <Button
+            variant="borderOrange"
+            size="sm"
+            className="h-10 border-dashed"
+          >
             <Search className="mr-2 h-4 w-4" />
             {selectedStatuses.length > 0
               ? "Filtros aplicados"
-              : "Filtrar por estado"}
+              : `Filtrar por ${filterName}`}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Buscar estado..." />
+            <CommandInput placeholder="Buscar filtros..." />
             <CommandList>
               <CommandEmpty>No se encontraron resultados.</CommandEmpty>
               <CommandGroup>

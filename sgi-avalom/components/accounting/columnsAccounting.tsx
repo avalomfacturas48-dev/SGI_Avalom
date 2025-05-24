@@ -17,14 +17,58 @@ import Link from "next/link";
 
 export const columns: ColumnDef<AvaAlquiler>[] = [
   {
-    accessorKey: "alq_id",
+    accessorKey: "ava_propiedad.ava_edificio.edi_identificador",
     header: ({ column }) => {
       return (
         <Button
           variant="table"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          ID
+          Iden Edificio
+          <ArrowUpDown className="text-orange ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "ava_propiedad.ava_edificio.edi_direccion",
+    header: "Dirección",
+    cell: ({ row }) => {
+      const address = row.original.ava_propiedad?.ava_edificio?.edi_direccion;
+      return <div className="font-medium text-wrap">{address}</div>;
+    },
+  },
+  {
+    accessorKey: "ava_propiedad.prop_identificador",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="table"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Iden Propiedad
+          <ArrowUpDown className="text-orange ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "ava_propiedad.prop_descripcion",
+    header: "Info Propiedad",
+    cell: ({ row }) => {
+      const info = row.original.ava_propiedad?.prop_descripcion as string;
+      return <div className="font-medium text-wrap">{info}</div>;
+    },
+  },
+  {
+    accessorKey: "ava_propiedad.ava_tipopropiedad.tipp_nombre",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="table"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Nombre Tipo Prop
           <ArrowUpDown className="text-orange ml-2 h-4 w-4" />
         </Button>
       );
@@ -50,23 +94,6 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
         currency: "CRC",
       }).format(amount);
       return <div className="font-medium">{formatted}</div>;
-    },
-  },
-  {
-    accessorKey: "alq_fechapago",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="table"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Fecha de Pago
-          <ArrowUpDown className="text-orange ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return format(new Date(row.getValue("alq_fechapago")), "dd/MM/yyyy");
     },
   },
   {
@@ -96,18 +123,6 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
     },
   },
   {
-    accessorKey: "ava_propiedad.prop_identificador",
-    header: "Identificador de Propiedad",
-  },
-  {
-    accessorKey: "ava_propiedad.ava_edificio.edi_identificador",
-    header: "Identificador de Edificio",
-  },
-  {
-    accessorKey: "ava_propiedad.ava_tipopropiedad.tipp_nombre",
-    header: "Tipo de Propiedad",
-  },
-  {
     id: "actions",
     cell: ({ row }) => {
       const rental = row.original;
@@ -124,13 +139,6 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                navigator.clipboard.writeText(rental.alq_id.toString());
-              }}
-            >
-              Copiar ID alquiler
-            </DropdownMenuItem>
             {isActive && (
               <>
                 <Link href={`/accounting/payments/${rental.alq_id}`}>

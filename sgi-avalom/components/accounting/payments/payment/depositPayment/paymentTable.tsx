@@ -10,7 +10,15 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, DollarSign, Hash, Tag } from "lucide-react";
+import {
+  X,
+  DollarSign,
+  Hash,
+  Tag,
+  BadgeDollarSign,
+  Banknote,
+  Wallet,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/currencyConverter";
@@ -25,9 +33,7 @@ export function PaymentTable({
   amountToPay,
   setAmountToPay,
 }: PaymentTableProps) {
-  const selectedDeposit = usePaymentStore(
-    (state) => state.selectedDeposit
-  );
+  const selectedDeposit = usePaymentStore((state) => state.selectedDeposit);
   const [payFull, setPayFull] = useState(false);
 
   const currentBalance = selectedDeposit
@@ -64,38 +70,58 @@ export function PaymentTable({
 
   const renderMobileView = () => (
     <Card className="mb-4">
-      <CardContent className="p-4 space-y-4">
-        <div className="flex justify-between">
-          <span className="font-semibold">ID:</span>
+      <CardContent className="p-4 space-y-6 text-sm flex flex-col items-center justify-center text-center">
+        {/* ID */}
+        <div className="flex items-center gap-2">
+          <Hash className="w-4 h-4 text-muted-foreground" />
+          <span className="font-medium">ID:</span>
           <span>{selectedDeposit.depo_id}</span>
         </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">Monto Total:</span>
-          <span>
-            {formatCurrency(Number(selectedDeposit.depo_total))}
-          </span>
+
+        {/* Monto Total */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground font-medium">
+            <DollarSign className="w-4 h-4" />
+            Monto Total
+          </div>
+          <div>{formatCurrency(Number(selectedDeposit.depo_total))}</div>
         </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">Saldo Actual:</span>
-          <span className="text-red-600 font-medium">
+
+        {/* Saldo Actual */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground font-medium">
+            <Banknote className="w-4 h-4" />
+            Saldo Actual
+          </div>
+          <div className="text-red-600 font-semibold">
             {formatCurrency(currentBalance)}
-          </span>
+          </div>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="font-semibold">Pagar Total:</span>
+
+        {/* Checkbox Total */}
+        <div className="flex items-center justify-center gap-3">
+          <span className="flex items-center gap-2 font-medium text-muted-foreground">
+            <Wallet className="w-4 h-4" />
+            Pagar Total
+          </span>
           <Checkbox
             checked={payFull}
             onCheckedChange={(checked) => setPayFull(checked as boolean)}
           />
         </div>
-        <div className="space-y-2">
-          <span className="font-semibold">Monto a Abonar:</span>
+
+        {/* Monto Abonar */}
+        <div className="space-y-1 w-full max-w-xs">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground font-medium">
+            <BadgeDollarSign className="w-4 h-4" />
+            Monto a Abonar
+          </div>
           <div className="relative">
             <Input
               value={amountToPay}
               onChange={(e) => handleAmountChange(e.target.value)}
-              className="pr-8"
-              placeholder="0.00"
+              className="pr-8 text-center"
+              placeholder="₡0.00"
             />
             {amountToPay && (
               <Button
@@ -109,11 +135,16 @@ export function PaymentTable({
             )}
           </div>
         </div>
-        <div className="flex justify-between">
-          <span className="font-semibold">Saldo Final:</span>
-          <span className="text-green-600 font-medium">
+
+        {/* Saldo Final */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-center gap-2 text-muted-foreground font-medium">
+            <DollarSign className="w-4 h-4" />
+            Saldo Final
+          </div>
+          <div className="text-green-600 font-semibold">
             {formatCurrency(finalBalance)}
-          </span>
+          </div>
         </div>
       </CardContent>
     </Card>

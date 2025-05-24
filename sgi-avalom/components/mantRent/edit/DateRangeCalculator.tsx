@@ -34,7 +34,7 @@ export function DateRangeCalculator() {
   }, [dateRange, setRents]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4 pb-4">
+    <div className="w-full mx-auto space-y-4 pb-4">
       <Card className="w-full">
         <CardHeader className="py-2">
           <CardTitle className="text-center text-lg">

@@ -31,6 +31,8 @@ interface ClientAlertDialogProps {
     | null
     | undefined;
   classn?: string;
+  icon?: React.ReactNode;
+  disabled?: boolean;
 }
 
 const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
@@ -43,11 +45,13 @@ const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
   onCancel,
   variant,
   classn,
+  icon,
+  disabled,
 }) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant={variant} className={classn}>{triggerText}</Button>
+        <Button variant={variant} disabled={disabled} className={classn}>{icon}{triggerText}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

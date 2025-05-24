@@ -61,42 +61,104 @@ export function PaymentForm({
               Detalles del Pago
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="pag_cuenta"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cuenta *</FormLabel>
+                <FormItem className="w-full">
+                  <FormLabel>Cuenta</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
                       placeholder="Ingrese la cuenta"
                       disabled={isSubmitting}
+                      className="w-full"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
-              name="pag_descripcion"
+              name="pag_banco"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción *</FormLabel>
+                <FormItem className="w-full">
+                  <FormLabel>Banco</FormLabel>
                   <FormControl>
-                    <Textarea
+                    <Input
                       {...field}
-                      placeholder="Ingrese la descripción del pago"
-                      rows={4}
+                      placeholder="Ingrese el banco"
                       disabled={isSubmitting}
+                      className="w-full"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="pag_metodopago"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Método de Pago</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ingrese el método de pago"
+                      disabled={isSubmitting}
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="pag_referencia"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Referencia</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="Ingrese la referencia"
+                      disabled={isSubmitting}
+                      className="w-full"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="md:col-span-2">
+              <FormField
+                control={form.control}
+                name="pag_descripcion"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Descripción</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder="Ingrese la descripción del pago"
+                        rows={4}
+                        disabled={isSubmitting}
+                        className="w-full"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </CardContent>
         </Card>
 

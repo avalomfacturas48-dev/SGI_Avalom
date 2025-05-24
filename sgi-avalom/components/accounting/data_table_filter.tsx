@@ -34,6 +34,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  DeleteIcon,
   MoreHorizontal,
 } from "lucide-react";
 import { AvaAlquiler } from "@/lib/types";
@@ -174,6 +175,7 @@ export function DataTable({
           />
 
           <StatusFilter
+            filterName="Estado"
             selectedStatuses={statusFilter}
             onStatusChange={onStatusChange}
             statuses={[
@@ -184,6 +186,7 @@ export function DataTable({
           />
 
           <StatusFilter
+            filterName="Tipo de Propiedad"
             selectedStatuses={propertyTypeFilter}
             onStatusChange={onPropertyTypeChange}
             statuses={[
@@ -211,7 +214,10 @@ export function DataTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {(() => {
+                      const label = column.id.split("_").pop() || column.id;
+                      return label.charAt(0).toUpperCase() + label.slice(1);
+                    })()}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>
@@ -219,8 +225,8 @@ export function DataTable({
         </div>
       </div>
 
-      <div className="hidden sm:block">
-        <div className="rounded-md border">
+      <div className="hidden rounded-md border sm:flex sm:w-full sm:flex-col">
+        <main className="grid flex-1 items-start rounded-md border">
           <UITable>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -270,7 +276,7 @@ export function DataTable({
               )}
             </TableBody>
           </UITable>
-        </div>
+        </main>
       </div>
 
       <div className="sm:hidden space-y-3">
@@ -310,30 +316,46 @@ export function DataTable({
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-2 pt-2 border-t">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(data.alq_id.toString());
-                      }}
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copiar ID
-                    </Button>
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2 border-t">
                     <Link
                       href={`/accounting/payments/${data.alq_id}`}
                       onClick={(e) => e.stopPropagation()}
+                      className="w-full sm:w-auto"
+                    >
+                      <Button
+                        variant="green"
+                        size="sm"
+                        className="flex items-center gap-2 w-full sm:w-auto"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                        Realizar Movimiento
+                      </Button>
+                    </Link>
+                    <Link
+                      href={`/accounting/finishedrent/${data.alq_id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full sm:w-auto"
                     >
                       <Button
                         variant="default"
                         size="sm"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 w-full sm:w-auto"
                       >
-                        <MoreHorizontal className="h-4 w-4" />
-                        Movimiento
+                        <ChevronRight className="h-4 w-4" />
+                        Finalizar Alquiler
+                      </Button>
+                    </Link>
+                    <Link
+                      href={`/accounting/canceledrent/${data.alq_id}`}
+                      className="w-full sm:w-auto"
+                    >
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex items-center gap-2 w-full sm:w-auto"
+                      >
+                        <DeleteIcon className="h-4 w-4" />
+                        Cancelar Alquiler
                       </Button>
                     </Link>
                   </div>

@@ -14,6 +14,9 @@ export async function POST(request: NextRequest) {
         pag_estado,
         pag_cuenta,
         pag_descripcion,
+        pag_metodopago,
+        pag_banco,
+        pag_referencia,
         alqm_id,
       } = data;
 
@@ -27,6 +30,9 @@ export async function POST(request: NextRequest) {
             pag_estado,
             pag_cuenta,
             pag_descripcion,
+            pag_metodopago,
+            pag_banco,
+            pag_referencia,
             alqm_id: BigInt(alqm_id),
           },
         });

@@ -53,6 +53,9 @@ export async function PUT(
           pag_estado: data.pag_estado,
           pag_descripcion: data.pag_descripcion,
           pag_cuenta: data.pag_cuenta,
+          pag_metodopago: data.pag_metodopago,
+          pag_banco: data.pag_banco,
+          pag_referencia: data.pag_referencia,
         },
       });
 

@@ -54,13 +54,8 @@ export function CancelPaymentTable() {
     <div className="space-y-4">
       {filteredPayments.map((payment) => (
         <Card key={payment.pag_id}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Pago ID: {payment.pag_id}
-            </CardTitle>
-          </CardHeader>
           <CardContent className="pb-4 pt-0">
-            <div className="grid gap-2">
+            <div className="grid gap-2 m-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium flex items-center">
                   <DollarSign className="w-4 h-4 mr-1" />
@@ -69,6 +64,27 @@ export function CancelPaymentTable() {
                 <span className="text-sm">
                   {formatCurrency(Number(payment.pag_monto))}
                 </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium flex items-center">
+                  <Eye className="w-4 h-4 mr-1" />
+                  Banco:
+                </span>
+                <span className="text-sm">{payment.pag_banco}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium flex items-center">
+                  <Eye className="w-4 h-4 mr-1" />
+                  Método de Pago:
+                </span>
+                <span className="text-sm">{payment.pag_metodopago}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium flex items-center">
+                  <Eye className="w-4 h-4 mr-1" />
+                  Referencia:
+                </span>
+                <span className="text-sm">{payment.pag_referencia}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium flex items-center">
@@ -142,15 +158,13 @@ export function CancelPaymentTable() {
       <TableHeader>
         <TableRow className="cursor-pointer hover:bg-muted">
           <TableHead>
-            <Button variant="table" onClick={() => handleSort("pag_id")}>
-              ID <ArrowUpDown className="text-orange ml-2 h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
             <Button variant="table" onClick={() => handleSort("pag_monto")}>
               Monto <ArrowUpDown className="text-orange ml-2 h-4 w-4" />
             </Button>
           </TableHead>
+          <TableHead>Banco</TableHead>
+          <TableHead>Metodo de Pago</TableHead>
+          <TableHead>Referencia</TableHead>
           <TableHead>Descripción</TableHead>
           <TableHead>
             <Button variant="table" onClick={() => handleSort("pag_estado")}>
@@ -168,8 +182,10 @@ export function CancelPaymentTable() {
       <TableBody>
         {filteredPayments.map((payment) => (
           <TableRow key={payment.pag_id}>
-            <TableCell>{payment.pag_id}</TableCell>
             <TableCell>{formatCurrency(Number(payment.pag_monto))}</TableCell>
+            <TableCell>{payment.pag_banco}</TableCell>
+            <TableCell>{payment.pag_metodopago}</TableCell>
+            <TableCell>{payment.pag_referencia}</TableCell>
             <TableCell>
               {expandedDescriptions[payment.pag_id]
                 ? payment.pag_descripcion
@@ -230,6 +246,7 @@ export function CancelPaymentTable() {
       <CardContent>
         <div className="mb-4">
           <StatusFilter
+            filterName="Estado"
             statuses={[
               { label: "Activo", value: "A" },
               { label: "Anulado", value: "D" },
@@ -238,8 +255,8 @@ export function CancelPaymentTable() {
             onStatusChange={setSelectedStatuses}
           />
         </div>
-        <div className="md:hidden">{renderMobileView()}</div>
-        <div className="hidden md:block overflow-x-auto">
+        <div className="lg:hidden">{renderMobileView()}</div>
+        <div className="hidden lg:block overflow-x-auto">
           {renderDesktopView()}
         </div>
       </CardContent>

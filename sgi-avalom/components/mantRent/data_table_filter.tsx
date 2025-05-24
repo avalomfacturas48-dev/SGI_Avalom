@@ -135,6 +135,7 @@ export function DataTable({
             aria-label="Buscar en la tabla"
           />
           <StatusFilter
+            filterName="Estado"
             selectedStatuses={statusFilter}
             onStatusChange={onStatusChange}
             statuses={[
@@ -145,6 +146,7 @@ export function DataTable({
           />
 
           <StatusFilter
+            filterName="Tipo de Propiedad"
             selectedStatuses={propertyTypeFilter}
             onStatusChange={onPropertyTypeChange}
             statuses={[
@@ -172,7 +174,10 @@ export function DataTable({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {column.id}
+                    {(() => {
+                      const label = column.id.split("_").pop() || column.id;
+                      return label.charAt(0).toUpperCase() + label.slice(1);
+                    })()}
                   </DropdownMenuCheckboxItem>
                 ))}
             </DropdownMenuContent>

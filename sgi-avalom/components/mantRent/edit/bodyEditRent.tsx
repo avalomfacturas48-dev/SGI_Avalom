@@ -1,21 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RentalForm from "@/components/mantRent/edit/rentalForm";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
-import { useParams } from "next/navigation";
-import { DateRangeCalculator } from "./DateRangeCalculator";
-import MonthsBetween from "./MonthsBetween";
-import useRentalStore from "@/lib/zustand/useRentalStore";
 import axios from "axios";
 import cookie from "js-cookie";
 import { toast } from "sonner";
+import { useParams } from "next/navigation";
+import RentalForm from "@/components/mantRent/edit/rentalForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { ModeToggle } from "@/components/modeToggle";
-import DepositForm from "./depositForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DateRangeCalculator } from "./DateRangeCalculator";
+import MonthsBetween from "./MonthsBetween";
+import DepositForm from "./depositForm";
+import useRentalStore from "@/lib/zustand/useRentalStore";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();

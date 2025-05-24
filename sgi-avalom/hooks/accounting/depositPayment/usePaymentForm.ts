@@ -11,12 +11,24 @@ import { useState } from "react";
 const paymentFormSchema = z.object({
   pag_descripcion: z
     .string()
-    .min(1, "La descripción debe tener al menos 1 caracter.")
-    .max(50, "La descripción debe tener como máximo 50 caracteres."),
+    .max(50, "La descripción debe tener como máximo 50 caracteres.")
+    .optional(),
   pag_cuenta: z
     .string()
-    .min(1, "La cuenta debe tener al menos 1 caracter.")
+    .min(1, "La cuenta es obligatoria.")
     .max(50, "La cuenta debe tener como máximo 50 caracteres."),
+  pag_metodopago: z
+    .string()
+    .min(1, "El método de pago es obligatorio.")
+    .max(30, "El método de pago debe tener como máximo 30 caracteres."),
+  pag_banco: z
+    .string()
+    .max(50, "El banco debe tener como máximo 50 caracteres.")
+    .optional(),
+  pag_referencia: z
+    .string()
+    .max(100, "La referencia debe tener como máximo 100 caracteres.")
+    .optional(),
 });
 
 type PaymentFormInputs = z.infer<typeof paymentFormSchema>;
@@ -32,6 +44,9 @@ export const usePaymentForm = () => {
     defaultValues: {
       pag_descripcion: "",
       pag_cuenta: "",
+      pag_metodopago: "",
+      pag_banco: "",
+      pag_referencia: "",
     },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +54,14 @@ export const usePaymentForm = () => {
 
   const handlePaymentSubmit = async (formData: PaymentFormData) => {
     try {
-      const { pag_descripcion, pag_cuenta, amountToPay } = formData;
+      const {
+        pag_descripcion,
+        pag_cuenta,
+        amountToPay,
+        pag_metodopago,
+        pag_banco,
+        pag_referencia,
+      } = formData;
 
       if (!selectedDeposit) {
         throw new Error("No hay deposito seleccionado.");
@@ -51,6 +73,9 @@ export const usePaymentForm = () => {
         pag_estado: "A",
         pag_descripcion,
         pag_cuenta,
+        pag_metodopago,
+        pag_banco,
+        pag_referencia,
         depo_id: selectedDeposit.depo_id,
       };
 

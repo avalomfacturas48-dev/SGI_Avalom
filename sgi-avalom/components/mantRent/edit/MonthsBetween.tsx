@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import useRentalStore from "@/lib/zustand/useRentalStore";
+import axios from "axios";
+import cookie from "js-cookie";
+import { PencilIcon, TrashIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -10,13 +13,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { PencilIcon, TrashIcon } from "lucide-react";
 import MonthlyRentForm from "./monthlyRentForm";
-import { toast } from "sonner";
 import ManageActions from "@/components/dataTable/manageActions";
 import { convertToCostaRicaTime } from "@/utils/dateUtils";
-import axios from "axios";
-import cookie from "js-cookie";
+import useRentalStore from "@/lib/zustand/useRentalStore";
+import AlertDialog from "@/components/alertDialog";
 
 interface MonthsBetweenProps {
   mode: "view" | "create";
@@ -24,7 +25,8 @@ interface MonthsBetweenProps {
 
 const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
   const { monthlyRents, deleteRent, createMonthlyRents } = useRentalStore();
-
+  const [openNew, setOpenNew] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [rents, setRents] = useState(
     mode === "create" ? createMonthlyRents : monthlyRents
   );
@@ -33,13 +35,17 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
     setRents(mode === "create" ? createMonthlyRents : monthlyRents);
   }, [createMonthlyRents, monthlyRents, mode]);
 
-  const handleDelete = async (alqm_id: string) => {
+  const handleDelete = async (alqm_id: string, alqm_identificador: string) => {
     if (mode === "create") {
       const { success } = deleteRent("createMonthlyRents", alqm_id);
       if (success) {
-        toast.success("Alquiler mensual eliminado localmente.");
+        toast.success(
+          `Alquiler mensual ${alqm_identificador} eliminado correctamente.`
+        );
       } else {
-        toast.error("Error al eliminar alquiler mensual localmente.");
+        toast.error(
+          `Error al eliminar el alquiler mensual ${alqm_identificador}.`
+        );
       }
     } else {
       try {
@@ -52,7 +58,9 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
 
         if (response?.data?.success) {
           deleteRent("monthlyRents", alqm_id);
-          toast.success("Alquiler mensual eliminado correctamente.");
+          toast.success(
+            `Alquiler mensual ${alqm_identificador} eliminado correctamente.`
+          );
         } else {
           throw new Error(response?.data?.error || "Error al eliminar.");
         }
@@ -66,6 +74,8 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
     <>
       {mode === "view" && (
         <ManageActions
+          open={openNew}
+          onOpenChange={setOpenNew}
           titleButton="Crear Alquiler Mensual"
           title="Crear Alquiler Mensual"
           description="Ingrese los datos del alquiler mensual."
@@ -77,7 +87,9 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
               action="create"
               alqmId={null}
               mode={mode}
-              onSuccess={() => {}}
+              onSuccess={() => {
+                setOpenNew(false);
+              }}
             />
           }
         />
@@ -101,6 +113,8 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                       <TooltipTrigger asChild>
                         <div className="inline-block">
                           <ManageActions
+                            open={openEdit}
+                            onOpenChange={setOpenEdit}
                             titleButton=""
                             title="Editar Alquiler Mensual"
                             description="Modifique los datos del alquiler mensual."
@@ -115,7 +129,9 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                                 action="edit"
                                 alqmId={rent.alqm_id}
                                 mode={mode}
-                                onSuccess={() => {}}
+                                onSuccess={() => {
+                                  setOpenEdit(false);
+                                }}
                               />
                             }
                           />
@@ -139,14 +155,23 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="inline-block">
-                          <Button
+                          <AlertDialog
+                            title="¿Estás seguro?"
+                            description="Esta acción no se puede deshacer."
+                            cancelText="Cancelar"
+                            actionText="Continuar"
+                            classn="p-4 m-0 h-8 w-full"
                             variant="ghost"
-                            onClick={() => handleDelete(rent.alqm_id)}
-                            className="p-1"
+                            onAction={() =>
+                              handleDelete(
+                                rent.alqm_id,
+                                rent.alqm_identificador
+                              )
+                            }
+                            icon={<TrashIcon className="h-4 w-4" />}
+                            triggerText=""
                             disabled={hasPayments}
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
+                          />
                         </div>
                       </TooltipTrigger>
                       {hasPayments && (
@@ -177,7 +202,11 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                     {convertToCostaRicaTime(rent.alqm_fechafin)}
                   </p>
                   <p>
-                    <strong>Total:</strong> ₡{rent.alqm_montototal}
+                    <strong>Total:</strong>{" "}
+                    {Number(rent.alqm_montototal).toLocaleString("es-CR", {
+                      style: "currency",
+                      currency: "CRC",
+                    })}
                   </p>
                   <p>
                     <strong>Estado:</strong> {rent.alqm_estado}
