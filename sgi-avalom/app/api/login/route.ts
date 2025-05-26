@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     },
   };
 
-  return NextResponse.json(response, {
+  return NextResponse.json(stringifyWithBigInt(response), {
     headers: { "Content-Type": "application/json" },
   });
 }

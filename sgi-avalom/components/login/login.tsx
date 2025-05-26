@@ -75,7 +75,7 @@ const Login: React.FC = () => {
           />
         </div>
         <CardContent>
-          {error && <Alert className="mt-2" variant="destructive">{error}</Alert>}
+          {error && <Alert className="mt-2 text-wrap max-w-sm" variant="destructive">{error}</Alert>}
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-5">
               <div className="grid w-full max-w-sm items-center gap-1.5">
