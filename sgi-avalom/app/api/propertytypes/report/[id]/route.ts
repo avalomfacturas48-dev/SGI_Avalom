@@ -4,9 +4,9 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const propId = parseInt(context.params.id);
+  const params = await context.params;
 
   const { searchParams } = req.nextUrl;
   const from = searchParams.get("from");
@@ -16,7 +16,7 @@ export async function GET(
   const toDate = to ? new Date(`${to}-31`) : undefined;
 
   const property = await prisma.ava_propiedad.findUnique({
-    where: { prop_id: propId },
+    where: { prop_id: Number(params.id) },
     include: {
       ava_edificio: true,
       ava_alquiler: {
