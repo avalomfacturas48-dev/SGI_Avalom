@@ -33,12 +33,12 @@ export async function GET(req: NextRequest) {
   const helvetica = await pdf.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const A4: [number, number] = [595.28, 841.89];
+  const A4: [number, number] = [841.89, 595.28]; // A4 landscape
   const marginX = 50;
   const marginTop = A4[1] - 50;
   const rowH = 18;
 
-  const colWidths = [70, 100, 100, 120, 80, 70];
+  const colWidths = [70, 90, 90, 120, 80, 70, 90, 90];
   const colXs = colWidths.reduce<number[]>(
     (acc, w, i) =>
       i === 0 ? [marginX] : [...acc, acc[i - 1] + colWidths[i - 1]],
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  cursorY -= 30;
+  cursorY -= 50;
 
   // Cabecera tabla
   page.drawLine({
@@ -96,13 +96,15 @@ export async function GET(req: NextRequest) {
     "Edificio",
     "Propiedad",
     "Cliente",
-    "Estado/Alquiler",
+    "Estado/Al",
     "Monto/mes",
+    "Pagado",
+    "Estado de pago",
   ];
   headers.forEach((h, i) => {
     page.drawText(h, {
       x: colXs[i],
-      y: cursorY - rowH + 20,
+      y: cursorY - rowH + 25,
       size: 11,
       font: helveticaBold,
       color: rgb(0, 0, 0),
@@ -111,12 +113,12 @@ export async function GET(req: NextRequest) {
 
   cursorY -= rowH;
 
-  let total = 0;
+  let totalEsperado = 0;
+  let totalPagado = 0;
 
   for (const ed of edificios) {
     for (const prop of ed.ava_propiedad) {
       for (const alq of prop.ava_alquiler) {
-        // aplicar filtro
         const mensualidades = alq.ava_alquilermensual.filter((m) => {
           const fecha = new Date(m.alqm_fechapago ?? m.alqm_fechainicio);
           return (
@@ -141,9 +143,13 @@ export async function GET(req: NextRequest) {
             ? `${cliente.cli_nombre} ${cliente.cli_papellido}`
             : "—";
           const estado = alq.alq_estado === "A" ? "Activo" : "Cancelado";
-          const monto = `CRC ${mens.alqm_montototal.toLocaleString("es-CR")}`;
 
-          total += Number(mens.alqm_montototal);
+          const montoEsperado = Number(mens.alqm_montototal);
+          const montoPagado = Number(mens.alqm_montopagado ?? 0);
+          const estadoPago = montoPagado >= montoEsperado ? "Completado" : "Incompleto";
+
+          totalEsperado += montoEsperado;
+          totalPagado += montoPagado;
 
           const row = [
             fecha,
@@ -151,7 +157,9 @@ export async function GET(req: NextRequest) {
             propiedadLabel,
             clienteNombre,
             estado,
-            monto,
+            `CRC ${montoEsperado.toLocaleString("es-CR")}`,
+            `CRC ${montoPagado.toLocaleString("es-CR")}`,
+            estadoPago,
           ];
 
           row.forEach((text, i) => {
@@ -178,14 +186,14 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Total final
+  // Totales al final
   if (cursorY < 80) {
     page = pdf.addPage(A4);
     cursorY = marginTop;
   }
 
   page.drawText(
-    `Total mensual acumulado: CRC ${total.toLocaleString("es-CR")}`,
+    `Total mensual esperado: CRC ${totalEsperado.toLocaleString("es-CR")}`,
     {
       x: marginX,
       y: cursorY - 20,
@@ -194,10 +202,19 @@ export async function GET(req: NextRequest) {
     }
   );
 
+  page.drawText(
+    `Total pagado por clientes: CRC ${totalPagado.toLocaleString("es-CR")}`,
+    {
+      x: marginX,
+      y: cursorY - 40,
+      size: 12,
+      font: helveticaBold,
+    }
+  );
+
   const pdfBytes = await pdf.save();
 
   let filename = "edificios_total.pdf";
-
   if (from && to) {
     filename = `edificios_${from}_a_${to}.pdf`;
   }
