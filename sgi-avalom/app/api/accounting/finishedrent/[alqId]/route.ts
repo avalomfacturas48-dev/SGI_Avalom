@@ -28,11 +28,7 @@ export async function PUT(
         (rent) => rent.alqm_estado === "P" || rent.alqm_estado === "R"
       );
 
-      const isDepositPaid =
-        rental.ava_deposito?.[0]?.depo_total ===
-        rental.ava_deposito?.[0]?.depo_montoactual;
-
-      if (!allPaymentsCompleted || !isDepositPaid) {
+      if (!allPaymentsCompleted) {
         return NextResponse.json(
           {
             success: false,
