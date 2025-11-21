@@ -154,7 +154,7 @@ Project developed as part of the **Information Systems Engineering** program at 
 
 💰 Recent payments • ❌ Cancelled rentals • ✅ Active rentals • 👥 New clients • 📈 Revenue graph (12 months)
 
-<img src="./src_ReadMe/HomePage.png" width="800" alt="Main Dashboard"/>
+<img src="./src_readme/HomePage.png" width="800" alt="Main Dashboard"/>
 
 </div>
 
@@ -166,7 +166,7 @@ Project developed as part of the **Information Systems Engineering** program at 
 
 **View, search, export, and manage all registered clients**
 
-<img src="./src_ReadMe/GestionClientes.png" width="800" alt="Client Management"/>
+<img src="./src_readme/GestionClientes.png" width="800" alt="Client Management"/>
 
 </div>
 
@@ -184,11 +184,11 @@ Project developed as part of the **Information Systems Engineering** program at 
 
 Each building includes: 🔢 Building identifier • 📝 Description • 📍 Location & postal code • 🏠 Associated property units
 
-<img src="./src_ReadMe/GestionEdificios.png" width="800" alt="Building Management"/>
+<img src="./src_readme/GestionEdificios.png" width="800" alt="Building Management"/>
 
 **Property Details Modal**
 
-<img src="./src_ReadMe/EditarPropiedad.png" width="800" alt="Edit Property"/>
+<img src="./src_readme/EditarPropiedad.png" width="800" alt="Edit Property"/>
 
 </div>
 
@@ -206,11 +206,11 @@ Each building includes: 🔢 Building identifier • 📝 Description • 📍 L
 
 Includes: 📜 Rental history • 📅 Payment dates • 📊 Status • 👥 Linked clients • 📤 Export tools
 
-<img src="./src_ReadMe/GestionAlquileres.png" width="800" alt="Rental Management"/>
+<img src="./src_readme/GestionAlquileres.png" width="800" alt="Rental Management"/>
 
 **Modify Rental View**
 
-<img src="./src_ReadMe/ModificarAlquiler.png" width="800" alt="Modify Rental"/>
+<img src="./src_readme/ModificarAlquiler.png" width="800" alt="Modify Rental"/>
 
 </div>
 
@@ -228,7 +228,7 @@ Includes: 📜 Rental history • 📅 Payment dates • 📊 Status • 👥 Li
 
 Displays: 👤 Client info • 💰 Total deposit & current balance • 📅 Each month (up to 36) • ✓ Payment status
 
-<img src="./src_ReadMe/MovimientosAlquiler.png" width="800" alt="Payment Movements"/>
+<img src="./src_readme/MovimientosAlquiler.png" width="800" alt="Payment Movements"/>
 
 </div>
 
@@ -246,7 +246,7 @@ Displays: 👤 Client info • 💰 Total deposit & current balance • 📅 Eac
 
 Features: 🔍 Filters (property type, status, building) • 📊 Complete financial records • 💼 Actions (pay, cancel, finalize) • 📤 Export tools
 
-<img src="./src_ReadMe/Contabilidad.png" width="800" alt="Accounting Module"/>
+<img src="./src_readme/Contabilidad.png" width="800" alt="Accounting Module"/>
 
 </div>
 
@@ -264,7 +264,7 @@ Features: 🔍 Filters (property type, status, building) • 📊 Complete finan
 
 Allows: ✏️ Edit building information • ➕ Create new properties • 📄 Pagination management • 🔍 Search by identifiers
 
-<img src="./src_ReadMe/PropiedadesYEdificios.png" width="800" alt="Properties and Buildings"/>
+<img src="./src_readme/PropiedadesYEdificios.png" width="800" alt="Properties and Buildings"/>
 
 </div>
 
