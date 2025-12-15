@@ -47,7 +47,7 @@ describe("CancelPaymentForm", () => {
   });
 
   it("muestra los campos del formulario y datos del pago", () => {
-    render(<CancelPaymentForm payment={fakePayment} onClose={() => {}} />);
+    render(<CancelPaymentForm payment={fakePayment} onSuccess={() => {}} />);
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.getByText("₡250,000.00")).toBeInTheDocument();
     expect(screen.getByText("Activo")).toBeInTheDocument();
@@ -58,7 +58,7 @@ describe("CancelPaymentForm", () => {
   });
 
   it("envía el formulario correctamente", async () => {
-    render(<CancelPaymentForm payment={fakePayment} onClose={() => {}} />);
+    render(<CancelPaymentForm payment={fakePayment} onSuccess={() => {}} />);
     fireEvent.click(screen.getByRole("button", { name: /anular pago/i }));
 
     await waitFor(() => {
