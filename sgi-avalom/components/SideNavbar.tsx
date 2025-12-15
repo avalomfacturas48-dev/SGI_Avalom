@@ -9,6 +9,7 @@ import {
   LineChart,
   Settings,
   FilePen,
+  Receipt,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -99,6 +100,12 @@ export default function SideNavbar() {
       href: "/accounting",
       icon: LineChart,
       title: "Contabilidad",
+      allowedRoles: ["A", "J", "E", "R"],
+    },
+    {
+      href: "/expenses",
+      icon: Receipt,
+      title: "Gastos",
       allowedRoles: ["A", "J", "E", "R"],
     },
   ];

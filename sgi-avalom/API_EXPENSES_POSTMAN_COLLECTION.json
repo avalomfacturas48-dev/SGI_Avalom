@@ -1,0 +1,645 @@
+{
+	"info": {
+		"_postman_id": "expenses-api-collection",
+		"name": "SGI Avalom - Expenses API",
+		"description": "Colección de endpoints para el módulo de Gastos del sistema SGI Avalom",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "noauth"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Agregar token como cookie si existe y no es el endpoint de login",
+					"const url = pm.request.url.toString();",
+					"if (!url.includes('/api/login')) {",
+					"    const token = pm.collectionVariables.get('authToken');",
+					"    if (token) {",
+					"        // Remover header Cookie existente si hay",
+					"        pm.request.headers.remove('Cookie');",
+					"        // Agregar nuevo header Cookie con el token",
+					"        pm.request.headers.add({",
+					"            key: 'Cookie',",
+					"            value: 'token=' + token",
+					"        });",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.token) {",
+									"        pm.collectionVariables.set('authToken', response.token);",
+									"        console.log('Token guardado:', response.token);",
+									"        console.log('Usa este token en la cookie \"token\" para las siguientes peticiones');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"anthonyah131@gmail.com\",\n    \"password\": \"123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "login"]
+						},
+						"description": "Endpoint para autenticarse y obtener el token de acceso"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gastos",
+			"item": [
+				{
+					"name": "Listar Gastos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text",
+								"disabled": false
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses?page=1&limit=10&estado=A&tipo=S",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Número de página"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Registros por página"
+								},
+								{
+									"key": "estado",
+									"value": "A",
+									"description": "Estado: A (Activo) o D (Anulado)"
+								},
+								{
+									"key": "tipo",
+									"value": "S",
+									"description": "Tipo: S (Servicio) o M (Mantenimiento)"
+								},
+								{
+									"key": "edi_id",
+									"value": "",
+									"description": "ID del edificio (opcional)"
+								},
+								{
+									"key": "prop_id",
+									"value": "",
+									"description": "ID de la propiedad (opcional)"
+								},
+								{
+									"key": "ser_id",
+									"value": "",
+									"description": "ID del servicio (opcional)"
+								},
+								{
+									"key": "fechaDesde",
+									"value": "",
+									"description": "Fecha desde (YYYY-MM-DD) (opcional)"
+								},
+								{
+									"key": "fechaHasta",
+									"value": "",
+									"description": "Fecha hasta (YYYY-MM-DD) (opcional)"
+								}
+							]
+						},
+						"description": "Obtiene la lista de gastos con filtros opcionales y paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Gasto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gas_tipo\": \"S\",\n    \"gas_concepto\": \"Pago de luz\",\n    \"gas_descripcion\": \"Pago mensual de servicio eléctrico\",\n    \"gas_monto\": \"50000\",\n    \"gas_fecha\": \"2024-01-15T00:00:00.000Z\",\n    \"gas_metodopago\": \"Transferencia\",\n    \"gas_cuenta\": \"123456789\",\n    \"gas_banco\": \"Banco Nacional\",\n    \"gas_referencia\": \"REF-001\",\n    \"edi_id\": \"1\",\n    \"prop_id\": \"1\",\n    \"ser_id\": \"1\",\n    \"usu_id\": \"1\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses"]
+						},
+						"description": "Crea un nuevo gasto. Si es tipo 'S' (Servicio) debe incluir ser_id. Si es tipo 'M' (Mantenimiento) no debe incluir ser_id."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Gasto por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "1"]
+						},
+						"description": "Obtiene un gasto específico por su ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Gasto",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gas_tipo\": \"S\",\n    \"gas_concepto\": \"Pago de luz actualizado\",\n    \"gas_descripcion\": \"Pago mensual de servicio eléctrico\",\n    \"gas_monto\": \"55000\",\n    \"gas_fecha\": \"2024-01-15T00:00:00.000Z\",\n    \"gas_metodopago\": \"Transferencia\",\n    \"gas_cuenta\": \"123456789\",\n    \"gas_banco\": \"Banco Nacional\",\n    \"gas_referencia\": \"REF-001\",\n    \"edi_id\": \"1\",\n    \"prop_id\": \"1\",\n    \"ser_id\": \"1\",\n    \"usu_id\": \"1\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "1"]
+						},
+						"description": "Actualiza un gasto existente. No se puede actualizar un gasto anulado."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Gasto",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "1"]
+						},
+						"description": "Elimina un gasto. No se puede eliminar un gasto anulado."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Gastos Anulados",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/canceled?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "canceled"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "tipo",
+									"value": "",
+									"description": "S o M (opcional)"
+								},
+								{
+									"key": "edi_id",
+									"value": "",
+									"description": "ID del edificio (opcional)"
+								},
+								{
+									"key": "prop_id",
+									"value": "",
+									"description": "ID de la propiedad (opcional)"
+								},
+								{
+									"key": "fechaDesde",
+									"value": "",
+									"description": "YYYY-MM-DD (opcional)"
+								},
+								{
+									"key": "fechaHasta",
+									"value": "",
+									"description": "YYYY-MM-DD (opcional)"
+								}
+							]
+						},
+						"description": "Obtiene la lista de gastos anulados con filtros opcionales y paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Anular Gasto",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ang_motivo\": \"Error en el registro\",\n    \"ang_descripcion\": \"Se registró por error, debe ser anulado\",\n    \"ang_montofinal\": \"0\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/cancel/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "cancel", "1"]
+						},
+						"description": "Anula un gasto. El usu_id se extrae automáticamente del token."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Anulación por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/cancel/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "cancel", "1"],
+							"description": "Obtiene los detalles de una anulación específica. El parámetro es el angId (ID de la anulación), no el gastoId."
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Servicios",
+			"item": [
+				{
+					"name": "Listar Servicios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/services?page=1&limit=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "services"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Obtiene la lista de servicios con paginación"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Servicio",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ser_codigo\": \"NETFLIX-001\",\n    \"ser_nombre\": \"Netflix\",\n    \"ser_servicio\": \"Streaming\",\n    \"ser_negocio\": \"Netflix Inc.\",\n    \"ser_mediopago\": \"Tarjeta de crédito\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/services",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "services"]
+						},
+						"description": "Crea un nuevo servicio en el catálogo"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Servicio por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/services/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "services", "1"]
+						},
+						"description": "Obtiene un servicio específico con sus gastos relacionados"
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Servicio",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ser_codigo\": \"NETFLIX-001\",\n    \"ser_nombre\": \"Netflix Premium\",\n    \"ser_servicio\": \"Streaming\",\n    \"ser_negocio\": \"Netflix Inc.\",\n    \"ser_mediopago\": \"Tarjeta de crédito\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/services/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "services", "1"]
+						},
+						"description": "Actualiza un servicio existente"
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Servicio",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/services/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "services", "1"]
+						},
+						"description": "Elimina un servicio. No se puede eliminar si tiene gastos asociados."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reportes",
+			"item": [
+				{
+					"name": "Reporte de Servicios (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/reports/services?edi_id=1&fechaDesde=2024-01-01&fechaHasta=2024-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "reports", "services"],
+							"query": [
+								{
+									"key": "edi_id",
+									"value": "1",
+									"description": "ID del edificio (requerido)"
+								},
+								{
+									"key": "fechaDesde",
+									"value": "2024-01-01",
+									"description": "Fecha desde (YYYY-MM-DD) (opcional)"
+								},
+								{
+									"key": "fechaHasta",
+									"value": "2024-12-31",
+									"description": "Fecha hasta (YYYY-MM-DD) (opcional)"
+								}
+							]
+						},
+						"description": "Genera un reporte PDF de gastos de servicios para un edificio específico"
+					},
+					"response": []
+				},
+				{
+					"name": "Reporte de Mantenimientos (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/reports/maintenance?edi_id=1&fechaDesde=2024-01-01&fechaHasta=2024-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "reports", "maintenance"],
+							"query": [
+								{
+									"key": "edi_id",
+									"value": "1",
+									"description": "ID del edificio (requerido)"
+								},
+								{
+									"key": "fechaDesde",
+									"value": "2024-01-01",
+									"description": "Fecha desde (YYYY-MM-DD) (opcional)"
+								},
+								{
+									"key": "fechaHasta",
+									"value": "2024-12-31",
+									"description": "Fecha hasta (YYYY-MM-DD) (opcional)"
+								}
+							]
+						},
+						"description": "Genera un reporte PDF de gastos de mantenimiento para un edificio específico"
+					},
+					"response": []
+				},
+				{
+					"name": "Reporte General de Gastos (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/reports/all?fechaDesde=2024-01-01&fechaHasta=2024-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "reports", "all"],
+							"query": [
+								{
+									"key": "fechaDesde",
+									"value": "2024-01-01",
+									"description": "Fecha desde (YYYY-MM-DD) (requerido)"
+								},
+								{
+									"key": "fechaHasta",
+									"value": "2024-12-31",
+									"description": "Fecha hasta (YYYY-MM-DD) (requerido)"
+								}
+							]
+						},
+						"description": "Genera un reporte PDF general con todos los gastos (servicios y mantenimientos)"
+					},
+					"response": []
+				},
+				{
+					"name": "Reporte Contable General (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/expenses/reports/profit-loss?fechaDesde=2024-01-01&fechaHasta=2024-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "expenses", "reports", "profit-loss"],
+							"query": [
+								{
+									"key": "fechaDesde",
+									"value": "2024-01-01",
+									"description": "Fecha desde (YYYY-MM-DD) (requerido)"
+								},
+								{
+									"key": "fechaHasta",
+									"value": "2024-12-31",
+									"description": "Fecha hasta (YYYY-MM-DD) (requerido)"
+								}
+							]
+						},
+						"description": "Genera un reporte contable completo de ganancias/pérdidas con análisis por mes, edificio y propiedad"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
+
