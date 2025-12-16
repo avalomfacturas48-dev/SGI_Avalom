@@ -67,3 +67,18 @@ export interface CancelGastoFormProps {
   gasto: AvaGasto;
   onSuccess: () => void;
 }
+
+// ============================================
+// Expense Statistics
+// ============================================
+
+export interface ExpenseStatistics {
+  totalMesActual: string;
+  totalAnioActual: string;
+  totalTransacciones: number;
+  porcentajeServicios: number;
+  porcentajeMantenimiento: number;
+  cantidadServicios: number;
+  cantidadMantenimiento: number;
+  cambioMesAnterior: number;
+}
