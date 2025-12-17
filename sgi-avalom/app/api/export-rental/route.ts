@@ -203,8 +203,6 @@ export async function GET(req: NextRequest) {
     `Tipo: ${alquiler.ava_propiedad?.ava_tipopropiedad?.tipp_nombre ?? "—"}`,
     `Edificio: ${alquiler.ava_propiedad?.ava_edificio?.edi_identificador ?? "—"}`,
     `Monto mensual: CRC ${Number(alquiler.alq_monto).toLocaleString("es-CR")}`,
-    `Fecha inicio: ${alquiler.alq_fechainicio ? new Date(alquiler.alq_fechainicio).toLocaleDateString("es-CR") : "—"}`,
-    `Fecha fin: ${alquiler.alq_fechafin ? new Date(alquiler.alq_fechafin).toLocaleDateString("es-CR") : "—"}`,
   ].filter(Boolean);
 
   infoGeneral.forEach((info, i) => {

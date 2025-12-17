@@ -4,8 +4,6 @@ import cookie from "js-cookie";
 
 export interface Rental {
   alq_id: number;
-  alq_fechainicio: string;
-  alq_fechafin: string | null;
   alq_estado: string;
   alq_prop_id: number;
   ava_propiedad: {
