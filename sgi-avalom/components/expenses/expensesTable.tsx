@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -49,9 +49,26 @@ interface ExpensesTableProps {
   onViewDetails: (expense: AvaGasto) => void;
   onEdit: (expense: AvaGasto) => void;
   onCancel: (expense: AvaGasto) => void;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
-export function ExpensesTable({ data, onViewDetails, onEdit, onCancel }: ExpensesTableProps) {
+export const ExpensesTable = memo(function ExpensesTable({ 
+  data, 
+  onViewDetails, 
+  onEdit, 
+  onCancel,
+  currentPage,
+  pageSize,
+  totalPages,
+  totalRecords,
+  onPageChange,
+  onPageSizeChange,
+}: ExpensesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -210,7 +227,6 @@ export function ExpensesTable({ data, onViewDetails, onEdit, onCancel }: Expense
     data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
@@ -328,8 +344,13 @@ export function ExpensesTable({ data, onViewDetails, onEdit, onCancel }: Expense
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="hover:bg-muted/50">
+              table.getRowModel().rows.map((row, index) => (
+                <TableRow 
+                  key={row.id} 
+                  data-state={row.getIsSelected() && "selected"} 
+                  className="hover:bg-muted/50 transition-colors duration-200 animate-in fade-in slide-in-from-left-5"
+                  style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
@@ -338,7 +359,13 @@ export function ExpensesTable({ data, onViewDetails, onEdit, onCancel }: Expense
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No se encontraron gastos.
+                  <div className="flex flex-col items-center justify-center gap-2 py-8">
+                    <div className="rounded-full bg-muted p-3">
+                      <Search className="size-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm font-medium">No se encontraron gastos</p>
+                    <p className="text-xs text-muted-foreground">Intenta ajustar los filtros de búsqueda</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -346,50 +373,109 @@ export function ExpensesTable({ data, onViewDetails, onEdit, onCancel }: Expense
         </Table>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-muted-foreground">
-          Mostrando {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} a{" "}
-          {Math.min(
-            (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-            table.getFilteredRowModel().rows.length
-          )}{" "}
-          de {table.getFilteredRowModel().rows.length} resultados
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <div className="text-sm font-medium text-muted-foreground">
+            Mostrando{" "}
+            <span className="font-semibold text-foreground">
+              {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalRecords)}
+            </span>{" "}
+            de{" "}
+            <span className="font-semibold text-foreground">{totalRecords}</span> resultados
+          </div>
+          <Badge variant="secondary" className="ml-2">
+            Página {currentPage}/{totalPages}
+          </Badge>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Select
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              onPageSizeChange(Number(value));
             }}
           >
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-[140px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {[5, 10, 20, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize} por página
+              {[5, 10, 20, 50, 100].map((size) => (
+                <SelectItem key={size} value={`${size}`}>
+                  {size} por página
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onPageChange(1)}
+              disabled={currentPage <= 1}
+              title="Primera página"
+            >
+              ««
+            </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
             >
-              Anterior
+              ← Anterior
             </Button>
-            <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-              Siguiente
+            
+            {/* Números de página */}
+            <div className="hidden items-center gap-1 md:flex">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="icon"
+                    className={`w-9 h-9 ${
+                      currentPage === pageNum ? "font-bold" : ""
+                    }`}
+                    onClick={() => onPageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              Siguiente →
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => onPageChange(totalPages)}
+              disabled={currentPage >= totalPages}
+              title="Última página"
+            >
+              »»
             </Button>
           </div>
         </div>
       </div>
     </div>
   );
-}
+});

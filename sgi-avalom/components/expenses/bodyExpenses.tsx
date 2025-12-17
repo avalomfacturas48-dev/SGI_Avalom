@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
 import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { ExpensesHeader } from "@/components/expenses/expensesHeader";
 import { StatisticsCards } from "@/components/expenses/statisticsCards";
 import { ExpensesTable } from "@/components/expenses/expensesTable";
@@ -22,9 +22,14 @@ import type { ExpenseStatistics } from "@/lib/types/forms";
 const BodyExpenses: React.FC = () => {
   const { expenses, setExpenses } = useExpensesStore();
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
   const [servicios, setServicios] = useState<AvaServicio[]>([]);
   const [edificios, setEdificios] = useState<AvaEdificio[]>([]);
   const [propiedades, setPropiedades] = useState<AvaPropiedad[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [statistics, setStatistics] = useState<ExpenseStatistics>({
     totalMesActual: "0",
     totalAnioActual: "0",
@@ -42,16 +47,13 @@ const BodyExpenses: React.FC = () => {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<AvaGasto | null>(null);
 
-  const fetchData = async () => {
-    setIsLoading(true);
+  // Cargar datos estáticos solo una vez
+  const fetchStaticData = useCallback(async () => {
     try {
       const token = cookie.get("token");
       if (!token) return;
 
-      const [expensesRes, serviciosRes, edificiosRes, propiedadesRes] = await Promise.all([
-        axios.get("/api/expenses", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+      const [serviciosRes, edificiosRes, propiedadesRes, allExpensesRes] = await Promise.all([
         axios.get("/api/expenses/servicios", {
           headers: { Authorization: `Bearer ${token}` },
         }),
@@ -61,22 +63,51 @@ const BodyExpenses: React.FC = () => {
         axios.get("/api/property", {
           headers: { Authorization: `Bearer ${token}` },
         }),
+        axios.get("/api/expenses", {
+          params: { estado: "A" },
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
-      setExpenses(expensesRes.data.data);
       setServicios(serviciosRes.data.data);
       setEdificios(edificiosRes.data.data);
       setPropiedades(propiedadesRes.data.data);
-
-      // Calculate statistics
-      calculateStatistics(expensesRes.data.data);
+      calculateStatistics(allExpensesRes.data.data);
     } catch (error) {
-      console.error("Error al cargar datos:", error);
+      console.error("Error al cargar datos estáticos:", error);
       toast.error("No se pudieron cargar los datos");
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Cargar gastos paginados
+  const fetchExpenses = useCallback(async () => {
+    setIsLoadingExpenses(true);
+    try {
+      const token = cookie.get("token");
+      if (!token) return;
+
+      const expensesRes = await axios.get("/api/expenses", {
+        params: {
+          page: currentPage,
+          limit: pageSize,
+          estado: "A",
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setExpenses(expensesRes.data.data);
+
+      if (expensesRes.data.pagination) {
+        setTotalPages(expensesRes.data.pagination.totalPages || 1);
+        setTotalRecords(expensesRes.data.pagination.total || 0);
+      }
+    } catch (error) {
+      console.error("Error al cargar gastos:", error);
+      toast.error("No se pudieron cargar los gastos");
+    } finally {
+      setIsLoadingExpenses(false);
+    }
+  }, [currentPage, pageSize]);
 
   const calculateStatistics = (gastos: AvaGasto[]) => {
     const now = new Date();
@@ -124,37 +155,58 @@ const BodyExpenses: React.FC = () => {
     });
   };
 
+  // Cargar datos estáticos solo al montar el componente
   useEffect(() => {
-    fetchData();
+    const initializeData = async () => {
+      setIsLoading(true);
+      await fetchStaticData();
+      await fetchExpenses();
+      setIsLoading(false);
+    };
+    initializeData();
   }, []);
 
-  const handleNewExpense = () => {
+  // Recargar solo gastos cuando cambia la paginación
+  useEffect(() => {
+    fetchExpenses();
+  }, [currentPage, pageSize, fetchExpenses]);
+
+  const handleNewExpense = useCallback(() => {
     setSelectedExpense(null);
     setFormOpen(true);
-  };
+  }, []);
 
-  const handleManageServices = () => {
+  const handleManageServices = useCallback(() => {
     setServicesOpen(true);
-  };
+  }, []);
 
-  const handleViewDetails = (expense: AvaGasto) => {
+  const handleViewDetails = useCallback((expense: AvaGasto) => {
     setSelectedExpense(expense);
     setDetailsOpen(true);
-  };
+  }, []);
 
-  const handleEdit = (expense: AvaGasto) => {
+  const handleEdit = useCallback((expense: AvaGasto) => {
     setSelectedExpense(expense);
     setDetailsOpen(false);
     setFormOpen(true);
-  };
+  }, []);
 
-  const handleCancel = (expense: AvaGasto) => {
+  const handleCancel = useCallback((expense: AvaGasto) => {
     setSelectedExpense(expense);
     setDetailsOpen(false);
     setCancellationOpen(true);
-  };
+  }, []);
 
-  const handleSubmitExpense = async (data: ExpenseFormValues) => {
+  const handlePageChange = useCallback((newPage: number) => {
+    setCurrentPage(newPage);
+  }, []);
+
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  }, []);
+
+  const handleSubmitExpense = useCallback(async (data: ExpenseFormValues) => {
     try {
       const token = cookie.get("token");
       if (!token) return;
@@ -171,15 +223,16 @@ const BodyExpenses: React.FC = () => {
         toast.success("Gasto creado exitosamente");
       }
 
-      fetchData();
+      setCurrentPage(1);
+      await Promise.all([fetchStaticData(), fetchExpenses()]);
       setFormOpen(false);
     } catch (error) {
       console.error("Error al guardar gasto:", error);
       toast.error("Error al guardar el gasto");
     }
-  };
+  }, [selectedExpense, fetchStaticData, fetchExpenses]);
 
-  const handleConfirmCancellation = async (data: CancellationFormValues) => {
+  const handleConfirmCancellation = useCallback(async (data: CancellationFormValues) => {
     try {
       const token = cookie.get("token");
       if (!token || !selectedExpense) return;
@@ -189,15 +242,15 @@ const BodyExpenses: React.FC = () => {
       });
 
       toast.success("Gasto anulado exitosamente");
-      fetchData();
+      await Promise.all([fetchStaticData(), fetchExpenses()]);
       setCancellationOpen(false);
     } catch (error) {
       console.error("Error al anular gasto:", error);
       toast.error("Error al anular el gasto");
     }
-  };
+  }, [selectedExpense, fetchStaticData, fetchExpenses]);
 
-  const handleCreateService = async (data: ServiceFormValues) => {
+  const handleCreateService = useCallback(async (data: ServiceFormValues) => {
     try {
       const token = cookie.get("token");
       if (!token) return;
@@ -207,14 +260,14 @@ const BodyExpenses: React.FC = () => {
       });
 
       toast.success("Servicio creado exitosamente");
-      fetchData();
+      await fetchStaticData();
     } catch (error) {
       console.error("Error al crear servicio:", error);
       toast.error("Error al crear el servicio");
     }
-  };
+  }, [fetchStaticData]);
 
-  const handleUpdateService = async (id: string, data: ServiceFormValues) => {
+  const handleUpdateService = useCallback(async (id: string, data: ServiceFormValues) => {
     try {
       const token = cookie.get("token");
       if (!token) return;
@@ -224,14 +277,14 @@ const BodyExpenses: React.FC = () => {
       });
 
       toast.success("Servicio actualizado exitosamente");
-      fetchData();
+      await fetchStaticData();
     } catch (error) {
       console.error("Error al actualizar servicio:", error);
       toast.error("Error al actualizar el servicio");
     }
-  };
+  }, [fetchStaticData]);
 
-  const handleDeleteService = async (id: string) => {
+  const handleDeleteService = useCallback(async (id: string) => {
     try {
       const token = cookie.get("token");
       if (!token) return;
@@ -241,28 +294,40 @@ const BodyExpenses: React.FC = () => {
       });
 
       toast.success("Servicio eliminado exitosamente");
-      fetchData();
+      await fetchStaticData();
     } catch (error) {
       console.error("Error al eliminar servicio:", error);
       toast.error("Error al eliminar el servicio");
     }
-  };
+  }, [fetchStaticData]);
 
   return (
     <div className="container mx-auto space-y-6 p-6">
       {isLoading ? (
-        <>
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-[250px]" />
-            <Skeleton className="h-4 w-[400px]" />
+        <div className="space-y-6">
+          <div className="space-y-4 animate-pulse">
+            <Skeleton className="h-10 w-[300px]" />
+            <Skeleton className="h-5 w-[450px]" />
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-[120px]" />
+              <Card key={i} className="animate-pulse">
+                <CardHeader className="space-y-2">
+                  <Skeleton className="h-4 w-[120px]" />
+                  <Skeleton className="h-8 w-[160px]" />
+                </CardHeader>
+              </Card>
             ))}
           </div>
-          <Skeleton className="h-[400px]" />
-        </>
+          <Card className="p-6">
+            <Skeleton className="mb-4 h-10 w-full" />
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </Card>
+        </div>
       ) : (
         <>
           <ExpensesHeader
@@ -272,11 +337,30 @@ const BodyExpenses: React.FC = () => {
 
           <StatisticsCards statistics={statistics} />
 
-          <div className="rounded-lg border bg-card p-6">
+          <div className="rounded-lg border bg-card p-6 relative">
+            {isLoadingExpenses && (
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+                <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-lg shadow-lg border">
+                  <div className="size-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium">Cargando gastos...</span>
+                </div>
+              </div>
+            )}
             <div className="mb-4 flex justify-end">
               <ExportExpenses expenses={expenses} />
             </div>
-            <ExpensesTable data={expenses} onViewDetails={handleViewDetails} onEdit={handleEdit} onCancel={handleCancel} />
+            <ExpensesTable 
+              data={expenses} 
+              onViewDetails={handleViewDetails} 
+              onEdit={handleEdit} 
+              onCancel={handleCancel}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
           </div>
 
           <ExpenseFormDialog
