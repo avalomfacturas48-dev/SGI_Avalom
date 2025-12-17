@@ -332,12 +332,12 @@ export async function GET(req: NextRequest) {
 
         const fechaInicio = new Date(mens.alqm_fechainicio).toLocaleDateString(
           "es-CR",
-          { month: "short", year: "2-digit" }
+          { month: "short", year: "numeric" }
         );
         const fechaFin = mens.alqm_fechafin
           ? new Date(mens.alqm_fechafin).toLocaleDateString("es-CR", {
               month: "short",
-              year: "2-digit",
+              year: "numeric",
             })
           : "";
         const fecha = fechaFin ? `${fechaInicio}-${fechaFin}` : fechaInicio;

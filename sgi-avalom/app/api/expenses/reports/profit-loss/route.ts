@@ -68,46 +68,6 @@ export async function GET(req: NextRequest) {
       const fromDate = new Date(fromDateStr);
       const toDate = new Date(toDateStr);
 
-      // Debug: Verificar cuántos gastos hay en total y en el rango
-      const totalGastos = await prisma.ava_gasto.count({
-        where: { gas_estado: "A" },
-      });
-      
-      // Verificar gastos sin filtro de fecha para debug
-      const gastosSinFiltroFecha = await prisma.ava_gasto.findMany({
-        where: { gas_estado: "A" },
-        take: 5,
-        orderBy: { gas_fecha: "desc" },
-        select: {
-          gas_id: true,
-          gas_fecha: true,
-          gas_monto: true,
-          gas_estado: true,
-        },
-      });
-      
-      const gastosEnRango = await prisma.ava_gasto.count({
-        where: {
-          gas_estado: "A",
-          gas_fecha: {
-            gte: fromDate,
-            lte: toDate,
-          },
-        },
-      });
-      
-      console.log(`[DEBUG Profit-Loss] Total gastos activos: ${totalGastos}`);
-      console.log(`[DEBUG Profit-Loss] Gastos en rango ${fechaDesde} a ${fechaHasta}: ${gastosEnRango}`);
-      console.log(`[DEBUG Profit-Loss] fromDate: ${fromDate.toISOString()}, toDate: ${toDate.toISOString()}`);
-      if (gastosSinFiltroFecha.length > 0) {
-        console.log(`[DEBUG Profit-Loss] Ejemplo de gastos activos (sin filtro fecha):`, 
-          gastosSinFiltroFecha.map(g => ({
-            gas_id: g.gas_id.toString(),
-            gas_fecha: g.gas_fecha.toISOString(),
-            gas_monto: g.gas_monto.toString(),
-          }))
-        );
-      }
 
       // ============================================
       // 1. CALCULAR INGRESOS (Pagos activos de mensualidades)
@@ -212,8 +172,7 @@ export async function GET(req: NextRequest) {
       });
 
       // Agrupar gastos por mes
-      console.log(`[DEBUG] Procesando ${gastos.length} gastos para agrupar por mes`);
-      gastos.forEach((gasto, index) => {
+      gastos.forEach((gasto) => {
         const mes = formatInTimeZone(
           gasto.gas_fecha,
           "UTC",
@@ -221,13 +180,10 @@ export async function GET(req: NextRequest) {
           { locale: es }
         );
         const monto = Number(gasto.gas_monto);
-        console.log(`[DEBUG] Gasto ${index + 1}: mes=${mes}, monto=${monto}, gas_monto=${gasto.gas_monto.toString()}`);
         const current = monthlyMap.get(mes) || { ingresos: 0, gastos: 0 };
         current.gastos += monto;
         monthlyMap.set(mes, current);
-        console.log(`[DEBUG] Después de agregar: mes=${mes}, gastos=${current.gastos}`);
       });
-      console.log(`[DEBUG] MonthlyMap después de procesar gastos:`, Array.from(monthlyMap.entries()));
 
       // Generar todos los meses en el rango
       const startMonth = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1);
@@ -336,8 +292,7 @@ export async function GET(req: NextRequest) {
         });
       });
       
-      console.log(`[DEBUG] Procesando ${gastos.length} gastos para asignar a edificios`);
-      gastos.forEach((gasto, index) => {
+      gastos.forEach((gasto) => {
         let edificio: { edi_id: string; edi_identificador: string } | null = null;
         
         if (gasto.ava_edificio) {
@@ -358,8 +313,6 @@ export async function GET(req: NextRequest) {
           }
         }
         
-        console.log(`[DEBUG] Gasto ${index + 1}: gas_id=${gasto.gas_id.toString()}, edi_id=${gasto.edi_id?.toString() || 'null'}, tiene_ava_edificio=${!!gasto.ava_edificio}, tiene_ava_propiedad=${!!gasto.ava_propiedad}, edificio=${edificio ? edificio.edi_identificador : 'null'}`);
-        
         if (edificio) {
           const key = edificio.edi_id;
           const current = buildingMap.get(key) || {
@@ -373,12 +326,8 @@ export async function GET(req: NextRequest) {
           const monto = Number(gasto.gas_monto);
           current.gastos += monto;
           buildingMap.set(key, current);
-          console.log(`[DEBUG] Gasto asignado a edificio ${edificio.edi_identificador}, monto=${monto}, total_gastos=${current.gastos}`);
-        } else {
-          console.log(`[DEBUG] ⚠️ Gasto ${gasto.gas_id.toString()} NO tiene edificio asignado`);
         }
       });
-      console.log(`[DEBUG] BuildingMap después de procesar gastos:`, Array.from(buildingMap.entries()).map(([k, v]) => ({ key: k, ...v })));
 
       // Calcular ganancia y margen por edificio
       const buildingSummaries: BuildingSummary[] = Array.from(
@@ -1010,7 +959,7 @@ export async function GET(req: NextRequest) {
       // Alertas
       if (mesesConPerdida.length > 0) {
         drawText(
-          `⚠ Meses con Pérdida: ${mesesConPerdida.map((m) => formatInTimeZone(new Date(m.mes + "-01"), "UTC", "MMM yyyy", { locale: es })).join(", ")}`,
+          `[!] Meses con Perdida: ${mesesConPerdida.map((m) => formatInTimeZone(new Date(m.mes + "-01"), "UTC", "MMM yyyy", { locale: es })).join(", ")}`,
           marginX,
           cursorY,
           10,
@@ -1023,7 +972,7 @@ export async function GET(req: NextRequest) {
 
       if (edificiosConMargenNegativo.length > 0) {
         drawText(
-          `⚠ Edificios con Margen Negativo: ${edificiosConMargenNegativo.map((e) => e.edi_identificador).join(", ")}`,
+          `[!] Edificios con Margen Negativo: ${edificiosConMargenNegativo.map((e) => e.edi_identificador).join(", ")}`,
           marginX,
           cursorY,
           10,
@@ -1036,7 +985,7 @@ export async function GET(req: NextRequest) {
 
       if (mesesGastosMayorIngresos.length > 0) {
         drawText(
-          `⚠ Meses donde Gastos > Ingresos: ${mesesGastosMayorIngresos.map((m) => formatInTimeZone(new Date(m.mes + "-01"), "UTC", "MMM yyyy", { locale: es })).join(", ")}`,
+          `[!] Meses donde Gastos > Ingresos: ${mesesGastosMayorIngresos.map((m) => formatInTimeZone(new Date(m.mes + "-01"), "UTC", "MMM yyyy", { locale: es })).join(", ")}`,
           marginX,
           cursorY,
           10,
@@ -1048,7 +997,7 @@ export async function GET(req: NextRequest) {
       }
 
       if (gastosAltos.length > 0) {
-        drawText("⚠ Gastos Altos Detectados:", marginX, cursorY, 10, helvetica, true, rgb(0.8, 0, 0));
+        drawText("[!] Gastos Altos Detectados:", marginX, cursorY, 10, helvetica, true, rgb(0.8, 0, 0));
         cursorY -= 18;
         gastosAltos.slice(0, 5).forEach((g) => {
           if (cursorY < 60) {
@@ -1084,7 +1033,6 @@ export async function GET(req: NextRequest) {
         },
       });
     } catch (error: any) {
-      console.error("Error generando reporte contable general:", error);
       return new Response(
         JSON.stringify({ error: "Error interno del servidor" }),
         { status: 500 }

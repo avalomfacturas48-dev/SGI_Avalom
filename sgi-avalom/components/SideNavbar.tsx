@@ -11,6 +11,7 @@ import {
   LineChart,
   FilePen,
   Receipt,
+  FileText,
   LogOut,
   Moon,
   Sun,
@@ -149,6 +150,12 @@ export default function SideNavbar() {
       href: "/expenses",
       icon: Receipt,
       title: "Gastos",
+      allowedRoles: ["A", "J", "E", "R"],
+    },
+    {
+      href: "/reports",
+      icon: FileText,
+      title: "Reportes",
       allowedRoles: ["A", "J", "E", "R"],
     },
   ];
