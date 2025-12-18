@@ -152,7 +152,7 @@ export async function GET(req: NextRequest) {
     })
   })
 
-  cursorY -= rowH
+  cursorY -= rowH + 5 // Espacio adicional para evitar que el encabezado tape el primer elemento
 
   // 4) Filas
   usuarios.forEach((u, idx) => {

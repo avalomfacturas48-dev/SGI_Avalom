@@ -9,20 +9,15 @@ import { DatePickerWithRange } from "@/components/ui/date-picker-with-range";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { useExpenseReportGenerator } from "@/hooks/reports/useExpenseReportGenerator";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function AllExpensesReportCard() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const { loading, generateExpenseReport } = useExpenseReportGenerator();
-  const { toast } = useToast();
 
   const handleGenerateReport = async () => {
     if (!dateRange?.from || !dateRange?.to) {
-      toast({
-        title: "Error",
-        description: "Debe seleccionar un rango de fechas",
-        variant: "destructive",
-      });
+      toast.error("Debe seleccionar un rango de fechas");
       return;
     }
 

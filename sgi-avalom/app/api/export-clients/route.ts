@@ -171,7 +171,7 @@ export async function GET(req: NextRequest) {
     });
   });
 
-  cursorY -= rowHeight;
+  cursorY -= rowHeight + 5; // Espacio adicional para evitar que el encabezado tape el primer elemento
 
   // 4. Dibujar filas
   clientes.forEach((c, idx) => {

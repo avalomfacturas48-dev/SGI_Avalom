@@ -161,8 +161,95 @@ export async function GET(req: NextRequest) {
       let countServicios = 0;
       let countMantenimientos = 0;
 
-      // Filas de datos
+      // Agrupar gastos por edificio (guardando también la info del edificio)
+      type EdificioInfo = {
+        nombre: string;
+        descripcion?: string | null;
+        direccion?: string | null;
+        codigopostal?: string | null;
+      };
+      
+      const gastosPorEdificio = new Map<string, { gastos: typeof gastos; info: EdificioInfo }>();
+      
       for (const gasto of gastos) {
+        const edificio = gasto.ava_edificio || gasto.ava_propiedad?.ava_edificio;
+        const edificioNombre =
+          edificio?.edi_identificador ||
+          "Sin edificio";
+        
+        if (!gastosPorEdificio.has(edificioNombre)) {
+          gastosPorEdificio.set(edificioNombre, {
+            gastos: [],
+            info: {
+              nombre: edificioNombre,
+              descripcion: edificio?.edi_descripcion || null,
+              direccion: edificio?.edi_direccion || null,
+              codigopostal: edificio?.edi_codigopostal || null,
+            },
+          });
+        }
+        gastosPorEdificio.get(edificioNombre)!.gastos.push(gasto);
+      }
+
+      // Ordenar edificios por nombre
+      const edificiosOrdenados = Array.from(gastosPorEdificio.keys()).sort();
+
+      // Filas de datos agrupadas por edificio
+      for (const edificioNombre of edificiosOrdenados) {
+        const { gastos: gastosEdificio, info: edificioInfo } = gastosPorEdificio.get(edificioNombre)!;
+        
+        // Título del edificio con información completa
+        if (cursorY < 120) {
+          page = pdf.addPage(A4);
+          cursorY = marginTop;
+        }
+        
+        page.drawText(`EDIFICIO: ${edificioInfo.nombre}`, {
+          x: marginX,
+          y: cursorY,
+          size: 12,
+          font: helveticaBold,
+          color: rgb(0, 0.3, 0.6),
+        });
+        cursorY -= rowH + 5;
+        
+        // Información adicional del edificio
+        if (edificioInfo.descripcion) {
+          page.drawText(`Descripción: ${edificioInfo.descripcion}`, {
+            x: marginX + 20,
+            y: cursorY,
+            size: 10,
+            font: helvetica,
+            color: rgb(0.3, 0.3, 0.3),
+          });
+          cursorY -= rowH;
+        }
+        
+        if (edificioInfo.direccion) {
+          page.drawText(`Dirección: ${edificioInfo.direccion}`, {
+            x: marginX + 20,
+            y: cursorY,
+            size: 10,
+            font: helvetica,
+            color: rgb(0.3, 0.3, 0.3),
+          });
+          cursorY -= rowH;
+        }
+        
+        if (edificioInfo.codigopostal) {
+          page.drawText(`Código postal: ${edificioInfo.codigopostal}`, {
+            x: marginX + 20,
+            y: cursorY,
+            size: 10,
+            font: helvetica,
+            color: rgb(0.3, 0.3, 0.3),
+          });
+          cursorY -= rowH;
+        }
+        
+        cursorY -= 5; // Espacio antes de la tabla
+
+        for (const gasto of gastosEdificio) {
         if (cursorY < 80) {
           page = pdf.addPage(A4);
           cursorY = marginTop;
@@ -233,7 +320,21 @@ export async function GET(req: NextRequest) {
           });
         });
 
-        cursorY -= rowH;
+          cursorY -= rowH;
+        }
+        
+        // Línea separadora entre edificios
+        if (cursorY < 100) {
+          page = pdf.addPage(A4);
+          cursorY = marginTop;
+        }
+        page.drawLine({
+          start: { x: marginX - 10, y: cursorY + 5 },
+          end: { x: marginX - 10 + tableWidth + 20, y: cursorY + 5 },
+          thickness: 1,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+        cursorY -= 10;
       }
 
       // Línea final

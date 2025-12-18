@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import cookie from "js-cookie";
 
 export interface ContractData {
+  // Campos existentes (obligatorios)
   arrendante: string;
   cedulaArrendante: string;
   arrendatario: string;
@@ -15,6 +16,19 @@ export interface ContractData {
   montoTotal: number;
   diaPago: number;
   duracionAnios: number;
+  
+  // Nuevos campos obligatorios
+  diaPrimerPago: number; // Día del mes del primer pago
+  numeroMiembros: number; // Número de miembros del núcleo familiar
+  depositoGarantia: number; // Monto del depósito de garantía
+  
+  // Nuevos campos opcionales
+  fechaFirma?: string; // Fecha de firma del contrato
+  matriculaFinca?: string; // Matrícula de la finca en el Registro Público
+  planoFinca?: string; // Información del plano de la finca
+  ubicacionFinca?: string; // Ubicación (distrito, cantón, provincia)
+  linderosFinca?: string; // Linderos de la finca
+  descripcionApartamento?: string; // Descripción detallada del apartamento
 }
 
 const initialFormData: ContractData = {
@@ -30,6 +44,15 @@ const initialFormData: ContractData = {
   montoTotal: 0,
   diaPago: 1,
   duracionAnios: 1,
+  diaPrimerPago: 0,
+  numeroMiembros: 0,
+  depositoGarantia: 0,
+  fechaFirma: "",
+  matriculaFinca: "",
+  planoFinca: "",
+  ubicacionFinca: "",
+  linderosFinca: "",
+  descripcionApartamento: "",
 };
 
 export const useContractGenerator = () => {
@@ -58,7 +81,7 @@ export const useContractGenerator = () => {
       if (!formData[field as keyof ContractData]) {
         toast({
           title: "Error",
-          description: "Todos los campos son requeridos",
+          description: "Todos los campos básicos son requeridos",
           variant: "destructive",
         });
         return false;
@@ -87,6 +110,34 @@ export const useContractGenerator = () => {
       toast({
         title: "Error",
         description: "La duración debe ser mayor a 0 años",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validar nuevos campos obligatorios
+    if (!formData.diaPrimerPago || formData.diaPrimerPago < 1 || formData.diaPrimerPago > 31) {
+      toast({
+        title: "Error",
+        description: "El día del primer pago es obligatorio y debe estar entre 1 y 31",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.numeroMiembros || formData.numeroMiembros < 1) {
+      toast({
+        title: "Error",
+        description: "El número de miembros del núcleo familiar es obligatorio y debe ser mayor a 0",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.depositoGarantia || formData.depositoGarantia <= 0) {
+      toast({
+        title: "Error",
+        description: "El depósito de garantía es obligatorio y debe ser mayor a 0",
         variant: "destructive",
       });
       return false;

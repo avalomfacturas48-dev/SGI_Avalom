@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import cookie from "js-cookie";
 import { format } from "date-fns";
 
@@ -11,7 +11,6 @@ export interface ExpenseReportOptions {
 
 export const useExpenseReportGenerator = () => {
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   const generateExpenseReport = async (
     reportType: "services" | "maintenance" | "all" | "profit-loss",
@@ -22,11 +21,7 @@ export const useExpenseReportGenerator = () => {
     try {
       const token = cookie.get("token");
       if (!token) {
-        toast({
-          title: "Error",
-          description: "No hay token de autenticación",
-          variant: "destructive",
-        });
+        toast.error("No hay token de autenticación");
         return false;
       }
 
@@ -62,15 +57,12 @@ export const useExpenseReportGenerator = () => {
           errorMessage = response.statusText || errorMessage;
         }
 
-        toast({
-          title: "Error",
-          description: response.status === 400
-            ? "Faltan parámetros requeridos para generar el reporte"
-            : response.status === 401
-            ? "No autorizado. Por favor, inicia sesión nuevamente"
-            : errorMessage,
-          variant: "destructive",
-        });
+        const description = response.status === 400
+          ? "Faltan parámetros requeridos para generar el reporte"
+          : response.status === 401
+          ? "No autorizado. Por favor, inicia sesión nuevamente"
+          : errorMessage;
+        toast.error(description);
         return false;
       }
 
@@ -80,17 +72,9 @@ export const useExpenseReportGenerator = () => {
         try {
           const errorData = await response.json();
           const errorMsg = errorData.error || errorData.message || "La respuesta del servidor no es un PDF válido";
-          toast({
-            title: "Error",
-            description: errorMsg,
-            variant: "destructive",
-          });
+          toast.error(errorMsg);
         } catch {
-          toast({
-            title: "Error",
-            description: "La respuesta del servidor no es un PDF válido",
-            variant: "destructive",
-          });
+          toast.error("La respuesta del servidor no es un PDF válido");
         }
         return false;
       }
@@ -99,11 +83,7 @@ export const useExpenseReportGenerator = () => {
       
       // Verificar que el blob no esté vacío y tenga el tamaño correcto
       if (blob.size === 0) {
-        toast({
-          title: "Error",
-          description: "El reporte generado está vacío",
-          variant: "destructive",
-        });
+        toast.error("El reporte generado está vacío");
         return false;
       }
 
@@ -117,17 +97,9 @@ export const useExpenseReportGenerator = () => {
         const text = await blob.text();
         try {
           const errorData = JSON.parse(text);
-          toast({
-            title: "Error",
-            description: errorData.error || "El servidor retornó un error",
-            variant: "destructive",
-          });
+          toast.error(errorData.error || "El servidor retornó un error");
         } catch {
-          toast({
-            title: "Error",
-            description: `Respuesta inválida del servidor: ${text.substring(0, 100)}`,
-            variant: "destructive",
-          });
+          toast.error(`Respuesta inválida del servidor: ${text.substring(0, 100)}`);
         }
         return false;
       }
@@ -141,20 +113,13 @@ export const useExpenseReportGenerator = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(downloadUrl);
 
-      toast({
-        title: "Éxito",
-        description: "Reporte generado exitosamente",
-      });
+      toast.success("Reporte generado exitosamente");
 
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Error desconocido";
       console.error("Error al generar reporte de gastos:", errorMessage);
-      toast({
-        title: "Error",
-        description: "Error al generar el reporte de gastos",
-        variant: "destructive",
-      });
+      toast.error("Error al generar el reporte de gastos");
       return false;
     } finally {
       setLoading(false);

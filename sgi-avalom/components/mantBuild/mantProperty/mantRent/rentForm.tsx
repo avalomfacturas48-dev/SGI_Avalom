@@ -306,6 +306,8 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
                       return;
                     }
 
+                    const diaPago = new Date(values.alq_fechapago).getDate();
+                    
                     const payload = {
                       arrendante: "Cesar Avila Prado",
                       cedulaArrendante: "1-0938-0196",
@@ -319,8 +321,12 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
                       contratoDesde: values.alq_fechapago,
                       contratoHasta: "",
                       montoTotal: Number(values.alq_monto),
-                      diaPago: new Date(values.alq_fechapago).getDate(),
+                      diaPago: diaPago,
                       duracionAnios: 3,
+                      // Campos obligatorios con valores por defecto
+                      diaPrimerPago: diaPago,
+                      numeroMiembros: 1,
+                      depositoGarantia: Number(values.alq_monto), // Por defecto igual al monto mensual
                     };
 
                     const res = await fetch("/api/generate-contract", {

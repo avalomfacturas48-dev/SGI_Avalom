@@ -59,7 +59,13 @@ export function ExpenseCancellationDialog({ open, onOpenChange, expense, onConfi
 
   const watchDescripcion = form.watch("ang_descripcion");
 
+  // Validar que el gasto no esté ya anulado
+  const isAlreadyCancelled = expense?.gas_estado === "D" || (expense?.ava_anulaciongasto && expense.ava_anulaciongasto.length > 0);
+
   const handleSubmit = (data: CancellationFormValues) => {
+    if (isAlreadyCancelled) {
+      return;
+    }
     setFormData(data);
     setShowConfirmation(true);
   };
@@ -73,8 +79,12 @@ export function ExpenseCancellationDialog({ open, onOpenChange, expense, onConfi
       setShowConfirmation(false);
       onOpenChange(false);
       form.reset();
+      setFormData(null);
     } catch (error) {
+      // El error ya se maneja en el hook useExpenses
+      // Solo mantener el diálogo abierto si hay error
       console.error("Error canceling expense:", error);
+      // No cerrar el diálogo si hay error para que el usuario vea el mensaje
     } finally {
       setIsSubmitting(false);
     }
@@ -89,6 +99,36 @@ export function ExpenseCancellationDialog({ open, onOpenChange, expense, onConfi
   };
 
   if (!expense) return null;
+
+  // Si el gasto ya está anulado, mostrar mensaje de error
+  if (isAlreadyCancelled) {
+    return (
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-destructive" />
+              Gasto ya Anulado
+            </DialogTitle>
+            <DialogDescription>Este gasto ya ha sido anulado previamente</DialogDescription>
+          </DialogHeader>
+
+          <Alert variant="destructive">
+            <AlertTriangle className="size-4" />
+            <AlertDescription>
+              No se puede anular un gasto que ya está anulado. El gasto "{expense.gas_concepto}" tiene estado anulado.
+            </AlertDescription>
+          </Alert>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClose}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <>

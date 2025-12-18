@@ -23,6 +23,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Loader2, Zap, Wrench, Upload, XIcon } from "lucide-react";
 import { expenseFormSchema, type ExpenseFormValues } from "@/lib/schemas/expenseSchemas";
 import type { AvaGasto, AvaServicio, AvaEdificio, AvaPropiedad } from "@/lib/types/entities";
+import { convertToCostaRicaTime, convertToUTCSV } from "@/utils/dateUtils";
 
 interface ExpenseFormDialogProps {
   open: boolean;
@@ -57,7 +58,7 @@ export function ExpenseFormDialog({
       gas_concepto: "",
       gas_descripcion: "",
       gas_monto: "",
-      gas_fecha: new Date().toISOString().split("T")[0],
+      gas_fecha: convertToCostaRicaTime(new Date().toISOString()),
       edi_id: "",
       prop_id: "",
       gas_metodopago: "",
@@ -75,13 +76,18 @@ export function ExpenseFormDialog({
 
   useEffect(() => {
     if (expense) {
+      // Convertir la fecha de ISO a formato yyyy-MM-dd para el input de fecha
+      const fechaFormateada = expense.gas_fecha 
+        ? convertToCostaRicaTime(expense.gas_fecha) 
+        : new Date().toISOString().split("T")[0];
+      
       form.reset({
         gas_tipo: expense.gas_tipo,
         ser_id: expense.ser_id || "",
         gas_concepto: expense.gas_concepto,
         gas_descripcion: expense.gas_descripcion || "",
         gas_monto: expense.gas_monto,
-        gas_fecha: expense.gas_fecha,
+        gas_fecha: fechaFormateada,
         edi_id: expense.edi_id,
         prop_id: expense.prop_id || "",
         gas_metodopago: expense.gas_metodopago || "",
@@ -96,13 +102,16 @@ export function ExpenseFormDialog({
         setUploadedFile(expense.gas_comprobante);
       }
     } else {
+      // Para nueva fecha, usar la fecha actual en zona horaria de Costa Rica
+      const fechaActual = convertToCostaRicaTime(new Date().toISOString());
+      
       form.reset({
         gas_tipo: "S",
         ser_id: "",
         gas_concepto: "",
         gas_descripcion: "",
         gas_monto: "",
-        gas_fecha: new Date().toISOString().split("T")[0],
+        gas_fecha: fechaActual,
         edi_id: "",
         prop_id: "",
         gas_metodopago: "",
@@ -126,7 +135,12 @@ export function ExpenseFormDialog({
   const handleSubmit = async (data: ExpenseFormValues) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      // Convertir la fecha de formato local (yyyy-MM-dd) a UTC ISO string antes de enviar
+      const dataToSubmit = {
+        ...data,
+        gas_fecha: data.gas_fecha ? convertToUTCSV(data.gas_fecha) : undefined,
+      };
+      await onSubmit(dataToSubmit as ExpenseFormValues);
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -370,19 +384,9 @@ export function ExpenseFormDialog({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Método de Pago</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecciona un método" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Efectivo">Efectivo</SelectItem>
-                                <SelectItem value="Transferencia">Transferencia</SelectItem>
-                                <SelectItem value="Tarjeta">Tarjeta</SelectItem>
-                                <SelectItem value="Cheque">Cheque</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <Input placeholder="Ej: Efectivo, Transferencia, Tarjeta..." {...field} />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}

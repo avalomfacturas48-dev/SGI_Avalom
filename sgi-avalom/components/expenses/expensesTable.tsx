@@ -43,6 +43,7 @@ import {
 import type { AvaGasto } from "@/lib/types/entities";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { convertToCostaRicaTime } from "@/utils/dateUtils";
 
 interface ExpensesTableProps {
   data: AvaGasto[];
@@ -55,6 +56,10 @@ interface ExpensesTableProps {
   totalRecords: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  tipoFilter?: string;
+  estadoFilter?: string;
+  onTipoFilterChange?: (tipo: string) => void;
+  onEstadoFilterChange?: (estado: string) => void;
 }
 
 export const ExpensesTable = memo(function ExpensesTable({ 
@@ -68,13 +73,38 @@ export const ExpensesTable = memo(function ExpensesTable({
   totalRecords,
   onPageChange,
   onPageSizeChange,
+  tipoFilter: externalTipoFilter,
+  estadoFilter: externalEstadoFilter,
+  onTipoFilterChange,
+  onEstadoFilterChange,
 }: ExpensesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState("");
-  const [tipoFilter, setTipoFilter] = useState<string>("all");
-  const [estadoFilter, setEstadoFilter] = useState<string>("all");
+  
+  // Usar filtros externos si están disponibles, sino usar estado local
+  const [internalTipoFilter, setInternalTipoFilter] = useState<string>("all");
+  const [internalEstadoFilter, setInternalEstadoFilter] = useState<string>("all");
+  
+  const tipoFilter = externalTipoFilter !== undefined ? externalTipoFilter : internalTipoFilter;
+  const estadoFilter = externalEstadoFilter !== undefined ? externalEstadoFilter : internalEstadoFilter;
+  
+  const handleTipoFilterChange = (value: string) => {
+    if (onTipoFilterChange) {
+      onTipoFilterChange(value);
+    } else {
+      setInternalTipoFilter(value);
+    }
+  };
+  
+  const handleEstadoFilterChange = (value: string) => {
+    if (onEstadoFilterChange) {
+      onEstadoFilterChange(value);
+    } else {
+      setInternalEstadoFilter(value);
+    }
+  };
 
   const columns: ColumnDef<AvaGasto>[] = useMemo(
     () => [
@@ -153,10 +183,15 @@ export const ExpensesTable = memo(function ExpensesTable({
         header: "Fecha",
         cell: ({ row }) => {
           const fecha = row.getValue("gas_fecha") as string;
+          if (!fecha) return <span className="text-muted-foreground">-</span>;
+          // Convertir la fecha a zona horaria de Costa Rica antes de formatear
+          const fechaCR = convertToCostaRicaTime(fecha);
+          // Formatear la fecha (fechaCR ya está en formato yyyy-MM-dd)
+          const fechaFormateada = formatDate(fechaCR + "T00:00:00");
           return (
             <div className="flex items-center gap-1 text-sm">
               <Calendar className="size-3 text-muted-foreground" />
-              {formatDate(fecha)}
+              {fechaFormateada}
             </div>
           );
         },
@@ -215,13 +250,8 @@ export const ExpensesTable = memo(function ExpensesTable({
     [onViewDetails, onEdit, onCancel]
   );
 
-  const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      if (tipoFilter !== "all" && item.gas_tipo !== tipoFilter) return false;
-      if (estadoFilter !== "all" && item.gas_estado !== estadoFilter) return false;
-      return true;
-    });
-  }, [data, tipoFilter, estadoFilter]);
+  // Los datos ya vienen filtrados del servidor, no necesitamos filtrar localmente
+  const filteredData = data;
 
   const table = useReactTable({
     data: filteredData,
@@ -258,7 +288,7 @@ export const ExpensesTable = memo(function ExpensesTable({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Select value={tipoFilter} onValueChange={setTipoFilter}>
+          <Select value={tipoFilter} onValueChange={handleTipoFilterChange}>
             <SelectTrigger className="w-[140px]">
               <Filter className="mr-2 size-4" />
               <SelectValue placeholder="Tipo" />
@@ -270,7 +300,7 @@ export const ExpensesTable = memo(function ExpensesTable({
             </SelectContent>
           </Select>
 
-          <Select value={estadoFilter} onValueChange={setEstadoFilter}>
+          <Select value={estadoFilter} onValueChange={handleEstadoFilterChange}>
             <SelectTrigger className="w-[140px]">
               <Filter className="mr-2 size-4" />
               <SelectValue placeholder="Estado" />
@@ -287,8 +317,8 @@ export const ExpensesTable = memo(function ExpensesTable({
               variant="ghost"
               size="sm"
               onClick={() => {
-                setTipoFilter("all");
-                setEstadoFilter("all");
+                handleTipoFilterChange("all");
+                handleEstadoFilterChange("all");
               }}
             >
               Limpiar filtros

@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
       const marginTop = A4[1] - 50;
       const rowH = 18;
 
-      const colWidths = [70, 100, 120, 80, 80, 90, 90, 90];
+      const colWidths = [70, 100, 140, 100, 90, 90, 100, 100];
       const colXs = colWidths.reduce<number[]>(
         (acc, w, i) =>
           i === 0 ? [marginX] : [...acc, acc[i - 1] + colWidths[i - 1]],
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
         color: rgb(0, 0, 0),
       });
 
-      // Información del edificio
+      // Información del edificio (más completa)
       page.drawText(`Edificio: ${edificio.edi_identificador}`, {
         x: marginX,
         y: cursorY - 10,
@@ -123,6 +123,29 @@ export async function GET(req: NextRequest) {
         font: helveticaBold,
         color: rgb(0.2, 0.2, 0.2),
       });
+      
+      let infoY = cursorY - 30;
+      if (edificio.edi_descripcion) {
+        page.drawText(`Descripción: ${edificio.edi_descripcion}`, {
+          x: marginX,
+          y: infoY,
+          size: 10,
+          font: helvetica,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+        infoY -= 15;
+      }
+      
+      if (edificio.edi_direccion) {
+        page.drawText(`Dirección: ${edificio.edi_direccion}`, {
+          x: marginX,
+          y: infoY,
+          size: 10,
+          font: helvetica,
+          color: rgb(0.3, 0.3, 0.3),
+        });
+        infoY -= 15;
+      }
 
       // Rango de fechas si existe
       if (fromDate || toDate) {
@@ -134,15 +157,15 @@ export async function GET(req: NextRequest) {
           : "";
         page.drawText(`Rango: ${fromLabel} a ${toLabel}`, {
           x: marginX,
-          y: cursorY - 30,
+          y: infoY,
           size: 10,
           font: helvetica,
           color: rgb(0.4, 0.4, 0.4),
         });
-        cursorY -= 20;
+        infoY -= 20;
       }
 
-      cursorY -= 40;
+      cursorY = infoY - 20;
 
       // Cabecera tabla
       page.drawLine({
@@ -152,7 +175,7 @@ export async function GET(req: NextRequest) {
         color: rgb(0, 0, 0),
       });
 
-      const headers = ["Fecha", "Servicio", "Concepto", "Edificio", "Propiedad", "Método Pago", "Referencia", "Monto"];
+      const headers = ["Fecha", "Servicio", "Concepto", "Descripción", "Propiedad", "Método Pago", "Referencia", "Monto"];
       headers.forEach((h, i) => {
         page.drawText(h, {
           x: colXs[i],
@@ -189,7 +212,7 @@ export async function GET(req: NextRequest) {
         );
         const servicio = gasto.ava_servicio?.ser_nombre || "—";
         const concepto = gasto.gas_concepto || "—";
-        const edificioNombre = gasto.ava_edificio?.edi_identificador || gasto.ava_propiedad?.ava_edificio?.edi_identificador || "—";
+        const descripcion = gasto.gas_descripcion || "—";
         const propiedad = gasto.ava_propiedad?.prop_identificador || "—";
         const metodoPago = gasto.gas_metodopago || "—";
         const referencia = gasto.gas_referencia || "—";
@@ -197,7 +220,7 @@ export async function GET(req: NextRequest) {
 
         total += Number(gasto.gas_monto);
 
-        const row = [fecha, servicio, concepto, edificioNombre, propiedad, metodoPago, referencia, monto];
+        const row = [fecha, servicio, concepto, descripcion, propiedad, metodoPago, referencia, monto];
 
         row.forEach((text, i) => {
           // Truncar texto si es muy largo

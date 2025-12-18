@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { ServicesTable } from "@/components/services/servicesTable";
 import { ServiceFormDialog } from "@/components/services/serviceFormDialog";
-import { ExportServices } from "@/components/services/exportServices";
 import type { AvaServicio } from "@/lib/types/entities";
 import type { ServiceFormValues } from "@/lib/schemas/expenseSchemas";
 
@@ -93,7 +92,6 @@ export function ServicesManagementDialog({
 
           <div className="space-y-4">
             <div className="flex justify-end gap-2">
-              <ExportServices services={services} />
               <Button size="sm" onClick={handleNewService}>
                 <Plus className="mr-2 size-4" />
                 Nuevo Servicio
@@ -124,8 +122,11 @@ export function ServicesManagementDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará el servicio "{serviceToDelete?.ser_nombre}". Los gastos asociados a este servicio no
-              serán eliminados, pero perderán la referencia al servicio.
+              Esta acción eliminará el servicio "{serviceToDelete?.ser_nombre}". 
+              <br />
+              <br />
+              <strong>Nota:</strong> No se puede eliminar un servicio que está siendo utilizado en gastos registrados. 
+              Si este servicio tiene gastos asociados, la eliminación será rechazada.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

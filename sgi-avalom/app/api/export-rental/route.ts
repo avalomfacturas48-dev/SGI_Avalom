@@ -87,6 +87,7 @@ export async function GET(req: NextRequest) {
           ava_pago: true,
         },
       },
+      ava_alquilercancelado: true,
       ava_alquilermensual: {
         where: {
           alqm_fechainicio: { gte: fromDate, lte: toDate },
@@ -193,6 +194,13 @@ export async function GET(req: NextRequest) {
     ? "Cancelado"
     : alquiler.alq_estado;
 
+  // Información de cancelación si existe
+  const cancelacion = alquiler.ava_alquilercancelado && alquiler.ava_alquilercancelado.length > 0 
+    ? alquiler.ava_alquilercancelado[0] 
+    : null;
+
+  const edificio = alquiler.ava_propiedad?.ava_edificio;
+  
   const infoGeneral = [
     `ID Alquiler: ${alq_id}`,
     `Estado: ${estadoAlquiler}`,
@@ -201,8 +209,13 @@ export async function GET(req: NextRequest) {
     `${cliente?.cli_telefono ? `Teléfono: ${cliente.cli_telefono}` : ""}`,
     `Propiedad: ${alquiler.ava_propiedad?.prop_identificador ?? "—"}`,
     `Tipo: ${alquiler.ava_propiedad?.ava_tipopropiedad?.tipp_nombre ?? "—"}`,
-    `Edificio: ${alquiler.ava_propiedad?.ava_edificio?.edi_identificador ?? "—"}`,
+    `Edificio: ${edificio?.edi_identificador ?? "—"}`,
+    edificio?.edi_descripcion ? `Descripción edificio: ${edificio.edi_descripcion}` : "",
+    edificio?.edi_direccion ? `Dirección edificio: ${edificio.edi_direccion}` : "",
+    edificio?.edi_codigopostal ? `Código postal: ${edificio.edi_codigopostal}` : "",
     `Monto mensual: CRC ${Number(alquiler.alq_monto).toLocaleString("es-CR")}`,
+    cancelacion ? `Fecha cancelación: ${formatInTimeZone(new Date(cancelacion.alqc_fecha_cancelacion), "UTC", "dd/MM/yyyy", { locale: es })}` : "",
+    cancelacion ? `Motivo cancelación: ${cancelacion.alqc_motivo}` : "",
   ].filter(Boolean);
 
   infoGeneral.forEach((info, i) => {
@@ -224,10 +237,43 @@ export async function GET(req: NextRequest) {
     const deposito = alquiler.ava_deposito[0];
     const depositoTotal = Number(deposito.depo_total);
     const depositoActual = Number(deposito.depo_montoactual);
+    const depositoUsado = depositoTotal - depositoActual;
+    const depositoDevuelto = deposito.depo_montodevuelto ? Number(deposito.depo_montodevuelto) : 0;
+    const depositoCastigo = deposito.depo_montocastigo ? Number(deposito.depo_montocastigo) : 0;
+    
+    // Calcular altura dinámica según información disponible
+    let depositoHeight = 130;
+    let depositoInfo: string[] = [
+      `Total: CRC ${depositoTotal.toLocaleString("es-CR")}`,
+      `Actual: CRC ${depositoActual.toLocaleString("es-CR")}`,
+      `Usado: CRC ${depositoUsado.toLocaleString("es-CR")}`,
+      `Pagos: ${deposito.ava_pago?.length ?? 0}`,
+    ];
+    
+    if (depositoDevuelto > 0) {
+      depositoInfo.push(`Devuelto: CRC ${depositoDevuelto.toLocaleString("es-CR")}`);
+      if (deposito.depo_descmontodevuelto) {
+        depositoInfo.push(`Motivo devolución: ${deposito.depo_descmontodevuelto}`);
+      }
+      depositoHeight += 36;
+    }
+    
+    if (depositoCastigo > 0) {
+      depositoInfo.push(`Castigo: CRC ${depositoCastigo.toLocaleString("es-CR")}`);
+      if (deposito.depo_descrmontocastigo) {
+        depositoInfo.push(`Motivo castigo: ${deposito.depo_descrmontocastigo}`);
+      }
+      depositoHeight += 36;
+    }
+    
+    if (deposito.depo_fechadevolucion) {
+      depositoInfo.push(`Fecha devolución: ${formatInTimeZone(new Date(deposito.depo_fechadevolucion), "UTC", "dd/MM/yyyy", { locale: es })}`);
+      depositoHeight += 18;
+    }
     
     page.drawText("DEPÓSITO", {
       x: marginX + 550,
-      y: cursorY + 145,
+      y: cursorY + depositoHeight - 10,
       size: 12,
       font: helveticaBold,
       color: rgb(0, 0.3, 0.6),
@@ -237,28 +283,60 @@ export async function GET(req: NextRequest) {
       x: marginX + 540,
       y: cursorY,
       width: 220,
-      height: 130,
+      height: depositoHeight,
       color: rgb(0.98, 0.98, 1),
       borderColor: rgb(0, 0.3, 0.6),
       borderWidth: 1,
     });
 
-    const depositoInfo = [
-      `Total: CRC ${depositoTotal.toLocaleString("es-CR")}`,
-      `Actual: CRC ${depositoActual.toLocaleString("es-CR")}`,
-      `Usado: CRC ${(depositoTotal - depositoActual).toLocaleString("es-CR")}`,
-      `Pagos: ${deposito.ava_pago?.length ?? 0}`,
-    ];
-
     depositoInfo.forEach((info, i) => {
       page.drawText(info, {
         x: marginX + 550,
-        y: cursorY + 115 - i * 18,
+        y: cursorY + depositoHeight - 25 - i * 18,
         size: 9,
         font: helvetica,
         color: rgb(0, 0, 0),
       });
     });
+  }
+  
+  // Información adicional si está cancelado
+  if (cancelacion && alquiler.alq_estado === "C") {
+    cursorY -= 20;
+    if (cursorY < 200) {
+      page = pdf.addPage(A3);
+      cursorY = marginTop;
+    }
+    
+    page.drawText("INFORMACIÓN DE CANCELACIÓN", {
+      x: marginX,
+      y: cursorY,
+      size: 12,
+      font: helveticaBold,
+      color: rgb(0.8, 0, 0),
+    });
+    cursorY -= 20;
+    
+    const cancelacionInfo = [
+      `Fecha de cancelación: ${formatInTimeZone(new Date(cancelacion.alqc_fecha_cancelacion), "UTC", "dd/MM/yyyy", { locale: es })}`,
+      `Motivo: ${cancelacion.alqc_motivo}`,
+      cancelacion.alqc_montodevuelto ? `Monto devuelto: CRC ${Number(cancelacion.alqc_montodevuelto).toLocaleString("es-CR")}` : "",
+      cancelacion.alqc_motivomontodevuelto ? `Motivo devolución: ${cancelacion.alqc_motivomontodevuelto}` : "",
+      cancelacion.alqc_castigo ? `Monto castigo: CRC ${Number(cancelacion.alqc_castigo).toLocaleString("es-CR")}` : "",
+      cancelacion.alqc_motivocastigo ? `Motivo castigo: ${cancelacion.alqc_motivocastigo}` : "",
+    ].filter(Boolean);
+    
+    cancelacionInfo.forEach((info, i) => {
+      page.drawText(info, {
+        x: marginX,
+        y: cursorY - i * 18,
+        size: 10,
+        font: helvetica,
+        color: rgb(0, 0, 0),
+      });
+    });
+    
+    cursorY -= cancelacionInfo.length * 18 + 10;
   }
 
   cursorY -= 20;

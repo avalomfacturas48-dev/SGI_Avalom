@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { PDFDocument, StandardFonts, PDFFont, PDFPage } from "pdf-lib";
 
 interface ContractData {
+  // Campos existentes (obligatorios)
   arrendante: string;
   cedulaArrendante: string;
   arrendatario: string;
@@ -15,10 +16,33 @@ interface ContractData {
   montoTotal: number;
   diaPago: number;
   duracionAnios: number;
+  
+  // Nuevos campos obligatorios
+  diaPrimerPago: number; // Día del mes del primer pago
+  numeroMiembros: number; // Número de miembros del núcleo familiar
+  depositoGarantia: number; // Monto del depósito de garantía
+  
+  // Nuevos campos opcionales
+  fechaFirma?: string; // Fecha de firma del contrato
+  matriculaFinca?: string; // Matrícula de la finca en el Registro Público
+  planoFinca?: string; // Información del plano de la finca
+  ubicacionFinca?: string; // Ubicación (distrito, cantón, provincia)
+  linderosFinca?: string; // Linderos de la finca
+  descripcionApartamento?: string; // Descripción detallada del apartamento
 }
 
 export async function POST(req: NextRequest) {
   const data: ContractData = await req.json();
+  
+  // Validar campos obligatorios
+  if (!data.diaPrimerPago || !data.numeroMiembros || !data.depositoGarantia) {
+    return new Response(
+      JSON.stringify({ 
+        error: "Faltan campos obligatorios: diaPrimerPago, numeroMiembros, depositoGarantia" 
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
   const pdf = await PDFDocument.create();
   let page = pdf.addPage([595.28, 841.89]); // A4
@@ -107,20 +131,31 @@ export async function POST(req: NextRequest) {
     `Nosotros ${data.arrendante}, cédula ${data.cedulaArrendante}, y ${data.arrendatario}, cédula ${data.cedulaArrendatario}, estado civil ${data.estadoCivil}, vecino de ${data.direccion}, Apartamento número ${data.aptoNumero}, hemos convenido en el siguiente contrato de arrendamiento de APARTAMENTO DE HABITACIÓN regido por las siguientes cláusulas:`
   );
 
+  // Construir texto de matrícula y plano
+  const matriculaTexto = data.matriculaFinca || "__________";
+  const planoTexto = data.planoFinca || "__________";
+  const ubicacionTexto = data.ubicacionFinca || "__________";
+  const linderosTexto = data.linderosFinca || "__________";
+  const descripcionApto = data.descripcionApartamento || "sala, comedor, cocina, dos habitaciones y un baño";
+  const diaPrimerPagoTexto = data.diaPrimerPago ? String(data.diaPrimerPago) : "__________";
+  const numeroMiembrosTexto = data.numeroMiembros ? String(data.numeroMiembros) : "__________";
+  const depositoTexto = data.depositoGarantia ? `CRC ${data.depositoGarantia.toLocaleString()}` : "CRC __________";
+  const fechaFirmaTexto = data.fechaFirma || "__________";
+
   // Cláusulas
   const clausulas = [
-    `PRIMERA.- Que la primera es dueña de la finca inscrita en el Registro Público de la Propiedad bajo el sistema de Folio Real matrículas CIENTO SESENTA Y NUEVE MIL NOVECIENTOS OCHENTA Y SIETE-CERO CERO CERO de la provincia de San José; que consta en un plano S-J- ciento nueve mil seiscientos diecisiete-cincuenta y ocho decímetros cuadrados; ubicada en el distrito primero, cantón Pérez Zeledón; lindando al norte con carretera interamericana, al sur con finca de Rómulo Concepción Solís Cambronero, al este con propiedad de Carmen, y al oeste con propiedad de López.`,
-    `SEGUNDA.- Que el primero le da en arrendamiento a la segunda un apartamento identificado con el número ${data.aptoNumero}, que consta de sala, comedor, cocina, dos habitaciones y un baño.`,
+    `PRIMERA.- Que la primera es dueña de la finca inscrita en el Registro Público de la Propiedad bajo el sistema de Folio Real matrículas ${matriculaTexto} de la provincia de San José; que consta en un plano ${planoTexto}; ubicada en ${ubicacionTexto}; lindando ${linderosTexto}.`,
+    `SEGUNDA.- Que el primero le da en arrendamiento a la segunda un apartamento identificado con el número ${data.aptoNumero}, que consta de ${descripcionApto}.`,
     `TERCERA.- El precio del alquiler es la suma total de CRC ${data.montoTotal.toLocaleString()}, para el primer año, pagadera por mensualidades adelantadas los días ${
       data.diaPago
-    } de cada mes, realizando el primer pago el día _____. El precio del arrendamiento tendrá incrementos anual conforme a lo que dicte la ley para arrendamientos de casa de habitación.`,
+    } de cada mes, realizando el primer pago el día ${diaPrimerPagoTexto}. El precio del arrendamiento tendrá incrementos anual conforme a lo que dicte la ley para arrendamientos de casa de habitación.`,
     `CUARTA.- El plazo de este contrato es de TRES AÑOS a partir del ${data.contratoDesde} y hasta el ${data.contratoHasta}.`,
-    `QUINTA.- Queda totalmente prohibido el subarrriendo, no pudiendo el arrendatario introducir a vivir más personas que las que conforman su núcleo familiar, el cual se compone de _____ miembros. Si se llegare a determinar por parte del propietario que dentro del inmueble se encuentra viviendo más personas que las indicadas al momento de firmar, será causa de incumplimiento pudiendo el arrendante solicitar la desocupación.`,
+    `QUINTA.- Queda totalmente prohibido el subarrriendo, no pudiendo el arrendatario introducir a vivir más personas que las que conforman su núcleo familiar, el cual se compone de ${numeroMiembrosTexto} miembros. Si se llegare a determinar por parte del propietario que dentro del inmueble se encuentra viviendo más personas que las indicadas al momento de firmar, será causa de incumplimiento pudiendo el arrendante solicitar la desocupación.`,
     `SÉTIMA.- El arrendatario acepta que este apartamento será únicamente utilizado como casa de habitación, quedando prohibido utilizarlo para negocios comerciales o cualquier otra actividad distinta a la habitacional.`,
     `OCTAVA.- El costo de los servicios de agua y electricidad está incluido en el precio del alquiler, por lo que el arrendatario se compromete a hacer un uso adecuado y racional de los mismos.`,
     `NOVENA.- Una vez transcurrido el plazo, deberá celebrarse un nuevo contrato donde se negociarán plazo y precio.`,
     `DÉCIMA.- El arrendante se reserva el derecho de realizar inspecciones a la propiedad cada vez que lo estime conveniente, previa comunicación al arrendatario.`,
-    `DÉCIMA PRIMERA.- El inquilino ha cancelado como depósito de garantía la suma de CRC __________, dinero que será devuelto al finalizar el presente contrato, siempre y cuando demuestre estar al día en pagos y en buen estado.`,
+    `DÉCIMA PRIMERA.- El inquilino ha cancelado como depósito de garantía la suma de ${depositoTexto}, dinero que será devuelto al finalizar el presente contrato, siempre y cuando demuestre estar al día en pagos y en buen estado.`,
     `DÉCIMA SEGUNDA.- El inquilino se compromete a dar aviso al propietario de cualquier desperfecto o daño que deba repararse lo más pronto posible para evitar gastos mayores.`,
     `DÉCIMA TERCERA.- Cualquier daño o pérdida que se cause por negligencia del inquilino será responsabilidad de éste y deberá repararlo. Queda liberado de daños causados por terceros, fuerza mayor o caso fortuito.`,
     `DÉCIMA CUARTA.- El inquilino conoce y acepta la existencia de cámaras de seguridad instaladas fuera de cada apartamento, para resguardar la seguridad de inquilinos y propiedad.`,
@@ -130,7 +165,7 @@ export async function POST(req: NextRequest) {
 
   // Cierre
   wrapText(
-    "Estando ambos conformes con lo anteriormente manifestado, firmamos en San Isidro de Pérez Zeledón, el ___________________________.",
+    `Estando ambos conformes con lo anteriormente manifestado, firmamos en San Isidro de Pérez Zeledón, el ${fechaFirmaTexto}.`,
     11
   );
 

@@ -257,11 +257,11 @@ export function ExpenseDetailsDialog({ open, onOpenChange, expense, onEdit, onCa
                 <>
                   <Separator />
                   <div className="rounded-lg bg-destructive/10 p-4">
-                    <div className="mb-2 flex items-center gap-2">
+                    <div className="mb-3 flex items-center gap-2">
                       <X className="size-5 text-destructive" />
                       <span className="font-semibold text-destructive">Gasto Anulado</span>
                     </div>
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Motivo:</span>
                         <span className="font-medium">{anulacion.ang_motivo}</span>
@@ -269,13 +269,27 @@ export function ExpenseDetailsDialog({ open, onOpenChange, expense, onEdit, onCa
                       {anulacion.ang_descripcion && (
                         <div>
                           <span className="text-muted-foreground">Descripción:</span>
-                          <p className="mt-1">{anulacion.ang_descripcion}</p>
+                          <p className="mt-1 text-sm">{anulacion.ang_descripcion}</p>
                         </div>
                       )}
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Fecha de anulación:</span>
                         <span>{formatDateTime(anulacion.ang_fechaanulacion)}</span>
                       </div>
+                      {anulacion.ava_usuario && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Anulado por:</span>
+                          <span className="font-medium">
+                            {anulacion.ava_usuario.usu_nombre} {anulacion.ava_usuario.usu_papellido}
+                          </span>
+                        </div>
+                      )}
+                      {anulacion.ang_montooriginal && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Monto original:</span>
+                          <span className="font-medium">{formatCurrency(anulacion.ang_montooriginal.toString())}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </>

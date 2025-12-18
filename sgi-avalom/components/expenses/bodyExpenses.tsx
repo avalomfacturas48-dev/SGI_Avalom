@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
-import cookie from "js-cookie";
-import { toast } from "sonner";
 import { Card, CardHeader } from "@/components/ui/card";
 import { ExpensesHeader } from "@/components/expenses/expensesHeader";
 import { StatisticsCards } from "@/components/expenses/statisticsCards";
@@ -12,298 +9,173 @@ import { ExpenseFormDialog } from "@/components/expenses/expenseFormDialog";
 import { ExpenseDetailsDialog } from "@/components/expenses/expenseDetailsDialog";
 import { ExpenseCancellationDialog } from "@/components/expenses/expenseCancellationDialog";
 import { ServicesManagementDialog } from "@/components/services/servicesManagementDialog";
-import { ExportExpenses } from "@/components/expenses/exportExpenses";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useExpenses } from "@/hooks/expenses/useExpenses";
+import { useExpenseStatisticsAPI } from "@/hooks/expenses/useExpenseStatisticsAPI";
+import { useExpenseStaticData } from "@/hooks/expenses/useExpenseStaticData";
+import { useServices } from "@/hooks/expenses/useServices";
+import { useExpenseDialogs } from "@/hooks/expenses/useExpenseDialogs";
+import { useExpensePagination } from "@/hooks/expenses/useExpensePagination";
 import useExpensesStore from "@/lib/zustand/expensesStore";
-import type { AvaGasto, AvaServicio, AvaEdificio, AvaPropiedad } from "@/lib/types/entities";
 import type { ExpenseFormValues, CancellationFormValues, ServiceFormValues } from "@/lib/schemas/expenseSchemas";
-import type { ExpenseStatistics } from "@/lib/types/forms";
 
 const BodyExpenses: React.FC = () => {
-  const { expenses, setExpenses } = useExpensesStore();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
-  const [servicios, setServicios] = useState<AvaServicio[]>([]);
-  const [edificios, setEdificios] = useState<AvaEdificio[]>([]);
-  const [propiedades, setPropiedades] = useState<AvaPropiedad[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [statistics, setStatistics] = useState<ExpenseStatistics>({
-    totalMesActual: "0",
-    totalAnioActual: "0",
-    totalTransacciones: 0,
-    porcentajeServicios: 0,
-    porcentajeMantenimiento: 0,
-    cantidadServicios: 0,
-    cantidadMantenimiento: 0,
-    cambioMesAnterior: 0,
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [tipoFilter, setTipoFilter] = useState<string>("all");
+  const [estadoFilter, setEstadoFilter] = useState<string>("all");
+
+  // Hooks personalizados
+  const {
+    servicios,
+    edificios,
+    propiedades,
+    isLoading: isLoadingStaticData,
+    fetchStaticData,
+  } = useExpenseStaticData();
+
+  const {
+    currentPage,
+    pageSize,
+    totalPages,
+    totalRecords,
+    handlePageChange,
+    handlePageSizeChange,
+    resetPagination,
+    updatePagination,
+  } = useExpensePagination();
+
+  const {
+    isLoading: isLoadingExpenses,
+    fetchExpenses,
+    fetchAllExpenses,
+    createExpense,
+    updateExpense,
+    cancelExpense,
+  } = useExpenses();
+
+  const {
+    formOpen,
+    detailsOpen,
+    cancellationOpen,
+    servicesOpen,
+    selectedExpense,
+    setFormOpen,
+    setDetailsOpen,
+    setCancellationOpen,
+    setServicesOpen,
+    handleNewExpense,
+    handleManageServices,
+    handleViewDetails,
+    handleEdit,
+    handleCancel,
+  } = useExpenseDialogs();
+
+  const { createService, updateService, deleteService } = useServices({
+    onSuccess: fetchStaticData,
   });
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [cancellationOpen, setCancellationOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<AvaGasto | null>(null);
+  // Estadísticas desde API
+  const { statistics, fetchStatistics } = useExpenseStatisticsAPI();
 
-  // Cargar datos estáticos solo una vez
-  const fetchStaticData = useCallback(async () => {
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      const [serviciosRes, edificiosRes, propiedadesRes, allExpensesRes] = await Promise.all([
-        axios.get("/api/expenses/servicios", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("/api/building", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("/api/property", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("/api/expenses", {
-          params: { estado: "A" },
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      setServicios(serviciosRes.data.data);
-      setEdificios(edificiosRes.data.data);
-      setPropiedades(propiedadesRes.data.data);
-      calculateStatistics(allExpensesRes.data.data);
-    } catch (error) {
-      console.error("Error al cargar datos estáticos:", error);
-      toast.error("No se pudieron cargar los datos");
+  // Cargar gastos paginados con filtros
+  const loadExpenses = useCallback(async () => {
+    const estado = estadoFilter === "all" ? undefined : estadoFilter;
+    const tipo = tipoFilter === "all" ? undefined : tipoFilter;
+    const result = await fetchExpenses(currentPage, pageSize, estado, tipo);
+    if (result?.pagination) {
+      updatePagination(result.pagination);
     }
-  }, []);
-
-  // Cargar gastos paginados
-  const fetchExpenses = useCallback(async () => {
-    setIsLoadingExpenses(true);
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      const expensesRes = await axios.get("/api/expenses", {
-        params: {
-          page: currentPage,
-          limit: pageSize,
-          estado: "A",
-        },
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setExpenses(expensesRes.data.data);
-
-      if (expensesRes.data.pagination) {
-        setTotalPages(expensesRes.data.pagination.totalPages || 1);
-        setTotalRecords(expensesRes.data.pagination.total || 0);
-      }
-    } catch (error) {
-      console.error("Error al cargar gastos:", error);
-      toast.error("No se pudieron cargar los gastos");
-    } finally {
-      setIsLoadingExpenses(false);
-    }
-  }, [currentPage, pageSize]);
-
-  const calculateStatistics = (gastos: AvaGasto[]) => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-
-    const gastosActivos = gastos.filter((g) => g.gas_estado === "A");
-
-    const mesActualGastos = gastosActivos.filter((g) => {
-      const fecha = new Date(g.gas_fecha);
-      return fecha.getMonth() === currentMonth && fecha.getFullYear() === currentYear;
-    });
-
-    const mesAnteriorGastos = gastosActivos.filter((g) => {
-      const fecha = new Date(g.gas_fecha);
-      return fecha.getMonth() === lastMonth && fecha.getFullYear() === lastMonthYear;
-    });
-
-    const anioActualGastos = gastosActivos.filter((g) => {
-      const fecha = new Date(g.gas_fecha);
-      return fecha.getFullYear() === currentYear;
-    });
-
-    const totalMesActual = mesActualGastos.reduce((sum, g) => sum + parseFloat(g.gas_monto), 0);
-    const totalMesAnterior = mesAnteriorGastos.reduce((sum, g) => sum + parseFloat(g.gas_monto), 0);
-    const totalAnioActual = anioActualGastos.reduce((sum, g) => sum + parseFloat(g.gas_monto), 0);
-
-    const servicios = gastosActivos.filter((g) => g.gas_tipo === "S");
-    const mantenimientos = gastosActivos.filter((g) => g.gas_tipo === "M");
-
-    const cambioMesAnterior =
-      totalMesAnterior > 0 ? ((totalMesActual - totalMesAnterior) / totalMesAnterior) * 100 : 0;
-
-    setStatistics({
-      totalMesActual: totalMesActual.toString(),
-      totalAnioActual: totalAnioActual.toString(),
-      totalTransacciones: gastosActivos.length,
-      porcentajeServicios: gastosActivos.length > 0 ? (servicios.length / gastosActivos.length) * 100 : 0,
-      porcentajeMantenimiento: gastosActivos.length > 0 ? (mantenimientos.length / gastosActivos.length) * 100 : 0,
-      cantidadServicios: servicios.length,
-      cantidadMantenimiento: mantenimientos.length,
-      cambioMesAnterior,
-    });
-  };
+  }, [currentPage, pageSize, estadoFilter, tipoFilter, fetchExpenses, updatePagination]);
 
   // Cargar datos estáticos solo al montar el componente
   useEffect(() => {
     const initializeData = async () => {
-      setIsLoading(true);
-      await fetchStaticData();
-      await fetchExpenses();
-      setIsLoading(false);
+      setIsInitialLoading(true);
+      await Promise.all([fetchStaticData(), fetchStatistics(), loadExpenses()]);
+      setIsInitialLoading(false);
     };
     initializeData();
   }, []);
 
-  // Recargar solo gastos cuando cambia la paginación
+  // Resetear a página 1 cuando cambian los filtros
   useEffect(() => {
-    fetchExpenses();
-  }, [currentPage, pageSize, fetchExpenses]);
+    if (!isInitialLoading && currentPage !== 1) {
+      handlePageChange(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estadoFilter, tipoFilter]);
+  
+  // Recargar gastos cuando cambia la paginación, tamaño de página o filtros
+  useEffect(() => {
+    if (!isInitialLoading) {
+      loadExpenses();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, pageSize, estadoFilter, tipoFilter]);
 
-  const handleNewExpense = useCallback(() => {
-    setSelectedExpense(null);
-    setFormOpen(true);
-  }, []);
-
-  const handleManageServices = useCallback(() => {
-    setServicesOpen(true);
-  }, []);
-
-  const handleViewDetails = useCallback((expense: AvaGasto) => {
-    setSelectedExpense(expense);
-    setDetailsOpen(true);
-  }, []);
-
-  const handleEdit = useCallback((expense: AvaGasto) => {
-    setSelectedExpense(expense);
-    setDetailsOpen(false);
-    setFormOpen(true);
-  }, []);
-
-  const handleCancel = useCallback((expense: AvaGasto) => {
-    setSelectedExpense(expense);
-    setDetailsOpen(false);
-    setCancellationOpen(true);
-  }, []);
-
-  const handlePageChange = useCallback((newPage: number) => {
-    setCurrentPage(newPage);
-  }, []);
-
-  const handlePageSizeChange = useCallback((newPageSize: number) => {
-    setPageSize(newPageSize);
-    setCurrentPage(1);
-  }, []);
-
-  const handleSubmitExpense = useCallback(async (data: ExpenseFormValues) => {
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      if (selectedExpense) {
-        await axios.put(`/api/expenses/${selectedExpense.gas_id}`, data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success("Gasto actualizado exitosamente");
-      } else {
-        await axios.post("/api/expenses", data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success("Gasto creado exitosamente");
+  const handleSubmitExpense = useCallback(
+    async (data: ExpenseFormValues) => {
+      try {
+        if (selectedExpense) {
+          await updateExpense(selectedExpense.gas_id, data);
+        } else {
+          await createExpense(data);
+        }
+        resetPagination();
+        await Promise.all([fetchStaticData(), fetchStatistics(), loadExpenses()]);
+        setFormOpen(false);
+      } catch (error) {
+        // El error ya se maneja en el hook
       }
+    },
+    [selectedExpense, createExpense, updateExpense, resetPagination, fetchStaticData, fetchStatistics, loadExpenses]
+  );
 
-      setCurrentPage(1);
-      await Promise.all([fetchStaticData(), fetchExpenses()]);
-      setFormOpen(false);
-    } catch (error) {
-      console.error("Error al guardar gasto:", error);
-      toast.error("Error al guardar el gasto");
-    }
-  }, [selectedExpense, fetchStaticData, fetchExpenses]);
+  const handleConfirmCancellation = useCallback(
+    async (data: CancellationFormValues) => {
+      if (!selectedExpense) return;
+      try {
+        await cancelExpense(selectedExpense.gas_id, data);
+        // Solo recargar datos si la anulación fue exitosa
+        await Promise.all([fetchStaticData(), fetchStatistics(), loadExpenses()]);
+        setCancellationOpen(false);
+      } catch (error) {
+        // El error ya se maneja en el hook useExpenses
+        // No cerrar el diálogo si hay error para que el usuario vea el mensaje
+        // El error se propaga para que el diálogo pueda manejarlo
+        throw error;
+      }
+    },
+    [selectedExpense, cancelExpense, fetchStaticData, fetchStatistics, loadExpenses]
+  );
 
-  const handleConfirmCancellation = useCallback(async (data: CancellationFormValues) => {
-    try {
-      const token = cookie.get("token");
-      if (!token || !selectedExpense) return;
+  const handleCreateService = useCallback(
+    async (data: ServiceFormValues) => {
+      await createService(data);
+    },
+    [createService]
+  );
 
-      await axios.post(`/api/expenses/${selectedExpense.gas_id}/cancel`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+  const handleUpdateService = useCallback(
+    async (id: string, data: ServiceFormValues) => {
+      await updateService(id, data);
+    },
+    [updateService]
+  );
 
-      toast.success("Gasto anulado exitosamente");
-      await Promise.all([fetchStaticData(), fetchExpenses()]);
-      setCancellationOpen(false);
-    } catch (error) {
-      console.error("Error al anular gasto:", error);
-      toast.error("Error al anular el gasto");
-    }
-  }, [selectedExpense, fetchStaticData, fetchExpenses]);
+  const handleDeleteService = useCallback(
+    async (id: string) => {
+      await deleteService(id);
+    },
+    [deleteService]
+  );
 
-  const handleCreateService = useCallback(async (data: ServiceFormValues) => {
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      await axios.post("/api/expenses/servicios", data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      toast.success("Servicio creado exitosamente");
-      await fetchStaticData();
-    } catch (error) {
-      console.error("Error al crear servicio:", error);
-      toast.error("Error al crear el servicio");
-    }
-  }, [fetchStaticData]);
-
-  const handleUpdateService = useCallback(async (id: string, data: ServiceFormValues) => {
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      await axios.put(`/api/expenses/servicios/${id}`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      toast.success("Servicio actualizado exitosamente");
-      await fetchStaticData();
-    } catch (error) {
-      console.error("Error al actualizar servicio:", error);
-      toast.error("Error al actualizar el servicio");
-    }
-  }, [fetchStaticData]);
-
-  const handleDeleteService = useCallback(async (id: string) => {
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      await axios.delete(`/api/expenses/servicios/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      toast.success("Servicio eliminado exitosamente");
-      await fetchStaticData();
-    } catch (error) {
-      console.error("Error al eliminar servicio:", error);
-      toast.error("Error al eliminar el servicio");
-    }
-  }, [fetchStaticData]);
+  // Obtener gastos del store para la tabla
+  const { expenses } = useExpensesStore();
 
   return (
     <div className="container mx-auto space-y-6 p-6">
-      {isLoading ? (
+      {isInitialLoading ? (
         <div className="space-y-6">
           <div className="space-y-4 animate-pulse">
             <Skeleton className="h-10 w-[300px]" />
@@ -346,9 +218,6 @@ const BodyExpenses: React.FC = () => {
                 </div>
               </div>
             )}
-            <div className="mb-4 flex justify-end">
-              <ExportExpenses expenses={expenses} />
-            </div>
             <ExpensesTable 
               data={expenses} 
               onViewDetails={handleViewDetails} 
@@ -360,6 +229,10 @@ const BodyExpenses: React.FC = () => {
               totalRecords={totalRecords}
               onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
+              tipoFilter={tipoFilter}
+              estadoFilter={estadoFilter}
+              onTipoFilterChange={setTipoFilter}
+              onEstadoFilterChange={setEstadoFilter}
             />
           </div>
 
