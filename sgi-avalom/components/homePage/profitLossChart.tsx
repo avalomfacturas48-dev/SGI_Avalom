@@ -193,29 +193,27 @@ export function ProfitLossChart({
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stackId="1"
                   stroke="#10b981"
                   fill="url(#colorRevenue)"
-                  fillOpacity={1}
-                  strokeWidth={2}
+                  fillOpacity={0.7}
+                  strokeWidth={2.5}
                 />
                 <Area
                   type="monotone"
                   dataKey="expenses"
-                  stackId="1"
                   stroke="#ef4444"
                   fill="url(#colorExpenses)"
-                  fillOpacity={1}
-                  strokeWidth={2}
+                  fillOpacity={0.5}
+                  strokeWidth={2.5}
                 />
                 <Area
                   type="monotone"
                   dataKey="profit"
                   stroke="#3b82f6"
-                  fill="url(#colorProfit)"
-                  fillOpacity={0.6}
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
+                  fill="none"
+                  fillOpacity={0}
+                  strokeWidth={3}
+                  strokeDasharray="8 4"
                 />
               </AreaChart>
             </ResponsiveContainer>
