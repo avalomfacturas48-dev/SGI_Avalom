@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/dataTable/data-table";
 import { columnsClient } from "@/components/mantClient/columnsClient";
-import { ModeToggle } from "@/components/modeToggle";
 import ManageActions from "@/components/dataTable/manageActions";
 import ClienteForm from "@/components/mantClient/clienteFormProps";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,7 +47,7 @@ const BodyMantClient: React.FC = () => {
   }, []);
 
   return (
-    <div className="mx-auto p-4 space-y-8">
+    <div className="mx-auto p-4 space-y-8 max-w-7xl">
       {isLoading ? (
         <>
           {/* Skeletons */}
@@ -122,8 +121,6 @@ const BodyMantClient: React.FC = () => {
               {/* Importar y refrescar */}
               <ImportClients onSuccess={fetchClients} />
 
-              {/* Modo oscuro */}
-              <ModeToggle />
             </div>
           </Card>
 

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import cookie from "js-cookie";
 import axios from "axios";
 import { Plus } from "lucide-react";
-import { ModeToggle } from "@/components/modeToggle";
 import { columns } from "./columnsUser";
 import { DataTable } from "@/components/dataTable/data-table";
 import ManageActions from "@/components/dataTable/manageActions";
@@ -53,7 +52,7 @@ const BodyMantUser: React.FC = () => {
   }, []);
 
   return (
-    <div className="mx-auto p-4 space-y-8">
+    <div className="mx-auto p-4 space-y-8 max-w-7xl">
       {isLoading ? (
         <>
           {/* Skeletons */}
@@ -122,7 +121,6 @@ const BodyMantUser: React.FC = () => {
               <ExportUsers />
               {/* <Button variant="outline">Descargar Plantilla</Button> */}
               <Button variant="outline">Importar</Button>
-              <ModeToggle />
             </div>
           </Card>
 

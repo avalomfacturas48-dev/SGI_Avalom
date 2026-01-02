@@ -18,6 +18,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 
 export interface MonthlyTotal {
   month: string;
@@ -45,19 +46,11 @@ export function RevenueAreaChart({
   const maxValue =
     formattedData.reduce((max, item) => Math.max(max, item.total), 0) * 1.2;
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("es-CR", {
-      style: "currency",
-      currency: "CRC",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-
   const CustomTooltip = ({ active, payload, label }: any) =>
     active && payload && payload.length ? (
       <div className="bg-background border rounded-md shadow-md p-3">
         <p className="font-medium">{`Mes: ${label}`}</p>
-        <p className="text-blue-500">{`Total: ${formatCurrency(
+        <p className="text-blue-500">{`Total: ${formatCurrencyNoDecimals(
           payload[0].value
         )}`}</p>
       </div>
@@ -89,7 +82,7 @@ export function RevenueAreaChart({
                     <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="month"
                   tickLine={false}
@@ -97,13 +90,15 @@ export function RevenueAreaChart({
                   tickMargin={8}
                   tickFormatter={(v) => v.slice(0, 3)}
                   interval={0}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <YAxis
                   domain={[0, maxValue]}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={formatCurrency}
+                  tickFormatter={formatCurrencyNoDecimals}
                   width={60}
+                  stroke="hsl(var(--muted-foreground))"
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Area

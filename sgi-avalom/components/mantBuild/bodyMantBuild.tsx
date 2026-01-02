@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import cookie from "js-cookie";
 import axios from "axios";
 import { Plus } from "lucide-react";
-import { ModeToggle } from "@/components/modeToggle";
 import { columns } from "./columnBuild";
 import { DataTable } from "@/components/dataTable/data-table";
 import ManageActions from "@/components/dataTable/manageActions";
@@ -93,7 +92,7 @@ const BodyMantBuild: React.FC = () => {
   }, [buildings, selectedBuilding?.edi_id]);
 
   return (
-    <div className="mx-auto p-4 space-y-8">
+    <div className="mx-auto p-4 space-y-8 max-w-7xl">
       {isLoading ? (
         <>
           <div className="space-y-4 mb-3">
@@ -158,7 +157,6 @@ const BodyMantBuild: React.FC = () => {
               <GenerateContractModal />
               <ExportBuildings />
               {/* <Button variant="outline">Importar</Button> */}
-              <ModeToggle />
             </div>
           </Card>
 

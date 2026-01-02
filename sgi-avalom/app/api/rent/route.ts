@@ -9,7 +9,16 @@ export async function GET(request: NextRequest) {
       const rents = await prisma.ava_alquiler.findMany({
         include: {
           ava_alquilermensual: true,
-          ava_propiedad: true,
+          ava_propiedad: {
+            include: {
+              ava_edificio: true,
+            },
+          },
+          ava_clientexalquiler: {
+            include: {
+              ava_cliente: true,
+            },
+          },
         },
       });
       return NextResponse.json(
