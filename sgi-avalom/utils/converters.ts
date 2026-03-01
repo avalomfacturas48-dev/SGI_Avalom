@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import Decimal from "decimal.js";
 
 export const stringifyWithBigInt = (data: any): any => {
   if (Array.isArray(data)) {

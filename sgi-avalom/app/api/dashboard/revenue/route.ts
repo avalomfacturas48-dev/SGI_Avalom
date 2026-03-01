@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
                 lte: end,
               },
               pag_estado: "A",
+              alqm_id: { not: null },
+              depo_id: null,
             },
           })
         )

@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { prisma } from "@/lib/prisma";
 import { es } from "date-fns/locale";
-import { formatInTimeZone, format } from "date-fns-tz";
+import { formatInTimeZone } from "date-fns-tz";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -21,6 +21,46 @@ export async function GET(req: NextRequest) {
   const esRango = Boolean(fromDate || toDate);
   const fechaGeneracion = new Date();
 
+  // ============================================
+  // 1. Obtener pagos activos (no depósitos) en el rango
+  // ============================================
+  const whereClause: any = {
+    pag_estado: "A",
+    alqm_id: { not: null },
+    depo_id: null,
+  };
+
+  if (fromDate || toDate) {
+    whereClause.pag_fechapago = {};
+    if (fromDate) whereClause.pag_fechapago.gte = fromDate;
+    if (toDate) whereClause.pag_fechapago.lte = toDate;
+  }
+
+  const pagos = await prisma.ava_pago.findMany({
+    where: whereClause,
+    include: {
+      ava_alquilermensual: {
+        include: {
+          ava_alquiler: {
+            include: {
+              ava_clientexalquiler: { include: { ava_cliente: true } },
+              ava_propiedad: {
+                include: {
+                  ava_tipopropiedad: true,
+                  ava_edificio: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: { pag_fechapago: "asc" },
+  });
+
+  // ============================================
+  // 2. Obtener estructura de edificios/propiedades
+  // ============================================
   const edificios = await prisma.ava_edificio.findMany({
     orderBy: { edi_identificador: "asc" },
     include: {
@@ -28,26 +68,57 @@ export async function GET(req: NextRequest) {
         orderBy: { prop_identificador: "asc" },
         include: {
           ava_tipopropiedad: true,
-          ava_alquiler: {
-            include: {
-              ava_clientexalquiler: { include: { ava_cliente: true } },
-              ava_alquilermensual: {
-                where: {
-                  alqm_fechainicio: {
-                    gte: fromDate,
-                    lte: toDate,
-                  },
-                },
-                orderBy: { alqm_fechainicio: "asc" },
-              },
-            },
-          },
+          ava_alquiler: true,
         },
       },
     },
   });
 
-  // Calcular estadísticas generales
+  // ============================================
+  // 3. Agrupar pagos por propiedad
+  // ============================================
+  type PaymentRow = {
+    pag_fechapago: Date;
+    pag_monto: number;
+    pag_metodopago: string | null;
+    pag_referencia: string | null;
+    alqm_fechainicio: Date;
+    alqm_fechafin: Date;
+    clienteNombre: string;
+    estadoAlquiler: string;
+  };
+
+  const pagosPorPropiedad = new Map<string, PaymentRow[]>();
+
+  pagos.forEach((pago) => {
+    const mens = pago.ava_alquilermensual;
+    if (!mens?.ava_alquiler?.ava_propiedad) return;
+
+    const propId = mens.ava_alquiler.ava_propiedad.prop_id.toString();
+    const cliente = mens.ava_alquiler.ava_clientexalquiler[0]?.ava_cliente;
+
+    const row: PaymentRow = {
+      pag_fechapago: pago.pag_fechapago,
+      pag_monto: Number(pago.pag_monto),
+      pag_metodopago: pago.pag_metodopago,
+      pag_referencia: pago.pag_referencia,
+      alqm_fechainicio: mens.alqm_fechainicio,
+      alqm_fechafin: mens.alqm_fechafin,
+      clienteNombre: cliente
+        ? `${cliente.cli_nombre} ${cliente.cli_papellido}`
+        : "—",
+      estadoAlquiler: mens.ava_alquiler.alq_estado,
+    };
+
+    if (!pagosPorPropiedad.has(propId)) {
+      pagosPorPropiedad.set(propId, []);
+    }
+    pagosPorPropiedad.get(propId)!.push(row);
+  });
+
+  // ============================================
+  // 4. Calcular estadísticas generales
+  // ============================================
   const totalEdificios = edificios.length;
   const totalPropiedades = edificios.reduce(
     (sum, ed) => sum + ed.ava_propiedad.length,
@@ -61,27 +132,17 @@ export async function GET(req: NextRequest) {
       ).length,
     0
   );
-  const tasaOcupacion = totalPropiedades > 0
-    ? ((propiedadesOcupadas / totalPropiedades) * 100).toFixed(1)
-    : "0.0";
+  const tasaOcupacion =
+    totalPropiedades > 0
+      ? ((propiedadesOcupadas / totalPropiedades) * 100).toFixed(1)
+      : "0.0";
 
-  // Calcular morosidad
-  let pagosAtrasados = 0;
-  let totalPagos = 0;
-  edificios.forEach((ed) => {
-    ed.ava_propiedad.forEach((prop) => {
-      prop.ava_alquiler.forEach((alq) => {
-        alq.ava_alquilermensual.forEach((mens) => {
-          totalPagos++;
-          if (mens.alqm_estado === "A") pagosAtrasados++;
-        });
-      });
-    });
-  });
-  const tasaMorosidad = totalPagos > 0
-    ? ((pagosAtrasados / totalPagos) * 100).toFixed(1)
-    : "0.0";
+  const totalPagado = pagos.reduce((sum, p) => sum + Number(p.pag_monto), 0);
+  const cantidadPagos = pagos.length;
 
+  // ============================================
+  // 5. Generar PDF
+  // ============================================
   const pdf = await PDFDocument.create();
   const helvetica = await pdf.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -91,8 +152,8 @@ export async function GET(req: NextRequest) {
   const marginTop = A4[1] - 50;
   const rowH = 18;
 
-  // Nueva estructura de columnas (sin Edificio y Propiedad repetidos)
-  const colWidths = [110, 150, 70, 70, 90, 80];
+  // Columnas: Fecha Pago | Período Alq. | Cliente | Estado Alq. | Monto | Método
+  const colWidths = [80, 100, 140, 70, 90, 90];
   const colXs = colWidths.reduce<number[]>(
     (acc, w, i) =>
       i === 0 ? [marginX] : [...acc, acc[i - 1] + colWidths[i - 1]],
@@ -179,7 +240,8 @@ export async function GET(req: NextRequest) {
     `Total de Propiedades: ${totalPropiedades}`,
     `Propiedades Ocupadas: ${propiedadesOcupadas}`,
     `Tasa de Ocupación: ${tasaOcupacion}%`,
-    `Tasa de Morosidad: ${tasaMorosidad}%`,
+    `Total Pagado: CRC ${totalPagado.toLocaleString("es-CR")}`,
+    `Cantidad de Pagos: ${cantidadPagos}`,
   ];
 
   const colGap = 200;
@@ -195,13 +257,23 @@ export async function GET(req: NextRequest) {
     });
   });
 
-  cursorY -= 90; // Más espacio después del resumen ejecutivo
+  cursorY -= 90;
 
-  let totalEsperado = 0;
-  let totalPagado = 0;
+  let grandTotalPagado = 0;
 
-  // Iterar por edificios
+  // ============================================
+  // 6. Iterar por edificios
+  // ============================================
   for (const ed of edificios) {
+    // Verificar si este edificio tiene alguna propiedad con pagos
+    const edificioTienePagos = ed.ava_propiedad.some((prop) =>
+      pagosPorPropiedad.has(prop.prop_id.toString())
+    );
+
+    if (!edificioTienePagos && esRango) {
+      continue;
+    }
+
     // Nueva página si es necesario
     if (cursorY < 120) {
       page = pdf.addPage(A4);
@@ -229,7 +301,8 @@ export async function GET(req: NextRequest) {
 
     // Iterar por propiedades del edificio
     for (const prop of ed.ava_propiedad) {
-      let subtotalEsperado = 0;
+      const propId = prop.prop_id.toString();
+      const pagosPropiedad = pagosPorPropiedad.get(propId) || [];
       let subtotalPagado = 0;
 
       if (cursorY < 100) {
@@ -260,28 +333,12 @@ export async function GET(req: NextRequest) {
 
       cursorY -= 25;
 
-      // Obtener todas las mensualidades de todos los alquileres
-      const todasMensualidades = prop.ava_alquiler.flatMap((alq) =>
-        alq.ava_alquilermensual.map((mens) => ({
-          ...mens,
-          _cliente: alq.ava_clientexalquiler[0]?.ava_cliente,
-          _estadoAlquiler: alq.alq_estado,
-        }))
-      );
-
-      // Ordenar por fecha de inicio
-      todasMensualidades.sort(
-        (a, b) =>
-          new Date(a.alqm_fechainicio).getTime() -
-          new Date(b.alqm_fechainicio).getTime()
-      );
-
-      // Si no hay mensualidades, mostrar mensaje
-      if (todasMensualidades.length === 0) {
+      // Si no hay pagos, mostrar mensaje
+      if (pagosPropiedad.length === 0) {
         page.drawText(
           esRango
-            ? "[!] Esta propiedad no genero ingresos en el periodo seleccionado"
-            : "[!] Esta propiedad no tiene registros de alquileres",
+            ? "[!] Esta propiedad no tiene pagos en el período seleccionado"
+            : "[!] Esta propiedad no tiene pagos registrados",
           {
             x: marginX + 20,
             y: cursorY,
@@ -294,14 +351,14 @@ export async function GET(req: NextRequest) {
         continue;
       }
 
-      // Cabecera de tabla para esta propiedad
+      // Cabecera de tabla
       const headers = [
-        "Período",
+        "Fecha Pago",
+        "Período Alq.",
         "Cliente",
         "Estado Alq.",
         "Monto",
-        "Pagado",
-        "Estado Pago",
+        "Método",
       ];
 
       headers.forEach((h, i) => {
@@ -323,72 +380,62 @@ export async function GET(req: NextRequest) {
 
       cursorY -= rowH;
 
-      // Imprimir las filas de datos
-      for (const mens of todasMensualidades) {
+      // Imprimir las filas de pagos
+      for (const pago of pagosPropiedad) {
         if (cursorY < 60) {
           page = pdf.addPage(A4);
           cursorY = marginTop;
         }
 
-        const fechaInicio = new Date(mens.alqm_fechainicio).toLocaleDateString(
-          "es-CR",
-          { month: "short", year: "numeric" }
+        const fechaPago = formatInTimeZone(
+          pago.pag_fechapago,
+          "UTC",
+          "dd/MM/yyyy",
+          { locale: es }
         );
-        const fechaFin = mens.alqm_fechafin
-          ? new Date(mens.alqm_fechafin).toLocaleDateString("es-CR", {
-              month: "short",
-              year: "numeric",
-            })
-          : "";
-        const fecha = fechaFin ? `${fechaInicio}-${fechaFin}` : fechaInicio;
 
-        const cliente = mens._cliente;
-        const clienteNombre = cliente
-          ? `${cliente.cli_nombre} ${cliente.cli_papellido}`
-          : "—";
+        const periodoInicio = formatInTimeZone(
+          pago.alqm_fechainicio,
+          "UTC",
+          "MMM yyyy",
+          { locale: es }
+        );
+        const periodoFin = formatInTimeZone(
+          pago.alqm_fechafin,
+          "UTC",
+          "MMM yyyy",
+          { locale: es }
+        );
+        const periodo = `${periodoInicio}-${periodoFin}`;
 
         const estado =
-          mens._estadoAlquiler === "A"
+          pago.estadoAlquiler === "A"
             ? "Activo"
-            : mens._estadoAlquiler === "F"
+            : pago.estadoAlquiler === "F"
             ? "Finalizado"
             : "Cancelado";
 
-        const montoEsperado = Number(mens.alqm_montototal);
-        const montoPagado = Number(mens.alqm_montopagado ?? 0);
-        const estadoPago =
-          mens.alqm_estado === "P"
-            ? "Pagado"
-            : mens.alqm_estado === "A"
-            ? "Atrasado"
-            : mens.alqm_estado === "I"
-            ? "Incompleto"
-            : mens.alqm_estado === "R"
-            ? "Cortesía"
-            : mens.alqm_estado;
+        const montoPagado = pago.pag_monto;
+        const metodoPago = pago.pag_metodopago || "—";
 
-        // Sumar a los subtotales
-        subtotalEsperado += montoEsperado;
         subtotalPagado += montoPagado;
-        // Sumar a los totales generales
-        totalEsperado += montoEsperado;
-        totalPagado += montoPagado;
+        grandTotalPagado += montoPagado;
 
         const row = [
-          fecha,
-          clienteNombre,
+          fechaPago,
+          periodo,
+          pago.clienteNombre,
           estado,
-          `CRC ${montoEsperado.toLocaleString("es-CR")}`,
           `CRC ${montoPagado.toLocaleString("es-CR")}`,
-          estadoPago,
+          metodoPago,
         ];
 
         row.forEach((text, i) => {
           const fontSize = 9;
           const textColor =
-            i === 5 && estadoPago === "Atrasado"
-              ? rgb(0.8, 0, 0)
-              : i === 5 && estadoPago === "Pagado"
+            i === 3 && estado === "Cancelado"
+              ? rgb(0.8, 0.4, 0)
+              : i === 3 && estado === "Activo"
               ? rgb(0, 0.5, 0)
               : rgb(0, 0, 0);
 
@@ -418,35 +465,39 @@ export async function GET(req: NextRequest) {
         cursorY = marginTop;
       }
 
+      // El rectángulo se dibuja completamente por debajo del último row (que quedó en cursorY+rowH)
+      // para evitar que tape el último pago de la tabla
       page.drawRectangle({
         x: marginX - 5,
-        y: cursorY - 5,
+        y: cursorY - 22,
         width: tableWidth + 10,
-        height: 35,
+        height: 22,
         color: rgb(0.95, 0.95, 1),
       });
 
       page.drawText(
-        `Subtotal ${prop.prop_identificador} - Esperado: CRC ${subtotalEsperado.toLocaleString(
+        `Subtotal ${prop.prop_identificador} - Pagado: CRC ${subtotalPagado.toLocaleString(
           "es-CR"
-        )} | Pagado: CRC ${subtotalPagado.toLocaleString("es-CR")}`,
+        )} (${pagosPropiedad.length} pago${pagosPropiedad.length !== 1 ? "s" : ""})`,
         {
           x: marginX,
-          y: cursorY + 5,
+          y: cursorY - 13,
           size: 10,
           font: helveticaBold,
           color: rgb(0, 0.3, 0.6),
         }
       );
 
-      cursorY -= 45;
+      cursorY -= 38;
     }
 
     // Espacio entre edificios
     cursorY -= 10;
   }
 
-  // Totales al final con estadísticas mejoradas
+  // ============================================
+  // 7. Resumen financiero final
+  // ============================================
   if (cursorY < 150) {
     page = pdf.addPage(A4);
     cursorY = marginTop;
@@ -457,9 +508,9 @@ export async function GET(req: NextRequest) {
   // Caja de resumen final
   page.drawRectangle({
     x: marginX - 10,
-    y: cursorY - 100,
+    y: cursorY - 60,
     width: tableWidth + 20,
-    height: 105,
+    height: 65,
     color: rgb(0.98, 0.98, 1),
     borderColor: rgb(0, 0.3, 0.6),
     borderWidth: 2,
@@ -475,26 +526,8 @@ export async function GET(req: NextRequest) {
 
   cursorY -= 40;
 
-  const totalPendiente = totalEsperado - totalPagado;
-  const porcentajePagado = totalEsperado > 0
-    ? ((totalPagado / totalEsperado) * 100).toFixed(1)
-    : "0.0";
-
   page.drawText(
-    `Total Esperado: CRC ${totalEsperado.toLocaleString("es-CR")}`,
-    {
-      x: marginX,
-      y: cursorY,
-      size: 11,
-      font: helveticaBold,
-      color: rgb(0, 0, 0),
-    }
-  );
-
-  cursorY -= 20;
-
-  page.drawText(
-    `Total Pagado: CRC ${totalPagado.toLocaleString("es-CR")}`,
+    `Total Pagado: CRC ${grandTotalPagado.toLocaleString("es-CR")}`,
     {
       x: marginX,
       y: cursorY,
@@ -504,30 +537,20 @@ export async function GET(req: NextRequest) {
     }
   );
 
-  cursorY -= 20;
-
   page.drawText(
-    `Total Pendiente: CRC ${totalPendiente.toLocaleString("es-CR")}`,
-    {
-      x: marginX,
-      y: cursorY,
-      size: 11,
-      font: helveticaBold,
-      color: totalPendiente > 0 ? rgb(0.8, 0, 0) : rgb(0, 0.5, 0),
-    }
-  );
-
-  page.drawText(
-    `Porcentaje de Cumplimiento: ${porcentajePagado}%`,
+    `Cantidad de Pagos: ${cantidadPagos}`,
     {
       x: marginX + 350,
       y: cursorY,
       size: 11,
       font: helveticaBold,
-      color: Number(porcentajePagado) >= 80 ? rgb(0, 0.5, 0) : rgb(0.8, 0.4, 0),
+      color: rgb(0, 0, 0),
     }
   );
 
+  // ============================================
+  // 8. Guardar y retornar PDF
+  // ============================================
   const pdfBytes = await pdf.save();
 
   const fromLabel = fromDate

@@ -82,6 +82,7 @@ export async function GET(req: NextRequest) {
           alqm_id: {
             not: null, // Solo pagos de mensualidades
           },
+          depo_id: null, // Excluir pagos de depósitos
         },
         include: {
           ava_alquilermensual: {
@@ -185,15 +186,15 @@ export async function GET(req: NextRequest) {
         monthlyMap.set(mes, current);
       });
 
-      // Generar todos los meses en el rango
-      const startMonth = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1);
-      const endMonth = new Date(toDate.getFullYear(), toDate.getMonth(), 1);
+      // Generar todos los meses en el rango (usar UTC para evitar problemas de zona horaria)
+      const startMonth = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), 1));
+      const endMonth = new Date(Date.UTC(toDate.getUTCFullYear(), toDate.getUTCMonth(), 1));
       const months: string[] = [];
 
       for (
         let d = new Date(startMonth);
         d <= endMonth;
-        d.setMonth(d.getMonth() + 1)
+        d.setUTCMonth(d.getUTCMonth() + 1)
       ) {
         months.push(formatInTimeZone(d, "UTC", "yyyy-MM", { locale: es }));
       }
@@ -244,6 +245,8 @@ export async function GET(req: NextRequest) {
       const buildingMap = new Map<string, BuildingSummary>();
 
       // Procesar ingresos por edificio
+      // Trackear pagos sin edificio para que el ranking concuerde con la serie global
+      let ingresosNoAsignados = 0;
       pagos.forEach((pago) => {
         const edificio =
           pago.ava_alquilermensual?.ava_alquiler?.ava_propiedad?.ava_edificio;
@@ -259,6 +262,8 @@ export async function GET(req: NextRequest) {
           };
           current.ingresos += Number(pago.pag_monto);
           buildingMap.set(key, current);
+        } else {
+          ingresosNoAsignados += Number(pago.pag_monto);
         }
       });
 
@@ -292,6 +297,7 @@ export async function GET(req: NextRequest) {
         });
       });
       
+      let gastosNoAsignados = 0;
       gastos.forEach((gasto) => {
         let edificio: { edi_id: string; edi_identificador: string } | null = null;
         
@@ -326,6 +332,8 @@ export async function GET(req: NextRequest) {
           const monto = Number(gasto.gas_monto);
           current.gastos += monto;
           buildingMap.set(key, current);
+        } else {
+          gastosNoAsignados += Number(gasto.gas_monto);
         }
       });
 
@@ -832,7 +840,38 @@ export async function GET(req: NextRequest) {
         cursorY -= 16;
       });
 
-      cursorY -= 30;
+      // Nota de totales del período + montos no asignados a edificio
+      cursorY -= 8;
+      if (cursorY < 80) { newPage(); }
+
+      const sumBuildingIngresos = buildingSummaries.reduce((s, b) => s + b.ingresos, 0);
+      const sumBuildingGastos = buildingSummaries.reduce((s, b) => s + b.gastos, 0);
+
+      page.drawRectangle({
+        x: marginX - 10,
+        y: cursorY - 52,
+        width: topColWidths.reduce((a, b) => a + b, 0) + 20,
+        height: 58,
+        color: rgb(0.97, 0.97, 0.97),
+        borderColor: rgb(0.7, 0.7, 0.8),
+        borderWidth: 0.5,
+      });
+
+      drawText("Verificación de totales del período:", marginX, cursorY - 4, 8, helvetica, true, rgb(0.3, 0.3, 0.5));
+      drawText(
+        `Ingresos globales: CRC ${ingresosTotal.toLocaleString("es-CR")}  |  Suma edificios: CRC ${sumBuildingIngresos.toLocaleString("es-CR")}${ingresosNoAsignados > 0 ? `  |  Sin edificio: CRC ${ingresosNoAsignados.toLocaleString("es-CR")}` : ""}`,
+        marginX, cursorY - 18, 8, helvetica, false, rgb(0, 0.4, 0)
+      );
+      drawText(
+        `Gastos globales: CRC ${gastosTotal.toLocaleString("es-CR")}  |  Suma edificios: CRC ${sumBuildingGastos.toLocaleString("es-CR")}${gastosNoAsignados > 0 ? `  |  Sin edificio: CRC ${gastosNoAsignados.toLocaleString("es-CR")}` : ""}`,
+        marginX, cursorY - 32, 8, helvetica, false, rgb(0.6, 0, 0)
+      );
+      drawText(
+        `Ganancia global: CRC ${gananciaTotal.toLocaleString("es-CR")}  |  Suma edificios: CRC ${(sumBuildingIngresos - sumBuildingGastos).toLocaleString("es-CR")}`,
+        marginX, cursorY - 46, 8, helvetica, true, rgb(0, 0.3, 0.6)
+      );
+
+      cursorY -= 65;
 
       // ============================================
       // SECCIÓN 4: TOP/BOTTOM PROPIEDADES
