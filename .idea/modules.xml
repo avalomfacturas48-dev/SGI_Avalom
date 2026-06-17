@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SGI_Avalom.iml" filepath="$PROJECT_DIR$/.idea/SGI_Avalom.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/sgi-avalom.iml" filepath="$PROJECT_DIR$/.idea/sgi-avalom.iml" />
     </modules>
   </component>
 </project>
