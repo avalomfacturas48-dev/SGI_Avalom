@@ -86,7 +86,7 @@ describe("Login component", () => {
         email: "test@correo.com",
       });
       expect(mockCookieSet).toHaveBeenCalledWith("token", "fake-token", {
-        expires: 1,
+        expires: 7,
       });
       expect(mockPush).toHaveBeenCalledWith("/homePage");
     });

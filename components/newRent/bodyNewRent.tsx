@@ -129,7 +129,7 @@ export function BodyNewRent() {
   };
 
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-4xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {/* Header */}
       <Card className="border shadow-lg">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

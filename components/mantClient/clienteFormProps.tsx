@@ -129,7 +129,7 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
             name="cli_telefono"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Teléfono</FormLabel>
+                <FormLabel>Teléfono (opcional)</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -146,7 +146,7 @@ const ClienteForm: React.FC<ClienteFormProps> = ({
             name="cli_correo"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Correo</FormLabel>
+                <FormLabel>Correo (opcional)</FormLabel>
                 <FormControl>
                   <Input
                     {...field}

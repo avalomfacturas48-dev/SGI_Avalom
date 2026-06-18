@@ -11,12 +11,12 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(amount: string | number): string {
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
-  if (isNaN(numAmount)) return "$0.00";
+  if (isNaN(numAmount)) return "₡0";
   return new Intl.NumberFormat("es-CR", {
     style: "currency",
     currency: "CRC",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(numAmount);
 }
 

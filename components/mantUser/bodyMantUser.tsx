@@ -8,10 +8,9 @@ import { columns } from "./columnsUser";
 import { DataTable } from "@/components/dataTable/data-table";
 import ManageActions from "@/components/dataTable/manageActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
-import { ExportUsers } from "./exportUsers";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import UserForm from "./UserFormProps";
 import useUserStore from "@/lib/zustand/userStore";
 
@@ -52,36 +51,35 @@ const BodyMantUser: React.FC = () => {
   }, []);
 
   return (
-    <div className="mx-auto p-4 space-y-8 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
-          {/* Skeletons */}
-          <div className="space-y-4 mb-3">
-            <div className="h-4 w-40 sm:w-56 rounded-md bg-muted animate-pulse" />
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-8">
-              <div className="w-60 h-8 rounded-md bg-muted animate-pulse" />
-              <div className="flex flex-wrap gap-2">
-                {[...Array(4)].map((_, i) => (
-                  <Skeleton
-                    key={i}
-                    className="h-8 w-[120px] rounded-md bg-muted animate-pulse"
-                  />
-                ))}
-              </div>
+          <Card className="flex flex-col sm:flex-row justify-between items-center">
+            <CardHeader className="space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-8 w-56" />
+            </CardHeader>
+            <div className="flex flex-wrap gap-2 p-4">
+              <Skeleton className="h-9 w-32" />
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-28" />
             </div>
-          </div>
-          <div className="space-y-4">
-            {[...Array(6)].map((_, index) => (
-              <div
-                key={index}
-                className="flex flex-col sm:flex-row items-center sm:justify-between gap-4 sm:gap-8 m-10"
-              >
-                <Skeleton className="w-full sm:w-[200px] h-[30px] rounded-full" />
-                <Skeleton className="w-full sm:w-[100px] h-[30px] rounded-full" />
-                <Skeleton className="w-full sm:w-[150px] h-[30px] rounded-full" />
+          </Card>
+          <Card>
+            <CardContent className="p-0">
+              <div className="flex items-center px-6 py-4 border-b">
+                <Skeleton className="h-8 w-64" />
               </div>
-            ))}
-          </div>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex items-center gap-6 px-6 py-4 border-b last:border-0">
+                  <Skeleton className="h-5 w-[180px]" />
+                  <Skeleton className="h-5 w-[120px]" />
+                  <Skeleton className="h-5 w-[150px]" />
+                  <Skeleton className="ml-auto h-8 w-8 rounded-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </>
       ) : (
         <>
@@ -117,16 +115,49 @@ const BodyMantUser: React.FC = () => {
                 }
               />
 
-              {/* Exportar, importar y toggle */}
-              <ExportUsers />
-              {/* <Button variant="outline">Descargar Plantilla</Button> */}
-              <Button variant="outline">Importar</Button>
             </div>
           </Card>
 
           <Card>
             <CardContent>
-              <DataTable columns={columns} data={users} />
+              <DataTable
+                columns={columns}
+                data={users}
+                renderMobileCard={(user, actions) => (
+                  <Card className="hover:bg-muted/50 transition-colors">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold">
+                            {user.usu_nombre} {user.usu_papellido}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.usu_cedula}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1.5">
+                          <StatusBadge status={user.usu_estado} />
+                          <div onClick={(e) => e.stopPropagation()}>{actions}</div>
+                        </div>
+                      </div>
+                      <div className="border-t pt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+                        <span className="text-muted-foreground">Correo</span>
+                        <span className="truncate">{user.usu_correo}</span>
+                        <span className="text-muted-foreground">Rol</span>
+                        <span>
+                          {user.usu_rol === "A"
+                            ? "Administrador"
+                            : user.usu_rol === "J"
+                            ? "Jefe"
+                            : user.usu_rol === "E"
+                            ? "Empleado"
+                            : "Auditor"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              />
             </CardContent>
           </Card>
         </>

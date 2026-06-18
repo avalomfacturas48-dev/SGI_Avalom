@@ -124,78 +124,68 @@ export function TopPerformersOverview({
         <CardContent>
           {loading ? (
             <Skeleton className="h-[300px] w-full" />
+          ) : topClients.length === 0 ? (
+            <p className="text-center py-6 text-sm text-muted-foreground">No hay datos disponibles</p>
           ) : (
-            <div className="overflow-hidden rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">#</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead className="text-right">Alquileres</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topClients.length > 0 ? (
-                    topClients.slice(0, maxItems).map((client, index) => (
+            <>
+              {/* Móvil */}
+              <div className="sm:hidden divide-y divide-border rounded-md border">
+                {topClients.slice(0, maxItems).map((client, index) => (
+                  <Link key={client.cli_id} href={clientDetailRoute} className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors">
+                    <div className="flex-shrink-0 w-6 flex justify-center">
+                      {index < 3 ? (
+                        <TrophyIcon className={`h-4 w-4 ${getMedalColor(index)}`} />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{index + 1}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{`${client.cli_nombre} ${client.cli_papellido}`}</p>
+                      <p className="text-xs text-muted-foreground truncate">{client.cli_correo}</p>
+                    </div>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0">
+                      {client._count.ava_clientexalquiler}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+              {/* Desktop: tabla */}
+              <div className="hidden sm:block overflow-x-auto rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">#</TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead className="text-right">Alquileres</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topClients.slice(0, maxItems).map((client, index) => (
                       <TableRow
                         key={client.cli_id}
-                        className={`${getRowBgColor(
-                          index,
-                          hoveredItem?.type === "client" &&
-                            hoveredItem?.id === client.cli_id
-                        )} cursor-pointer transition-colors`}
-                        onMouseEnter={() =>
-                          setHoveredItem({ type: "client", id: client.cli_id })
-                        }
+                        className={`${getRowBgColor(index, hoveredItem?.type === "client" && hoveredItem?.id === client.cli_id)} cursor-pointer transition-colors`}
+                        onMouseEnter={() => setHoveredItem({ type: "client", id: client.cli_id })}
                         onMouseLeave={() => setHoveredItem(null)}
-                        onClick={() =>
-                          (window.location.href = `${clientDetailRoute}`)
-                        }
+                        onClick={() => (window.location.href = clientDetailRoute)}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center justify-center">
-                            {index < 3 ? (
-                              <TrophyIcon
-                                className={`h-5 w-5 ${getMedalColor(index)}`}
-                              />
-                            ) : (
-                              <span className="text-slate-500">
-                                {index + 1}
-                              </span>
-                            )}
+                            {index < 3 ? <TrophyIcon className={`h-5 w-5 ${getMedalColor(index)}`} /> : <span className="text-slate-500">{index + 1}</span>}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{`${client.cli_nombre} ${client.cli_papellido}`}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {client.cli_correo}
-                            </div>
-                          </div>
+                          <div className="font-medium">{`${client.cli_nombre} ${client.cli_papellido}`}</div>
+                          <div className="text-xs text-muted-foreground">{client.cli_correo}</div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Badge
-                            variant="outline"
-                            className="bg-blue-50 text-blue-700 border-blue-200"
-                          >
-                            {client._count.ava_clientexalquiler}
-                          </Badge>
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">{client._count.ava_clientexalquiler}</Badge>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={3}
-                        className="text-center py-6 text-muted-foreground"
-                      >
-                        No hay datos disponibles
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -222,83 +212,68 @@ export function TopPerformersOverview({
         <CardContent>
           {loading ? (
             <Skeleton className="h-[300px] w-full" />
+          ) : topProperties.length === 0 ? (
+            <p className="text-center py-6 text-sm text-muted-foreground">No hay datos disponibles</p>
           ) : (
-            <div className="overflow-hidden rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">#</TableHead>
-                    <TableHead>Propiedad</TableHead>
-                    <TableHead className="text-right">Alquileres</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topProperties.length > 0 ? (
-                    topProperties.slice(0, maxItems).map((property, index) => (
+            <>
+              {/* Móvil */}
+              <div className="sm:hidden divide-y divide-border rounded-md border">
+                {topProperties.slice(0, maxItems).map((property, index) => (
+                  <Link key={property.prop_id} href={propertyDetailRoute} className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors">
+                    <div className="flex-shrink-0 w-6 flex justify-center">
+                      {index < 3 ? (
+                        <TrophyIcon className={`h-4 w-4 ${getMedalColor(index)}`} />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{index + 1}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{property.prop_identificador}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{property.prop_descripcion}</p>
+                    </div>
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 flex-shrink-0">
+                      {property._count.ava_alquiler}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+              {/* Desktop: tabla */}
+              <div className="hidden sm:block overflow-x-auto rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">#</TableHead>
+                      <TableHead>Propiedad</TableHead>
+                      <TableHead className="text-right">Alquileres</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {topProperties.slice(0, maxItems).map((property, index) => (
                       <TableRow
                         key={property.prop_id}
-                        className={`${getRowBgColor(
-                          index,
-                          hoveredItem?.type === "property" &&
-                            hoveredItem?.id === property.prop_id
-                        )} cursor-pointer transition-colors`}
-                        onMouseEnter={() =>
-                          setHoveredItem({
-                            type: "property",
-                            id: property.prop_id,
-                          })
-                        }
+                        className={`${getRowBgColor(index, hoveredItem?.type === "property" && hoveredItem?.id === property.prop_id)} cursor-pointer transition-colors`}
+                        onMouseEnter={() => setHoveredItem({ type: "property", id: property.prop_id })}
                         onMouseLeave={() => setHoveredItem(null)}
-                        onClick={() =>
-                          (window.location.href = `${propertyDetailRoute}`)
-                        }
+                        onClick={() => (window.location.href = propertyDetailRoute)}
                       >
                         <TableCell className="font-medium">
                           <div className="flex items-center justify-center">
-                            {index < 3 ? (
-                              <TrophyIcon
-                                className={`h-5 w-5 ${getMedalColor(index)}`}
-                              />
-                            ) : (
-                              <span className="text-slate-500">
-                                {index + 1}
-                              </span>
-                            )}
+                            {index < 3 ? <TrophyIcon className={`h-5 w-5 ${getMedalColor(index)}`} /> : <span className="text-slate-500">{index + 1}</span>}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">
-                              {property.prop_identificador}
-                            </div>
-                            <div className="text-xs text-muted-foreground line-clamp-1">
-                              {property.prop_descripcion}
-                            </div>
-                          </div>
+                          <div className="font-medium">{property.prop_identificador}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-1">{property.prop_descripcion}</div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Badge
-                            variant="outline"
-                            className="bg-emerald-50 text-emerald-700 border-emerald-200"
-                          >
-                            {property._count.ava_alquiler}
-                          </Badge>
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">{property._count.ava_alquiler}</Badge>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={3}
-                        className="text-center py-6 text-muted-foreground"
-                      >
-                        No hay datos disponibles
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

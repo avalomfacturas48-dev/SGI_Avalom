@@ -36,6 +36,14 @@ interface ClientAlertDialogProps {
   classn?: string;
   icon?: React.ReactNode;
   disabled?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * Cuando es true no se renderiza el botón disparador y el diálogo queda
+   * controlado por `open`/`onOpenChange`. Permite abrir la confirmación desde
+   * un item de menú sin anidar el AlertDialog dentro del DropdownMenu.
+   */
+  hideTrigger?: boolean;
 }
 
 const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
@@ -51,15 +59,21 @@ const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
   classn,
   icon,
   disabled,
+  open: openProp,
+  onOpenChange,
+  hideTrigger,
 }) => {
+  const open = onOpenChange !== undefined ? !!openProp : undefined;
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant={variant} disabled={disabled} className={classn}>
-          {icon}
-          {triggerText}
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {!hideTrigger && (
+        <AlertDialogTrigger asChild>
+          <Button variant={variant} disabled={disabled} className={classn}>
+            {icon}
+            {triggerText}
+          </Button>
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

@@ -24,7 +24,7 @@ const BodyHomePage: React.FC = () => {
   const monthlyRevenue = revenue?.[revenue.length - 1]?.total ?? 0;
 
   return (
-    <div className="mx-auto p-4 space-y-4 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {/* Header */}
       <Card className="border shadow-sm">
         <CardHeader>
@@ -34,7 +34,7 @@ const BodyHomePage: React.FC = () => {
               { label: "Dashboard" },
             ]}
           />
-          <CardTitle className="text-2xl text-primary font-bold">
+          <CardTitle className="text-xl sm:text-2xl text-primary font-bold">
             Dashboard
           </CardTitle>
         </CardHeader>

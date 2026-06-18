@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectTrigger,
@@ -92,6 +93,25 @@ const PropertyForm: React.FC<PropertyFormProps> = ({
                 <FormControl>
                   <Input
                     {...field}
+                    disabled={action === "view"}
+                    className="bg-background"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="prop_descripcioncontrato"
+            render={({ field }) => (
+              <FormItem className="col-span-full">
+                <FormLabel>De qué consta (para el contrato)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    rows={2}
+                    placeholder="Ej: dos habitaciones, un baño, sala, comedor y cocina"
                     disabled={action === "view"}
                     className="bg-background"
                   />

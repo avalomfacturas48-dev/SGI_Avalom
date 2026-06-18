@@ -63,7 +63,7 @@ const BodyPayment: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto p-4 max-w-7xl space-y-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <div className="space-y-6">
           <Card>
@@ -140,7 +140,7 @@ const BodyPayment: React.FC = () => {
                   </div>
 
                   {/* Resumen de saldos */}
-                  <div className="grid grid-cols-3 gap-4 p-4 rounded-lg border bg-muted/30">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 p-4 rounded-lg border bg-muted/30">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground mb-1">Total depósito</p>
                       <p className="text-sm font-bold text-foreground">

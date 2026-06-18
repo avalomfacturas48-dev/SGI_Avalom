@@ -3,7 +3,7 @@
 import type React from "react";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
-import { FileText, TrendingUp, Receipt, Users as UsersIcon, FileSignature, Building } from "lucide-react";
+import { FileText, TrendingUp, Receipt, Users as UsersIcon, Building } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -16,7 +16,6 @@ import { BuildingsReportCard } from "./reportCards/buildingsReportCard";
 import { ClientsReportCard } from "./reportCards/clientsReportCard";
 import { RentalReportCard } from "./reportCards/rentalReportCard";
 import { UsersReportCard } from "./reportCards/usersReportCard";
-import { ContractCard } from "./reportCards/contractCard";
 
 // Reportes de Gastos
 import { ServicesReportCard } from "./reportCards/servicesReportCard";
@@ -26,7 +25,7 @@ import { ProfitLossReportCard } from "./reportCards/profitLossReportCard";
 
 const BodyReports: React.FC = () => {
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {/* Header */}
       <Card className="border shadow-lg bg-gradient-to-r from-primary/5 to-primary/10">
         <CardHeader>
@@ -35,7 +34,7 @@ const BodyReports: React.FC = () => {
               items={[{ label: "Inicio", href: "/homePage" }, { label: "Reportes" }]}
             />
             <div>
-              <CardTitle className="text-3xl text-primary font-bold flex items-center gap-3">
+              <CardTitle className="text-xl sm:text-3xl text-primary font-bold flex items-center gap-3">
                 <FileText className="h-8 w-8" />
                 Centro de Reportes
               </CardTitle>
@@ -137,26 +136,6 @@ const BodyReports: React.FC = () => {
               <ClientsReportCard />
               <UsersReportCard />
             </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* 5. DOCUMENTOS LEGALES */}
-        <AccordionItem value="documentos" className="border rounded-lg shadow-sm bg-card">
-          <AccordionTrigger className="px-6 py-4 hover:no-underline">
-            <div className="flex items-center gap-3 w-full">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-                <FileSignature className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <h3 className="text-lg font-bold">Generación de Documentos</h3>
-                <p className="text-sm text-muted-foreground">
-                  Contratos y documentos legales de arrendamiento
-                </p>
-              </div>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-6 pb-6">
-            <ContractCard />
           </AccordionContent>
         </AccordionItem>
 

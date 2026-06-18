@@ -6,8 +6,6 @@ import cookie from "js-cookie";
 import axios from "axios";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
-import { ExportBuildings } from "./exportBuildings";
-import GenerateContractModal from "@/components/mantBuild/generateContractModal";
 import ManageActions from "@/components/dataTable/manageActions";
 import BuildForm from "./buildFormProps";
 import BuildingCard from "./BuildingCard";
@@ -46,7 +44,7 @@ const BodyMantBuild: React.FC = () => {
   }, [fetchTypes, types]);
 
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
           <div className="space-y-4 mb-3">
@@ -99,8 +97,6 @@ const BodyMantBuild: React.FC = () => {
                   />
                 }
               />
-              <GenerateContractModal />
-              <ExportBuildings />
             </div>
           </Card>
 

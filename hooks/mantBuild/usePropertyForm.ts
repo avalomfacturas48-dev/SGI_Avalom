@@ -19,6 +19,10 @@ const propertyFormSchema = z.object({
   prop_descripcion: z
     .string()
     .max(50, "La descripción no puede tener más de 50 caracteres"),
+  prop_descripcioncontrato: z
+    .string()
+    .max(300, "El detalle no puede tener más de 300 caracteres")
+    .optional(),
   tipp_id: z.string().min(1, "Selecciona un tipo de propiedad"),
 });
 
@@ -39,11 +43,13 @@ export const usePropertyForm = ({
       ? {
           prop_identificador: "",
           prop_descripcion: "",
+          prop_descripcioncontrato: "",
           tipp_id: undefined,
         }
       : {
           prop_identificador: property?.prop_identificador || "",
           prop_descripcion: property?.prop_descripcion || "",
+          prop_descripcioncontrato: property?.prop_descripcioncontrato || "",
           tipp_id: property?.tipp_id || undefined,
         };
   }, [action, property]);

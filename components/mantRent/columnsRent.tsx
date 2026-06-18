@@ -3,7 +3,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDown,
-  MoreHorizontal,
   Building2,
   Home,
   Calendar,
@@ -13,16 +12,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { AvaAlquiler } from "@/lib/types";
-import Link from "next/link";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { TenantCell } from "@/components/shared/TenantCell";
@@ -186,30 +177,18 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
     cell: ({ row }) => {
       const rental = row.original;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir Menú</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <Link href={`/mantRent/edit/${rental.alq_id}`}>
-              <DropdownMenuItem>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar alquiler
-              </DropdownMenuItem>
-            </Link>
-            <Link href={`/accounting/payments/${rental.alq_id}`}>
-              <DropdownMenuItem>
-                <LineChart className="mr-2 h-4 w-4" />
-                Ver contabilidad
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <RowActions>
+          <RowActionButton
+            label="Editar alquiler"
+            icon={<Pencil className="h-4 w-4" />}
+            href={`/mantRent/edit/${rental.alq_id}`}
+          />
+          <RowActionButton
+            label="Ver contabilidad"
+            icon={<LineChart className="h-4 w-4" />}
+            href={`/accounting/payments/${rental.alq_id}`}
+          />
+        </RowActions>
       );
     },
   },

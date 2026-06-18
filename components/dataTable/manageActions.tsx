@@ -43,6 +43,13 @@ interface ManageActionsProps {
   icon?: React.ReactNode;
   FormComponent: React.ReactNode;
   disabled?: boolean;
+  /**
+   * Cuando es true no se renderiza el botón disparador y el diálogo queda
+   * controlado únicamente por `open`/`onOpenChange`. Útil para abrir el modal
+   * desde un item de menú (DropdownMenuItem) sin anidar el Dialog dentro del
+   * menú, lo que rompería el manejo de foco de Radix.
+   */
+  hideTrigger?: boolean;
 }
 
 const ManageActions: React.FC<ManageActionsProps> = ({
@@ -56,23 +63,26 @@ const ManageActions: React.FC<ManageActionsProps> = ({
   icon,
   FormComponent,
   disabled,
+  hideTrigger,
 }) => {
   const [openInternal, setOpenInternal] = useState(false);
   const onlyWidth = useWindowWidth();
   const isDesktop = onlyWidth >= 768;
 
-  const open = onOpenChange !== undefined ? openProp! : openInternal;
+  const open = onOpenChange !== undefined ? !!openProp : openInternal;
   const setOpen = onOpenChange !== undefined ? onOpenChange : setOpenInternal;
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant={variant} disabled={disabled} className={classn}>
-            {icon && <span className="mr-2">{icon}</span>}
-            {titleButton}
-          </Button>
-        </DialogTrigger>
+        {!hideTrigger && (
+          <DialogTrigger asChild>
+            <Button variant={variant} disabled={disabled} className={classn}>
+              {icon && <span className="mr-2">{icon}</span>}
+              {titleButton}
+            </Button>
+          </DialogTrigger>
+        )}
         <DialogContent className="sm:max-w-[425px] md:max-w-xl lg:max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
@@ -86,12 +96,14 @@ const ManageActions: React.FC<ManageActionsProps> = ({
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant={variant} disabled={disabled} className={classn}>
-          {icon && <span className="mr-2">{icon}</span>}
-          {titleButton}
-        </Button>
-      </DrawerTrigger>
+      {!hideTrigger && (
+        <DrawerTrigger asChild>
+          <Button variant={variant} disabled={disabled} className={classn}>
+            {icon && <span className="mr-2">{icon}</span>}
+            {titleButton}
+          </Button>
+        </DrawerTrigger>
+      )}
       <DrawerContent className="flex flex-col h-[85vh]">
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>

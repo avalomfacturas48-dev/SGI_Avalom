@@ -174,7 +174,7 @@ const BodyExpenses: React.FC = () => {
   const { expenses } = useExpensesStore();
 
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isInitialLoading ? (
         <div className="space-y-6">
           <div className="space-y-4 animate-pulse">
@@ -209,7 +209,7 @@ const BodyExpenses: React.FC = () => {
 
           <StatisticsCards statistics={statistics} />
 
-          <div className="rounded-lg border bg-card p-6 relative">
+          <div className="rounded-lg border bg-card p-3 sm:p-6 relative">
             {isLoadingExpenses && (
               <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
                 <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-lg shadow-lg border">

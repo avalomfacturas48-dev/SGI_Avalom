@@ -49,6 +49,7 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
   const router = useRouter();
   const { removeBuilding } = useBuildingStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const properties = building.ava_propiedad ?? [];
   const total = properties.length;
@@ -91,6 +92,7 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
   };
 
   return (
+    <>
     <Card
       className="cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col group"
       onClick={() => router.push(`/mantBuild/${building.edi_id}`)}
@@ -120,17 +122,8 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
                 Acciones
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-                <AlertDialog
-                  title="¿Está seguro?"
-                  description="Esta acción no se puede deshacer. ¿Está seguro de que desea borrar este edificio?"
-                  triggerText="Borrar Edificio"
-                  cancelText="Cancelar"
-                  actionText="Continuar"
-                  classn="p-4 m-0 h-8 w-full"
-                  variant="ghost"
-                  onAction={handleDelete}
-                />
+              <DropdownMenuItem onSelect={() => setOpenDelete(true)}>
+                Borrar Edificio
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -187,6 +180,20 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
         )}
       </CardFooter>
     </Card>
+
+      {/* Confirmación fuera del menú para no romper el manejo de foco de Radix */}
+      <AlertDialog
+        hideTrigger
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        title="¿Está seguro?"
+        description="Esta acción no se puede deshacer. ¿Está seguro de que desea borrar este edificio?"
+        triggerText="Borrar Edificio"
+        cancelText="Cancelar"
+        actionText="Continuar"
+        onAction={handleDelete}
+      />
+    </>
   );
 };
 

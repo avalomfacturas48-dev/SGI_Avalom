@@ -2,6 +2,7 @@
 
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CanceledRentForm } from "./CanceledRentForm";
 import { RentalInfoCardCanceled } from "./rentalInfoCardCanceled";
 import useCanceledRentalStore from "@/lib/zustand/useCanceledRentalStore";
@@ -18,6 +19,7 @@ const BodyCanceledRent: React.FC = () => {
     setPropiedad,
     setClientes,
     setLoading,
+    isLoading,
     setHayPagosPendientes,
   } = useCanceledRentalStore();
   const { alqId } = useParams();
@@ -69,8 +71,35 @@ const BodyCanceledRent: React.FC = () => {
     setLoading,
   ]);
 
+  if (isLoading) {
+    return (
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <Card>
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-8 w-52" />
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-44" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-10" />
+              ))}
+            </div>
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-9 w-32" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto p-4 max-w-7xl space-y-8">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       <Card className="bg-background flex flex-col sm:flex-row justify-between items-center">
         <CardHeader>
           <BreadcrumbResponsive
@@ -80,7 +109,7 @@ const BodyCanceledRent: React.FC = () => {
               { label: "Cancelar Alquiler" },
             ]}
           />
-          <CardTitle className="text-2xl font-bold mb-4 sm:mb-0">
+          <CardTitle className="text-xl sm:text-2xl font-bold mb-4 sm:mb-0">
             Cancelar Alquiler
           </CardTitle>
         </CardHeader>
@@ -88,7 +117,7 @@ const BodyCanceledRent: React.FC = () => {
 
       <Card className="bg-background">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold">
+          <CardTitle className="text-base font-semibold">
             Cancelar Alquiler
           </CardTitle>
         </CardHeader>

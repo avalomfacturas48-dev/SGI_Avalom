@@ -143,12 +143,10 @@ export function MovementsHistory() {
 
   return (
     <Card className="border shadow-lg">
-      <CardHeader className="border-b">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <History className="h-4 w-4 text-primary" />
-            </div>
+      <CardHeader className="border-b py-3 px-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+            <History className="h-3.5 w-3.5 text-primary" />
             Historial de movimientos
           </CardTitle>
           <StatusFilter
@@ -163,38 +161,30 @@ export function MovementsHistory() {
         </div>
 
         {/* Resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          <div className="flex items-center gap-2.5 p-3 rounded-lg border bg-card">
-            <div className="p-2 rounded-md bg-emerald-500/10">
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Cobrado (activo)</p>
-              <p className="text-base font-bold text-emerald-600">
+        <div className="grid grid-cols-3 gap-2 pt-2">
+          <div className="flex items-center gap-2 p-2 rounded-lg border bg-card">
+            <TrendingUp className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[10px] text-muted-foreground">Cobrado</p>
+              <p className="text-xs font-bold text-emerald-600 truncate">
                 {formatCurrencyNoDecimals(totals.cobrado)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2.5 p-3 rounded-lg border bg-card">
-            <div className="p-2 rounded-md bg-red-500/10">
-              <TrendingDown className="h-4 w-4 text-red-600" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Anulado</p>
-              <p className="text-base font-bold text-red-600">
+          <div className="flex items-center gap-2 p-2 rounded-lg border bg-card">
+            <TrendingDown className="h-3.5 w-3.5 text-red-600 flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[10px] text-muted-foreground">Anulado</p>
+              <p className="text-xs font-bold text-red-600 truncate">
                 {formatCurrencyNoDecimals(totals.anulado)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2.5 p-3 rounded-lg border bg-card">
-            <div className="p-2 rounded-md bg-primary/10">
-              <History className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Total movimientos</p>
-              <p className="text-base font-bold text-foreground">
-                {totals.count}
-              </p>
+          <div className="flex items-center gap-2 p-2 rounded-lg border bg-card">
+            <History className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-[10px] text-muted-foreground">Total</p>
+              <p className="text-xs font-bold text-foreground">{totals.count}</p>
             </div>
           </div>
         </div>
@@ -210,125 +200,189 @@ export function MovementsHistory() {
             </p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Concepto</TableHead>
-                  <TableHead className="text-right">Monto</TableHead>
-                  <TableHead>Método</TableHead>
-                  <TableHead>Referencia</TableHead>
-                  <TableHead>Estado</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginated.map((m) => (
-                  <TableRow
-                    key={m.id}
-                    className={cn(m.anulado && "bg-red-500/5")}
-                  >
-                    <TableCell className="whitespace-nowrap text-sm">
-                      {formatToCR(m.date)}
-                    </TableCell>
-                    <TableCell>
+          <>
+            {/* Móvil: cards */}
+            <div className="sm:hidden space-y-2">
+              {paginated.map((m) => (
+                <div
+                  key={m.id}
+                  className={cn(
+                    "rounded-lg border p-3 space-y-2",
+                    m.anulado && "bg-red-500/5 border-red-200 dark:border-red-900"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className="gap-1 text-[11px]">
+                      {m.tipo === "Depósito" ? (
+                        <Wallet className="h-3 w-3" />
+                      ) : (
+                        <HandCoins className="h-3 w-3" />
+                      )}
+                      {m.tipo}
+                    </Badge>
+                    {m.anulado ? (
                       <Badge
                         variant="outline"
-                        className="gap-1 whitespace-nowrap"
+                        className="gap-1 bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400 text-[11px]"
                       >
-                        {m.tipo === "Depósito" ? (
-                          <Wallet className="h-3 w-3" />
-                        ) : (
-                          <HandCoins className="h-3 w-3" />
-                        )}
-                        {m.tipo}
+                        <Ban className="h-3 w-3" />
+                        Anulado
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm font-medium">
-                      {m.concepto}
-                    </TableCell>
-                    <TableCell
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400 text-[11px]"
+                      >
+                        Activo
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex items-baseline justify-between gap-2 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{m.concepto}</p>
+                    <p
                       className={cn(
-                        "text-right font-semibold whitespace-nowrap",
-                        m.anulado && "line-through text-muted-foreground"
+                        "text-sm font-bold whitespace-nowrap flex-shrink-0",
+                        m.anulado ? "line-through text-muted-foreground" : "text-foreground"
                       )}
                     >
                       {formatCurrencyNoDecimals(m.monto)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {m.metodo ? (
-                        <span>
-                          {m.metodo}
-                          {m.banco && (
-                            <span className="text-muted-foreground">
-                              {" "}
-                              · {m.banco}
-                            </span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground gap-2 min-w-0">
+                    <span className="flex-shrink-0">{formatToCR(m.date)}</span>
+                    {(m.metodo || m.referencia) && (
+                      <span className="truncate text-right">
+                        {[m.metodo, m.banco, m.referencia].filter(Boolean).join(" · ")}
+                      </span>
+                    )}
+                  </div>
+
+                  {m.anulado && (m.anulacionMotivo || m.anulacionDescripcion) && (
+                    <div className="text-xs text-red-600 dark:text-red-400 border-t border-red-200 dark:border-red-900 pt-1.5 space-y-0.5">
+                      {m.anulacionMotivo && (
+                        <p><span className="font-medium">Motivo:</span> {m.anulacionMotivo}</p>
                       )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {m.referencia || "—"}
-                    </TableCell>
-                    <TableCell>
-                      {m.anulado ? (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Badge
-                                variant="outline"
-                                className="gap-1 bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400 cursor-help"
-                              >
-                                <Ban className="h-3 w-3" />
-                                Anulado
-                                <Info className="h-3 w-3" />
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <div className="space-y-1 text-xs">
-                                {m.anulacionMotivo && (
-                                  <p>
-                                    <span className="font-semibold">
-                                      Motivo:
-                                    </span>{" "}
-                                    {m.anulacionMotivo}
-                                  </p>
-                                )}
-                                {m.anulacionDescripcion && (
-                                  <p>{m.anulacionDescripcion}</p>
-                                )}
-                                {m.anulacionFecha && (
-                                  <p className="text-muted-foreground">
-                                    {formatToCR(m.anulacionFecha)}
-                                  </p>
-                                )}
-                                {m.anulacionUsuario && (
-                                  <p className="text-muted-foreground">
-                                    Por: {m.anulacionUsuario}
-                                  </p>
-                                )}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      ) : (
-                        <Badge
-                          variant="outline"
-                          className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400"
-                        >
-                          Activo
-                        </Badge>
+                      {m.anulacionDescripcion && <p>{m.anulacionDescripcion}</p>}
+                      {m.anulacionFecha && (
+                        <p className="text-muted-foreground">
+                          {formatToCR(m.anulacionFecha)}
+                          {m.anulacionUsuario && ` · ${m.anulacionUsuario}`}
+                        </p>
                       )}
-                    </TableCell>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: tabla */}
+            <div className="hidden sm:block rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Concepto</TableHead>
+                    <TableHead className="text-right">Monto</TableHead>
+                    <TableHead>Método</TableHead>
+                    <TableHead>Referencia</TableHead>
+                    <TableHead>Estado</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {paginated.map((m) => (
+                    <TableRow key={m.id} className={cn(m.anulado && "bg-red-500/5")}>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {formatToCR(m.date)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="gap-1 whitespace-nowrap">
+                          {m.tipo === "Depósito" ? (
+                            <Wallet className="h-3 w-3" />
+                          ) : (
+                            <HandCoins className="h-3 w-3" />
+                          )}
+                          {m.tipo}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm font-medium">{m.concepto}</TableCell>
+                      <TableCell
+                        className={cn(
+                          "text-right font-semibold whitespace-nowrap",
+                          m.anulado && "line-through text-muted-foreground"
+                        )}
+                      >
+                        {formatCurrencyNoDecimals(m.monto)}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {m.metodo ? (
+                          <span>
+                            {m.metodo}
+                            {m.banco && (
+                              <span className="text-muted-foreground"> · {m.banco}</span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {m.referencia || "—"}
+                      </TableCell>
+                      <TableCell>
+                        {m.anulado ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge
+                                  variant="outline"
+                                  className="gap-1 bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400 cursor-help"
+                                >
+                                  <Ban className="h-3 w-3" />
+                                  Anulado
+                                  <Info className="h-3 w-3" />
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <div className="space-y-1 text-xs">
+                                  {m.anulacionMotivo && (
+                                    <p>
+                                      <span className="font-semibold">Motivo:</span>{" "}
+                                      {m.anulacionMotivo}
+                                    </p>
+                                  )}
+                                  {m.anulacionDescripcion && <p>{m.anulacionDescripcion}</p>}
+                                  {m.anulacionFecha && (
+                                    <p className="text-muted-foreground">
+                                      {formatToCR(m.anulacionFecha)}
+                                    </p>
+                                  )}
+                                  {m.anulacionUsuario && (
+                                    <p className="text-muted-foreground">
+                                      Por: {m.anulacionUsuario}
+                                    </p>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400"
+                          >
+                            Activo
+                          </Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </CardContent>
 

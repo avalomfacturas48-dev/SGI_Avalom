@@ -202,11 +202,7 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                             title="Editar Alquiler Mensual"
                             description="Modifique los datos del alquiler mensual."
                             variant="ghost"
-                            classn={cn(
-                              "h-8 w-8 p-0 text-muted-foreground hover:text-foreground",
-                              hasPayments && "pointer-events-none opacity-40"
-                            )}
-                            disabled={hasPayments}
+                            classn="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                             icon={<PencilIcon className="h-3.5 w-3.5" />}
                             FormComponent={
                               <MonthlyRentForm
@@ -222,9 +218,10 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                       {hasPayments && (
                         <TooltipContent
                           side="top"
-                          className="text-xs max-w-[160px]"
+                          className="text-xs max-w-[180px]"
                         >
-                          Tiene pagos registrados, no se puede editar.
+                          Tiene pagos registrados. Al editar, verifique que el
+                          saldo siga siendo consistente.
                         </TooltipContent>
                       )}
                     </Tooltip>

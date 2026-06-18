@@ -125,30 +125,30 @@ export function PendingPaymentsOverview({
   return (
     <div className="space-y-4">
       {/* Tarjetas de resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
         {summaryCards.map((card) => {
           const Icon = card.icon;
           return (
             <Link href={card.href} key={card.id}>
               <Card className="group cursor-pointer hover:shadow-md transition-all duration-200 h-full">
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex items-center justify-center w-10 h-10 rounded-full ${card.bgColor}`}
-                    >
-                      <Icon className={`w-5 h-5 ${card.color}`} />
-                    </div>
-                    <span className="font-medium text-sm">{card.title}</span>
-                  </div>
+                <CardContent className="p-3 sm:p-5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">
+                    <div
+                      className={`flex-shrink-0 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full ${card.bgColor}`}
+                    >
+                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${card.color}`} />
+                    </div>
+                    <span className="font-medium text-xs sm:text-sm leading-tight">{card.title}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xl sm:text-2xl font-bold">
                       {loading ? (
-                        <Skeleton className="h-7 w-10" />
+                        <Skeleton className="h-6 w-8" />
                       ) : (
                         card.value
                       )}
                     </span>
-                    <ArrowRightIcon className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRightIcon className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </CardContent>
               </Card>
@@ -181,56 +181,47 @@ export function PendingPaymentsOverview({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table>
+              <Table className="[&_td]:py-2 [&_td]:px-2 [&_th]:py-2 [&_th]:px-2">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[120px]">Tipo</TableHead>
+                    <TableHead className="w-[82px]">Tipo</TableHead>
                     <TableHead>Propiedad</TableHead>
                     <TableHead className="hidden md:table-cell">Cliente</TableHead>
                     <TableHead className="hidden sm:table-cell">Período</TableHead>
                     <TableHead className="text-right">Pendiente</TableHead>
-                    <TableHead className="w-[80px]" />
+                    <TableHead className="w-[36px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filas.map((fila) => {
                     if (fila.tipo === "mensualidad") {
                       const item = fila.item;
-                      const pendiente =
-                        item.alqm_montototal - item.alqm_montopagado;
-                      const cliente =
-                        item.ava_alquiler.ava_clientexalquiler[0]?.ava_cliente;
-                      const periodo = `${format(new Date(item.alqm_fechainicio), "d MMM", { locale: es })} – ${format(new Date(item.alqm_fechafin), "d MMM yyyy", { locale: es })}`;
+                      const pendiente = item.alqm_montototal - item.alqm_montopagado;
+                      const cliente = item.ava_alquiler.ava_clientexalquiler[0]?.ava_cliente;
+                      const periodo = `${format(new Date(item.alqm_fechainicio), "d MMM", { locale: es })} – ${format(new Date(item.alqm_fechafin), "d MMM yy", { locale: es })}`;
                       return (
                         <TableRow key={`m-${item.alqm_id}`}>
                           <TableCell>
-                            <Badge
-                              variant="outline"
-                              className="bg-amber-500/10 text-amber-700 border-amber-400/40 text-xs"
-                            >
-                              Mensualidad
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-400/40 text-[10px] px-1.5">
+                              Mensual.
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-medium text-sm">
+                          <TableCell className="font-medium text-xs">
                             {item.ava_alquiler.ava_propiedad.prop_identificador}
                           </TableCell>
-                          <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                            {cliente
-                              ? `${cliente.cli_nombre} ${cliente.cli_papellido}`
-                              : "—"}
+                          <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                            {cliente ? `${cliente.cli_nombre} ${cliente.cli_papellido}` : "—"}
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
+                          <TableCell className="hidden sm:table-cell text-xs text-muted-foreground whitespace-nowrap">
                             {periodo}
                           </TableCell>
-                          <TableCell className="text-right font-semibold text-amber-700 text-sm">
+                          <TableCell className="text-right font-semibold text-amber-700 text-xs whitespace-nowrap">
                             {formatCurrency(pendiente)}
                           </TableCell>
                           <TableCell>
-                            <Button asChild size="sm" variant="ghost" className="h-7 px-2">
-                              <Link
-                                href={`/accounting/payments/payment/${item.alqm_id}`}
-                              >
-                                <ArrowRightIcon className="w-4 h-4" />
+                            <Button asChild size="sm" variant="ghost" className="h-7 w-7 p-0">
+                              <Link href={`/accounting/payments/payment/${item.alqm_id}`}>
+                                <ArrowRightIcon className="w-3.5 h-3.5" />
                               </Link>
                             </Button>
                           </TableCell>
@@ -239,42 +230,30 @@ export function PendingPaymentsOverview({
                     } else {
                       const item = fila.item;
                       const pendiente = item.depo_total - item.depo_montoactual;
-                      const cliente =
-                        item.ava_alquiler.ava_clientexalquiler[0]?.ava_cliente;
+                      const cliente = item.ava_alquiler.ava_clientexalquiler[0]?.ava_cliente;
                       return (
                         <TableRow key={`d-${item.depo_id}`}>
                           <TableCell>
-                            <Badge
-                              variant="outline"
-                              className="bg-emerald-500/10 text-emerald-700 border-emerald-400/40 text-xs"
-                            >
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-400/40 text-[10px] px-1.5">
                               Depósito
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-medium text-sm">
+                          <TableCell className="font-medium text-xs">
                             {item.ava_alquiler.ava_propiedad.prop_identificador}
                           </TableCell>
-                          <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                            {cliente
-                              ? `${cliente.cli_nombre} ${cliente.cli_papellido}`
-                              : "—"}
+                          <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                            {cliente ? `${cliente.cli_nombre} ${cliente.cli_papellido}` : "—"}
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
-                            {format(
-                              new Date(item.depo_fechacreacion),
-                              "d MMM yyyy",
-                              { locale: es }
-                            )}
+                          <TableCell className="hidden sm:table-cell text-xs text-muted-foreground whitespace-nowrap">
+                            {format(new Date(item.depo_fechacreacion), "d MMM yyyy", { locale: es })}
                           </TableCell>
-                          <TableCell className="text-right font-semibold text-emerald-700 text-sm">
+                          <TableCell className="text-right font-semibold text-emerald-700 text-xs whitespace-nowrap">
                             {formatCurrency(pendiente)}
                           </TableCell>
                           <TableCell>
-                            <Button asChild size="sm" variant="ghost" className="h-7 px-2">
-                              <Link
-                                href={`/accounting/payments/depositpayment/${item.depo_id}`}
-                              >
-                                <ArrowRightIcon className="w-4 h-4" />
+                            <Button asChild size="sm" variant="ghost" className="h-7 w-7 p-0">
+                              <Link href={`/accounting/payments/depositpayment/${item.depo_id}`}>
+                                <ArrowRightIcon className="w-3.5 h-3.5" />
                               </Link>
                             </Button>
                           </TableCell>

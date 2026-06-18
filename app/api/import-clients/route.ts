@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
       cli_papellido: String(papellido || '').trim(),
       cli_sapellido: String(sapellido || '').trim() || null,
       cli_cedula: String(cedula || '').trim(),
-      cli_telefono: String(telefono || '').trim(),
-      cli_correo: String(correo || '').trim(),
+      cli_telefono: String(telefono || '').trim() || null,
+      cli_correo: String(correo || '').trim() || null,
       cli_direccion: String(dirección || '').trim() || null,
       cli_estadocivil: String(estadocivil || '').trim() || null,
     }

@@ -64,6 +64,7 @@ export async function PUT(
         data: {
           prop_identificador: data.prop_identificador,
           prop_descripcion: data.prop_descripcion,
+          prop_descripcioncontrato: data.prop_descripcioncontrato || null,
           tipp_id: data.tipp_id,
         },
       });

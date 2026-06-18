@@ -59,7 +59,6 @@ const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
     .join(" ");
 
   if (!filterValue) return true;
-
   const lowerFilter = filterValue.toLowerCase();
 
   return (
@@ -70,6 +69,14 @@ const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
   );
 };
 
+interface ServerPagination {
+  total: number;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+}
+
 interface DataTableProps {
   columns: ColumnDef<AvaAlquiler, any>[];
   data: AvaAlquiler[];
@@ -78,6 +85,10 @@ interface DataTableProps {
   onStatusChange: (value: string[]) => void;
   onPropertyTypeChange: (value: string[]) => void;
   onRowClick?: (row: AvaAlquiler) => void;
+  // Props para modo servidor (opcionales — sin ellas, funciona client-side)
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  serverPagination?: ServerPagination;
 }
 
 export function DataTable({
@@ -88,96 +99,128 @@ export function DataTable({
   onStatusChange,
   onPropertyTypeChange,
   onRowClick,
+  searchValue,
+  onSearchChange,
+  serverPagination,
 }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [localSearch, setLocalSearch] = useState("");
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
   const [pageSize, setPageSize] = useState(10);
   const [pageIndex, setPageIndex] = useState(0);
 
+  const isServerSide = !!serverPagination;
+  const searchInput = searchValue !== undefined ? searchValue : localSearch;
+  const handleSearchInput = onSearchChange ?? setLocalSearch;
+
   const filteredData = useMemo(() => {
+    if (isServerSide) return data;
     return data.filter((item) => {
       const matchesStatus =
         statusFilter.length === 0 || statusFilter.includes(item.alq_estado);
-
       const matchesPropertyType =
         propertyTypeFilter.length === 0 ||
         propertyTypeFilter.includes(
           item.ava_propiedad?.ava_tipopropiedad?.tipp_nombre || ""
         );
-
       return matchesStatus && matchesPropertyType;
     });
-  }, [data, statusFilter, propertyTypeFilter]);
+  }, [data, statusFilter, propertyTypeFilter, isServerSide]);
+
+  const tablePaginationState = isServerSide
+    ? { pageIndex: 0, pageSize: 99999 }
+    : { pageIndex, pageSize };
 
   const table = useReactTable<AvaAlquiler>({
     data: filteredData,
     columns,
     state: {
       sorting,
-      globalFilter: globalFilterValue,
+      globalFilter: isServerSide ? undefined : localSearch,
       columnVisibility,
       rowSelection,
-      pagination: { pageSize, pageIndex },
+      pagination: tablePaginationState,
     },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilterValue,
+    onGlobalFilterChange: setLocalSearch,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: isServerSide
+      ? undefined
+      : (updater) => {
+          const newState =
+            typeof updater === "function"
+              ? updater({ pageIndex, pageSize })
+              : updater;
+          setPageIndex(newState.pageIndex);
+          setPageSize(newState.pageSize);
+        },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     globalFilterFn,
-    onPaginationChange: (updater) => {
-      const newState =
-        typeof updater === "function"
-          ? updater({ pageIndex, pageSize })
-          : updater;
-      setPageIndex(newState.pageIndex);
-      setPageSize(newState.pageSize);
-    },
   });
 
+  // Valores de paginación resueltos (servidor o cliente)
+  const displayPage = isServerSide ? serverPagination!.page : pageIndex + 1;
+  const displayPageSize = isServerSide ? serverPagination!.pageSize : pageSize;
+  const totalPages = isServerSide
+    ? Math.ceil(serverPagination!.total / serverPagination!.pageSize) || 1
+    : table.getPageCount();
+  const canPrevPage = isServerSide
+    ? serverPagination!.page > 1
+    : table.getCanPreviousPage();
+  const canNextPage = isServerSide
+    ? serverPagination!.page < totalPages
+    : table.getCanNextPage();
+
+  const handlePrevPage = () => {
+    if (isServerSide) serverPagination!.onPageChange(serverPagination!.page - 1);
+    else table.previousPage();
+  };
+  const handleNextPage = () => {
+    if (isServerSide) serverPagination!.onPageChange(serverPagination!.page + 1);
+    else table.nextPage();
+  };
   const handlePageSizeChange = (size: number) => {
-    table.setPageSize(size);
-    table.setPageIndex(0);
+    if (isServerSide) {
+      serverPagination!.onPageSizeChange(size);
+    } else {
+      setPageSize(size);
+      setPageIndex(0);
+    }
   };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case "A":
-        return "default";
-      case "C":
-        return "destructive";
-      case "F":
-        return "secondary";
-      default:
-        return "default";
+      case "A": return "default";
+      case "C": return "destructive";
+      case "F": return "secondary";
+      default: return "default";
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-  };
 
   return (
     <div className="w-full space-y-4 p-4 sm:p-6">
-      <div className="sticky top-0 z-10 backdrop-blur p-4 space-y-4 border-b">
+      {/* Filtros */}
+      <div className="p-4 space-y-4 border-b">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
           <Input
             placeholder="Buscar por inquilino, propiedad, edificio, monto..."
-            value={globalFilterValue}
-            onChange={(event) => setGlobalFilterValue(event.target.value)}
+            value={searchInput}
+            onChange={(e) => handleSearchInput(e.target.value)}
             className="w-full"
             aria-label="Buscar en la tabla"
           />
-
           <StatusFilter
             filterName="Estado"
             selectedStatuses={statusFilter}
@@ -188,7 +231,6 @@ export function DataTable({
               { label: "Finalizado", value: "F" },
             ]}
           />
-
           <StatusFilter
             filterName="Tipo de Propiedad"
             selectedStatuses={propertyTypeFilter}
@@ -198,7 +240,6 @@ export function DataTable({
               { label: "Local", value: "local" },
             ]}
           />
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="borderOrange" className="w-full md:w-auto">
@@ -229,6 +270,7 @@ export function DataTable({
         </div>
       </div>
 
+      {/* Vista desktop: tabla (≥ sm) */}
       <div className="hidden rounded-md border sm:flex sm:w-full sm:flex-col">
         <main className="grid flex-1 items-start rounded-md border overflow-x-auto">
           <UITable>
@@ -291,59 +333,53 @@ export function DataTable({
         </main>
       </div>
 
+      {/* Vista móvil: cards (< sm) */}
       <div className="sm:hidden space-y-3">
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map((row) => {
-            const data = row.original;
-            const isActive = data.alq_estado === "A";
+            const rental = row.original;
+            const isActive = rental.alq_estado === "A";
             return (
               <Card key={row.id} className="cursor-pointer hover:bg-muted/50">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <Badge variant="outline" className="font-mono">
-                        {data.ava_propiedad?.ava_edificio?.edi_identificador ||
-                          "—"}
+                        {rental.ava_propiedad?.ava_edificio?.edi_identificador || "—"}
                       </Badge>
                       <Badge variant="secondary" className="font-mono">
-                        {data.ava_propiedad?.prop_identificador || "—"}
+                        {rental.ava_propiedad?.prop_identificador || "—"}
                       </Badge>
                     </div>
-                    <Badge variant={getStatusBadgeVariant(data.alq_estado)}>
-                      {data.alq_estado === "A"
+                    <Badge variant={getStatusBadgeVariant(rental.alq_estado)}>
+                      {rental.alq_estado === "A"
                         ? "Activo"
-                        : data.alq_estado === "C"
+                        : rental.alq_estado === "C"
                         ? "Cancelado"
                         : "Finalizado"}
                     </Badge>
                   </div>
-
-                  <TenantInline rental={data} />
-
+                  <TenantInline rental={rental} />
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <div className="text-muted-foreground">Monto</div>
                       <div className="font-medium">
-                        {formatCurrencyNoDecimals(Number(data.alq_monto))}
+                        {formatCurrencyNoDecimals(Number(rental.alq_monto))}
                       </div>
                     </div>
                     <div>
                       <div className="text-muted-foreground">Día de pago</div>
-                      <div>{formatDate(data.alq_fechapago)}</div>
+                      <div>{formatDate(rental.alq_fechapago)}</div>
                     </div>
                   </div>
-
                   <div className="flex flex-col gap-2 pt-2 border-t">
                     {isActive && (
                       <Link
-                        href={`/accounting/payments/${data.alq_id}`}
+                        href={`/accounting/payments/${rental.alq_id}`}
                         onClick={(e) => e.stopPropagation()}
                         className="w-full"
                       >
-                        <Button
-                          size="sm"
-                          className="flex items-center gap-2 w-full"
-                        >
+                        <Button size="sm" className="flex items-center gap-2 w-full">
                           <ChevronRight className="h-4 w-4" />
                           Realizar movimiento
                         </Button>
@@ -352,28 +388,20 @@ export function DataTable({
                     {isActive && (
                       <div className="flex gap-2">
                         <Link
-                          href={`/accounting/finishedrent/${data.alq_id}`}
+                          href={`/accounting/finishedrent/${rental.alq_id}`}
                           onClick={(e) => e.stopPropagation()}
                           className="flex-1"
                         >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full"
-                          >
+                          <Button variant="outline" size="sm" className="w-full">
                             Finalizar
                           </Button>
                         </Link>
                         <Link
-                          href={`/accounting/canceledrent/${data.alq_id}`}
+                          href={`/accounting/canceledrent/${rental.alq_id}`}
                           onClick={(e) => e.stopPropagation()}
                           className="flex-1"
                         >
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="w-full"
-                          >
+                          <Button variant="destructive" size="sm" className="w-full">
                             Cancelar
                           </Button>
                         </Link>
@@ -391,14 +419,14 @@ export function DataTable({
         )}
       </div>
 
+      {/* Paginación */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
           <p className="text-sm text-muted-foreground whitespace-nowrap">
-            Página {table.getState().pagination.pageIndex + 1} de{" "}
-            {table.getPageCount()}
+            Página {displayPage} de {totalPages}
           </p>
           <Select
-            value={String(pageSize)}
+            value={String(displayPageSize)}
             onValueChange={(value) => handlePageSizeChange(Number(value))}
           >
             <SelectTrigger className="w-[100px]">
@@ -417,8 +445,8 @@ export function DataTable({
           <Button
             variant="green"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={handlePrevPage}
+            disabled={!canPrevPage}
           >
             <ChevronLeft className="h-4 w-4" />
             Anterior
@@ -426,8 +454,8 @@ export function DataTable({
           <Button
             variant="green"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={handleNextPage}
+            disabled={!canNextPage}
           >
             Siguiente
             <ChevronRight className="h-4 w-4" />

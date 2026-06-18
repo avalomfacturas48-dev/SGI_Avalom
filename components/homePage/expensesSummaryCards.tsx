@@ -66,8 +66,15 @@ export function ExpensesSummaryCards({
   ];
 
   if (compact) {
+    const formatCompact = (value: number) => {
+      const abs = Math.abs(value);
+      if (abs >= 1_000_000) return `₡${(abs / 1_000_000).toFixed(1)}M`;
+      if (abs >= 1_000) return `₡${Math.round(abs / 1_000)}K`;
+      return `₡${abs}`;
+    };
+
     return (
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
@@ -79,24 +86,20 @@ export function ExpensesSummaryCards({
                 onMouseEnter={() => setHoveredCard(card.id)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
-                <CardContent className="p-3 flex items-center gap-3">
-                  <div
-                    className={`flex items-center justify-center w-8 h-8 rounded-lg ${card.bgColor} shrink-0`}
-                  >
-                    <Icon className={`w-4 h-4 ${card.color}`} />
+                <CardContent className="p-2.5 flex flex-col items-center text-center gap-1">
+                  <div className={`flex items-center justify-center w-6 h-6 rounded-md ${card.bgColor} shrink-0`}>
+                    <Icon className={`w-3 h-3 ${card.color}`} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground truncate">
-                      {card.title}
+                  <p className="text-[10px] text-muted-foreground leading-tight w-full truncate">
+                    {card.title}
+                  </p>
+                  {loading ? (
+                    <Skeleton className="h-4 w-12" />
+                  ) : (
+                    <p className="text-sm font-bold text-foreground leading-tight">
+                      {formatCompact(Number(card.value))}
                     </p>
-                    {loading ? (
-                      <Skeleton className="h-5 w-20 mt-0.5" />
-                    ) : (
-                      <p className="text-sm font-bold text-foreground truncate">
-                        {formatCurrency(Number(card.value))}
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </Link>

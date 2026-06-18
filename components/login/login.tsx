@@ -37,7 +37,7 @@ const Login: React.FC = () => {
         const data = await response.json();
         const { token, user } = data;
 
-        cookie.set("token", token, { expires: 1 });
+        cookie.set("token", token, { expires: 7 });
         setUser(user);
         router.push("/homePage");
       } else {

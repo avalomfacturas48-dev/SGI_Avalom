@@ -75,6 +75,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const { removeProperty } = useBuildingStore();
   const { types } = useTypeStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [openDateDialog, setOpenDateDialog] = useState(false);
 
   const activeRental = property.ava_alquiler?.[0];
@@ -182,17 +183,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                   Generar Reporte
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-                  <AlertDialog
-                    title="¿Está seguro?"
-                    description="Esta acción no se puede deshacer. ¿Está seguro de que desea borrar esta propiedad?"
-                    triggerText="Borrar Propiedad"
-                    cancelText="Cancelar"
-                    actionText="Continuar"
-                    classn="p-4 m-0 h-8 w-full"
-                    variant="ghost"
-                    onAction={handleDelete}
-                  />
+                <DropdownMenuItem onSelect={() => setOpenDelete(true)}>
+                  Borrar Propiedad
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -239,7 +231,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                     )}
                     <div className="space-y-0.5">
                       {tenants.map((t) => (
-                        <p key={t.cli_id} className="truncate max-w-[180px]">
+                        <p key={t.cli_id} className="truncate">
                           {getClientFullName(t)}
                         </p>
                       ))}
@@ -266,6 +258,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           )}
         </CardFooter>
       </Card>
+
+      {/* Confirmación fuera del menú para no romper el manejo de foco de Radix */}
+      <AlertDialog
+        hideTrigger
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        title="¿Está seguro?"
+        description="Esta acción no se puede deshacer. ¿Está seguro de que desea borrar esta propiedad?"
+        triggerText="Borrar Propiedad"
+        cancelText="Cancelar"
+        actionText="Continuar"
+        onAction={handleDelete}
+      />
 
       <DateRangeDialog
         open={openDateDialog}

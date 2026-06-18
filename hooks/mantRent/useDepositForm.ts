@@ -57,12 +57,13 @@ export const useDepositForm = () => {
     }
   };
 
-  const isFormDisabled = Boolean(deposit?.ava_pago?.length);
+  // El depósito puede editarse aunque tenga pagos asociados; solo se advierte.
+  const hasPayments = Boolean(deposit?.ava_pago?.length);
 
   return {
     form,
     onSubmit,
-    isFormDisabled,
+    hasPayments,
     isEditing,
     deposit,
   };

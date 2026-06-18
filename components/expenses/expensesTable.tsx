@@ -31,7 +31,6 @@ import {
   Wrench,
   Calendar,
   Building2,
-  MoreHorizontal,
   Eye,
   Edit,
   X,
@@ -40,6 +39,7 @@ import {
   Filter,
   Columns,
 } from "lucide-react";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import type { AvaGasto } from "@/lib/types/entities";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -215,34 +215,28 @@ export const ExpensesTable = memo(function ExpensesTable({
           const isActive = expense.gas_estado === "A";
 
           return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="size-8 p-0">
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onViewDetails(expense)}>
-                  <Eye className="mr-2 size-4" />
-                  Ver detalles
-                </DropdownMenuItem>
-                {isActive && (
-                  <>
-                    <DropdownMenuItem onClick={() => onEdit(expense)}>
-                      <Edit className="mr-2 size-4" />
-                      Editar
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive" onClick={() => onCancel(expense)}>
-                      <X className="mr-2 size-4" />
-                      Anular
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <RowActions>
+              <RowActionButton
+                label="Ver detalles"
+                icon={<Eye className="h-4 w-4" />}
+                onClick={() => onViewDetails(expense)}
+              />
+              {isActive && (
+                <>
+                  <RowActionButton
+                    label="Editar"
+                    icon={<Edit className="h-4 w-4" />}
+                    onClick={() => onEdit(expense)}
+                  />
+                  <RowActionButton
+                    label="Anular"
+                    icon={<X className="h-4 w-4" />}
+                    variant="destructive"
+                    onClick={() => onCancel(expense)}
+                  />
+                </>
+              )}
+            </RowActions>
           );
         },
       },
@@ -357,29 +351,109 @@ export const ExpensesTable = memo(function ExpensesTable({
         </div>
       </div>
 
-      <div className="rounded-md border">
+      {/* Móvil: cards */}
+      <div className="sm:hidden space-y-2">
+        {table.getRowModel().rows.length > 0 ? (
+          table.getRowModel().rows.map((row) => {
+            const expense = row.original;
+            const isActive = expense.gas_estado === "A";
+            const fechaCR = expense.gas_fecha ? convertToCostaRicaTime(expense.gas_fecha) : null;
+            const fechaFormateada = fechaCR ? formatDate(fechaCR + "T00:00:00") : null;
+            return (
+              <div key={row.id} className="rounded-lg border p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {expense.gas_tipo === "S" ? (
+                      <Badge className="bg-blue-500 hover:bg-blue-600 text-[11px]">
+                        <Zap className="mr-1 size-3" />Servicio
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-orange-500 hover:bg-orange-600 text-[11px]">
+                        <Wrench className="mr-1 size-3" />Mantenimiento
+                      </Badge>
+                    )}
+                    {isActive ? (
+                      <Badge className="bg-green-500 hover:bg-green-600 text-[11px]">Activo</Badge>
+                    ) : (
+                      <Badge variant="destructive" className="text-[11px]">Anulado</Badge>
+                    )}
+                  </div>
+                  <RowActions>
+                    <RowActionButton label="Ver detalles" icon={<Eye className="h-4 w-4" />} onClick={() => onViewDetails(expense)} />
+                    {isActive && (
+                      <>
+                        <RowActionButton label="Editar" icon={<Edit className="h-4 w-4" />} onClick={() => onEdit(expense)} />
+                        <RowActionButton label="Anular" icon={<X className="h-4 w-4" />} variant="destructive" onClick={() => onCancel(expense)} />
+                      </>
+                    )}
+                  </RowActions>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium">{expense.gas_concepto}</p>
+                  {expense.gas_descripcion && (
+                    <p className="text-xs text-muted-foreground line-clamp-1">{expense.gas_descripcion}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                    <Building2 className="size-3 flex-shrink-0" />
+                    <span className="truncate">
+                      {expense.ava_edificio?.edi_identificador}
+                      {expense.ava_propiedad && ` · ${expense.ava_propiedad.prop_identificador}`}
+                    </span>
+                  </div>
+                  <span className="text-sm font-semibold flex-shrink-0">{formatCurrency(expense.gas_monto)}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  {fechaFormateada && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="size-3" />
+                      <span>{fechaFormateada}</span>
+                    </div>
+                  )}
+                  {expense.ava_servicio && (
+                    <Badge variant="outline" className="text-[11px]">{expense.ava_servicio.ser_nombre}</Badge>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 py-8">
+            <div className="rounded-full bg-muted p-3">
+              <Search className="size-6 text-muted-foreground" />
+            </div>
+            <p className="text-sm font-medium">No se encontraron gastos</p>
+            <p className="text-xs text-muted-foreground">Intenta ajustar los filtros de búsqueda</p>
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: tabla */}
+      <div className="hidden sm:block rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, index) => (
-                <TableRow 
-                  key={row.id} 
-                  data-state={row.getIsSelected() && "selected"} 
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
                   className="hover:bg-muted/50 transition-colors duration-200 animate-in fade-in slide-in-from-left-5"
-                  style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
+                  style={{ animationDelay: `${index * 30}ms`, animationFillMode: "backwards" }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>

@@ -4,20 +4,13 @@ import { useState } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, Eye, Pencil, Trash2 } from "lucide-react";
 import useUserStore from "@/lib/zustand/userStore";
 import { User } from "@/lib/types";
 import AlertDialog from "@/components/alertDialog";
 import UserForm from "@/components/mantUser/UserFormProps";
 import ManageActions from "@/components/dataTable/manageActions";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/lib/UserContext";
 import { toast } from "sonner";
@@ -115,8 +108,9 @@ export const columns: ColumnDef<User>[] = [
       const removeUser = useUserStore((s) => s.removeUser);
       const { user: currentUser } = useUser();
 
-      const [dropdownOpen, setDropdownOpen] = useState(false);
+      const [openView, setOpenView] = useState(false);
       const [openEdit, setOpenEdit] = useState(false);
+      const [openDelete, setOpenDelete] = useState(false);
 
       const canEdit =
         (currentUser?.usu_rol === "A" &&
@@ -136,7 +130,6 @@ export const columns: ColumnDef<User>[] = [
           toast.success("Usuario eliminado", {
             description: `El usuario ${user.usu_nombre} fue eliminado correctamente.`,
           });
-          setDropdownOpen(false);
         } catch (error) {
           toast.error("Error", {
             description: "No se pudo eliminar el usuario.",
@@ -145,75 +138,73 @@ export const columns: ColumnDef<User>[] = [
       };
 
       return (
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuLabel className="text-center">
-              Acciones
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-
-            {/* Ver Usuario */}
-            <DropdownMenuItem asChild>
-              <ManageActions
-                titleButton="Ver Usuario"
-                title="Detalles de Usuario"
-                description="Visualiza los datos del usuario"
-                variant="ghost"
-                classn="p-4 m-0 h-8 w-full"
-                FormComponent={
-                  <UserForm action="view" entity={user} onSuccess={() => {}} />
-                }
-              />
-            </DropdownMenuItem>
-
+        <>
+          <RowActions>
+            <RowActionButton
+              label="Ver Usuario"
+              icon={<Eye className="h-4 w-4" />}
+              onClick={() => setOpenView(true)}
+            />
             {canEdit && (
               <>
-                {/* Editar Usuario */}
-                <DropdownMenuItem asChild>
-                  <ManageActions
-                    open={openEdit}
-                    onOpenChange={setOpenEdit}
-                    titleButton="Editar Usuario"
-                    title="Editar Usuario"
-                    description="Modifica los datos del usuario"
-                    variant="ghost"
-                    classn="p-4 m-0 h-8 w-full"
-                    FormComponent={
-                      <UserForm
-                        action="edit"
-                        entity={user}
-                        onSuccess={() => {
-                          setOpenEdit(false);
-                          setDropdownOpen(false);
-                        }}
-                      />
-                    }
-                  />
-                </DropdownMenuItem>
-
-                {/* Borrar Usuario */}
-                <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-                  <AlertDialog
-                    title="¿Estás seguro?"
-                    description="Esta acción no se puede deshacer."
-                    triggerText="Borrar Usuario"
-                    cancelText="Cancelar"
-                    actionText="Continuar"
-                    classn="p-4 m-0 h-8 w-full"
-                    variant="ghost"
-                    onAction={handleDelete}
-                  />
-                </DropdownMenuItem>
+                <RowActionButton
+                  label="Editar Usuario"
+                  icon={<Pencil className="h-4 w-4" />}
+                  onClick={() => setOpenEdit(true)}
+                />
+                <RowActionButton
+                  label="Borrar Usuario"
+                  icon={<Trash2 className="h-4 w-4" />}
+                  variant="destructive"
+                  onClick={() => setOpenDelete(true)}
+                />
               </>
             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </RowActions>
+
+          {/* Diálogos controlados por estado */}
+          <ManageActions
+            hideTrigger
+            open={openView}
+            onOpenChange={setOpenView}
+            title="Detalles de Usuario"
+            description="Visualiza los datos del usuario"
+            FormComponent={
+              <UserForm action="view" entity={user} onSuccess={() => {}} />
+            }
+          />
+
+          {canEdit && (
+            <>
+              <ManageActions
+                hideTrigger
+                open={openEdit}
+                onOpenChange={setOpenEdit}
+                title="Editar Usuario"
+                description="Modifica los datos del usuario"
+                FormComponent={
+                  <UserForm
+                    action="edit"
+                    entity={user}
+                    onSuccess={() => setOpenEdit(false)}
+                  />
+                }
+              />
+
+              <AlertDialog
+                hideTrigger
+                open={openDelete}
+                onOpenChange={setOpenDelete}
+                title="¿Estás seguro?"
+                description="Esta acción no se puede deshacer."
+                triggerText="Borrar Usuario"
+                cancelText="Cancelar"
+                actionText="Continuar"
+                onAction={handleDelete}
+              />
+            </>
+          )}
+        </>
       );
     },
     enableSorting: false,

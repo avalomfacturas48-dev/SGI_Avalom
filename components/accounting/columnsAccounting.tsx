@@ -1,10 +1,8 @@
 "use client";
 
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDown,
-  MoreHorizontal,
   Building2,
   Home,
   Calendar,
@@ -12,23 +10,11 @@ import {
   Wallet,
   Flag,
   XCircle,
-  FileDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { AvaAlquiler } from "@/lib/types";
-import Link from "next/link";
-import DateRangeDialog from "../DateRangeDialog";
-import { toast } from "sonner";
-import { useState } from "react";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { TenantCell } from "@/components/shared/TenantCell";
@@ -187,97 +173,31 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
     cell: ({ row }) => {
       const rental = row.original;
       const isActive = rental.alq_estado === "A";
-      const [dialogOpen, setDialogOpen] = useState(false);
-      const [loading, setLoading] = useState(false);
-
-      const downloadPDF = async (alq_id: number, from: string, to: string) => {
-        try {
-          setLoading(true);
-          const url = `/api/export-rental?alq_id=${alq_id}&from=${from}&to=${to}`;
-          const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${cookie.get("token") ?? ""}` },
-          });
-          if (!res.ok) throw new Error(`Error ${res.status}`);
-
-          // Obtener el nombre del archivo del header
-          const disposition = res.headers.get("Content-Disposition");
-          let filename = "reporte.pdf";
-          if (disposition && disposition.includes("filename=")) {
-            const match = disposition.match(/filename="?([^"]+)"?/);
-            if (match && match[1]) filename = match[1];
-          }
-
-          const blob = await res.blob();
-          const pdfUrl = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = pdfUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          window.URL.revokeObjectURL(pdfUrl);
-        } catch (err: any) {
-          console.error(err);
-          toast.error("No se pudo generar el reporte del alquiler.");
-        } finally {
-          setLoading(false);
-        }
-      };
 
       return (
         <div className="flex items-center justify-end gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir Menú</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {isActive && (
-                <>
-                  <Link href={`/accounting/payments/${rental.alq_id}`}>
-                    <DropdownMenuItem>
-                      <Wallet className="mr-2 h-4 w-4" />
-                      Realizar movimiento
-                    </DropdownMenuItem>
-                  </Link>
-                  <Link href={`/accounting/finishedrent/${rental.alq_id}`}>
-                    <DropdownMenuItem>
-                      <Flag className="mr-2 h-4 w-4" />
-                      Finalizar Alquiler
-                    </DropdownMenuItem>
-                  </Link>
-                  <Link href={`/accounting/canceledrent/${rental.alq_id}`}>
-                    <DropdownMenuItem className="text-destructive focus:text-destructive">
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Cancelar Alquiler
-                    </DropdownMenuItem>
-                  </Link>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem
-                onClick={() => setDialogOpen(true)}
-                disabled={loading}
-              >
-                <FileDown className="mr-2 h-4 w-4" />
-                {loading ? "Generando…" : "Exportar Alquiler"}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {/* Este dialog está FUERA del menú */}
-          <DateRangeDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-            title="Exportar Alquiler"
-            onGenerate={async (from, to) => {
-              await downloadPDF(Number(rental.alq_id), from, to);
-              setDialogOpen(false);
-            }}
-          />
+          <RowActions>
+            {isActive && (
+              <>
+                <RowActionButton
+                  label="Realizar movimiento"
+                  icon={<Wallet className="h-4 w-4" />}
+                  href={`/accounting/payments/${rental.alq_id}`}
+                />
+                <RowActionButton
+                  label="Finalizar Alquiler"
+                  icon={<Flag className="h-4 w-4" />}
+                  href={`/accounting/finishedrent/${rental.alq_id}`}
+                />
+                <RowActionButton
+                  label="Cancelar Alquiler"
+                  icon={<XCircle className="h-4 w-4" />}
+                  variant="destructive"
+                  href={`/accounting/canceledrent/${rental.alq_id}`}
+                />
+              </>
+            )}
+          </RowActions>
         </div>
       );
     },

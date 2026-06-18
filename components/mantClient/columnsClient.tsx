@@ -4,19 +4,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import ClientAlertDialog from "@/components/alertDialog";
 import ClienteForm from "@/components/mantClient/clienteFormProps";
 import ManageActions from "@/components/dataTable/manageActions";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { Button } from "@/components/ui/button";
 import useClientStore from "@/lib/zustand/clientStore";
 import { Cliente } from "@/lib/types";
@@ -68,8 +61,9 @@ export const columnsClient: ColumnDef<Cliente>[] = [
     cell: ({ row }) => {
       const cliente = row.original;
       const removeClient = useClientStore((s) => s.removeClient);
+      const [openView, setOpenView] = useState(false);
       const [openEdit, setOpenEdit] = useState(false);
-      const [dropdownOpen, setDropdownOpen] = useState(false);
+      const [openDelete, setOpenDelete] = useState(false);
 
       const handleDelete = async () => {
         try {
@@ -80,82 +74,75 @@ export const columnsClient: ColumnDef<Cliente>[] = [
           });
           removeClient(cliente.cli_id);
           toast.success("Cliente eliminado");
-          setDropdownOpen(false);
         } catch (err: any) {
           toast.error(err.message || "Error al eliminar");
         }
       };
 
       return (
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
+        <>
+          <RowActions>
+            <RowActionButton
+              label="Ver Cliente"
+              icon={<Eye className="h-4 w-4" />}
+              onClick={() => setOpenView(true)}
+            />
+            <RowActionButton
+              label="Editar Cliente"
+              icon={<Pencil className="h-4 w-4" />}
+              onClick={() => setOpenEdit(true)}
+            />
+            <RowActionButton
+              label="Borrar Cliente"
+              icon={<Trash2 className="h-4 w-4" />}
+              variant="destructive"
+              onClick={() => setOpenDelete(true)}
+            />
+          </RowActions>
 
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuLabel className="text-center">
-              Acciones
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-
-            {/* Ver Cliente */}
-            <DropdownMenuItem asChild>
-              <ManageActions
-                titleButton="Ver Cliente"
-                title="Detalles de Cliente"
-                description="Visualiza los datos del cliente"
-                variant="ghost"
-                classn="p-4 m-0 h-8 w-full"
-                FormComponent={
-                  <ClienteForm
-                    action="view"
-                    entity={cliente}
-                    onSuccess={() => setDropdownOpen(false)}
-                  />
-                }
+          {/* Diálogos controlados por estado */}
+          <ManageActions
+            hideTrigger
+            open={openView}
+            onOpenChange={setOpenView}
+            title="Detalles de Cliente"
+            description="Visualiza los datos del cliente"
+            FormComponent={
+              <ClienteForm
+                action="view"
+                entity={cliente}
+                onSuccess={() => setOpenView(false)}
               />
-            </DropdownMenuItem>
+            }
+          />
 
-            {/* Editar Cliente */}
-            <DropdownMenuItem asChild>
-              <ManageActions
-                open={openEdit}
-                onOpenChange={setOpenEdit}
-                titleButton="Editar Cliente"
-                title="Editar Cliente"
-                description="Modifica la información del cliente"
-                variant="ghost"
-                classn="p-4 m-0 h-8 w-full"
-                FormComponent={
-                  <ClienteForm
-                    action="edit"
-                    entity={cliente}
-                    onSuccess={() => {
-                      setOpenEdit(false);
-                      setDropdownOpen(false);
-                    }}
-                  />
-                }
+          <ManageActions
+            hideTrigger
+            open={openEdit}
+            onOpenChange={setOpenEdit}
+            title="Editar Cliente"
+            description="Modifica la información del cliente"
+            FormComponent={
+              <ClienteForm
+                action="edit"
+                entity={cliente}
+                onSuccess={() => setOpenEdit(false)}
               />
-            </DropdownMenuItem>
+            }
+          />
 
-            {/* Borrar Cliente */}
-            <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-              <ClientAlertDialog
-                title="¿Estás seguro?"
-                description="Esta acción no se puede deshacer."
-                triggerText="Borrar Cliente"
-                cancelText="Cancelar"
-                actionText="Continuar"
-                classn="p-4 m-0 h-8 w-full"
-                variant="ghost"
-                onAction={handleDelete}
-              />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <ClientAlertDialog
+            hideTrigger
+            open={openDelete}
+            onOpenChange={setOpenDelete}
+            title="¿Estás seguro?"
+            description="Esta acción no se puede deshacer."
+            triggerText="Borrar Cliente"
+            cancelText="Cancelar"
+            actionText="Continuar"
+            onAction={handleDelete}
+          />
+        </>
       );
     },
     enableSorting: false,

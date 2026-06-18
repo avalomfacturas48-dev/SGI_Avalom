@@ -36,15 +36,19 @@ import {
   Gift,
   History,
   Ban,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatToCR } from "@/utils/dateUtils";
 import { cn } from "@/lib/utils";
 import { StatusFilter } from "@/components/dataTable/status-filter";
 import Link from "next/link";
-import { formatCurrency, formatCurrencyNoDecimals } from "@/utils/currencyConverter";
+import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { toast } from "sonner";
 import AlertDialog from "@/components/alertDialog";
 import { AvaAlquilerMensual } from "@/lib/types";
+
+const ITEMS_PER_PAGE = 8;
 
 const MonthlyRentsView: React.FC = () => {
   const { monthlyRents, setRentStatus } = useRentalStore();
@@ -52,10 +56,15 @@ const MonthlyRentsView: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [movementRent, setMovementRent] = useState<AvaAlquilerMensual | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setRents(monthlyRents);
   }, [monthlyRents]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatuses, sortOrder]);
 
   const getStatusColor = (rent: AvaAlquilerMensual) => {
     const now = new Date();
@@ -123,6 +132,12 @@ const MonthlyRentsView: React.FC = () => {
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedRents.length / ITEMS_PER_PAGE));
+  const paginatedRents = filteredAndSortedRents.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const handleGiftToggle = async (rent: AvaAlquilerMensual) => {
     const isGifted = rent.alqm_estado !== "R";
     try {
@@ -179,8 +194,8 @@ const MonthlyRentsView: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredAndSortedRents.map((rent) => {
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
+          {paginatedRents.map((rent) => {
             const isPaid = rent.alqm_estado === "P";
             const isGifted = rent.alqm_estado === "R";
             const isSettled = isPaid || isGifted;
@@ -200,18 +215,18 @@ const MonthlyRentsView: React.FC = () => {
                   getStatusColor(rent)
                 )}
               >
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
+                <CardHeader className="pb-1.5 px-3 pt-3">
+                  <div className="flex items-start justify-between gap-1">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm font-bold text-foreground truncate">
+                      <CardTitle className="text-xs font-bold text-foreground truncate">
                         {rent.alqm_identificador}
                       </CardTitle>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
                         {formatToCR(rent.alqm_fechainicio)} – {formatToCR(rent.alqm_fechafin)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className={cn("text-xs font-semibold", statusColor)}>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <span className={cn("text-[10px] font-semibold hidden sm:inline", statusColor)}>
                         {statusLabel}
                       </span>
                       {getStatusIcon(rent)}
@@ -219,66 +234,66 @@ const MonthlyRentsView: React.FC = () => {
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-3 flex-1">
+                <CardContent className="space-y-2 flex-1 px-3 pb-2">
                   {/* Progreso */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">Pagado</span>
-                      <span className="font-bold text-foreground">{Math.round(progress)}%</span>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className={cn("font-semibold sm:hidden", statusColor)}>{statusLabel}</span>
+                      <span className="font-bold text-foreground ml-auto">{Math.round(progress)}%</span>
                     </div>
-                    <Progress value={progress} className="h-1.5" indicatorClassName="bg-primary" />
+                    <Progress value={progress} className="h-1" indicatorClassName="bg-primary" />
                   </div>
 
                   {/* Montos */}
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t text-center">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground mb-0.5">Total</p>
-                      <p className="text-xs font-bold text-foreground">
-                        {formatCurrency(Number(rent.alqm_montototal))}
-                      </p>
+                  <div className="divide-y divide-border pt-1.5 border-t">
+                    <div className="flex items-center justify-between py-0.5 min-w-0">
+                      <span className="text-[10px] text-muted-foreground flex-shrink-0">Total</span>
+                      <span className="text-[10px] font-bold text-foreground ml-2 truncate text-right">
+                        {formatCurrencyNoDecimals(Number(rent.alqm_montototal))}
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground mb-0.5">Pagado</p>
-                      <p className="text-xs font-semibold text-emerald-600">
-                        {formatCurrency(Number(rent.alqm_montopagado))}
-                      </p>
+                    <div className="flex items-center justify-between py-0.5 min-w-0">
+                      <span className="text-[10px] text-muted-foreground flex-shrink-0">Pagado</span>
+                      <span className="text-[10px] font-semibold text-emerald-600 ml-2 truncate text-right">
+                        {formatCurrencyNoDecimals(Number(rent.alqm_montopagado))}
+                      </span>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground mb-0.5">Pendiente</p>
-                      <p className={cn("text-xs font-semibold", pendingAmount > 0 ? "text-amber-600" : "text-emerald-600")}>
-                        {formatCurrency(pendingAmount)}
-                      </p>
+                    <div className="flex items-center justify-between py-0.5 min-w-0">
+                      <span className="text-[10px] text-muted-foreground flex-shrink-0">Pendiente</span>
+                      <span className={cn("text-[10px] font-semibold ml-2 truncate text-right", pendingAmount > 0 ? "text-amber-600" : "text-emerald-600")}>
+                        {formatCurrencyNoDecimals(pendingAmount)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-2 pt-3 border-t">
+                <CardFooter className="flex flex-col gap-1.5 px-3 pt-2 pb-3 border-t">
                   {/* Pagar — solo visible si no está pagado ni regalado */}
                   {!isSettled && (
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full text-xs"
+                      className="w-full text-[11px] h-7"
                       asChild
                     >
                       <Link href={`/accounting/payments/payment/${rent.alqm_id}`}>
-                        <HandCoins className="h-3.5 w-3.5 mr-1.5" />
+                        <HandCoins className="h-3 w-3 mr-1" />
                         Pagar
                       </Link>
                     </Button>
                   )}
 
-                  <div className="flex gap-2 w-full">
+                  <div className="flex gap-1.5 w-full">
                     {/* Anular */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-xs"
+                      className="flex-1 text-[11px] h-7"
                       disabled={isGifted}
                       asChild
                     >
                       <Link href={`/accounting/payments/cancelpayment/${rent.alqm_id}`}>
-                        <BanIcon className="h-3.5 w-3.5 mr-1.5" />
+                        <BanIcon className="h-3 w-3 mr-1" />
                         Anular
                       </Link>
                     </Button>
@@ -296,8 +311,8 @@ const MonthlyRentsView: React.FC = () => {
                         cancelText="Cancelar"
                         actionText={isGifted ? "Quitar regalo" : "Regalar mes"}
                         variant="ghost"
-                        classn="text-xs p-1.5 h-8 w-8"
-                        icon={<Gift size={14} />}
+                        classn="text-[11px] p-1 h-7 w-7"
+                        icon={<Gift size={12} />}
                         onAction={() => handleGiftToggle(rent)}
                       />
                     )}
@@ -307,13 +322,13 @@ const MonthlyRentsView: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full text-xs text-muted-foreground hover:text-foreground"
+                    className="w-full text-[11px] h-7 text-muted-foreground hover:text-foreground"
                     onClick={() => setMovementRent(rent)}
                   >
-                    <History className="h-3.5 w-3.5 mr-1.5" />
-                    Ver movimientos
+                    <History className="h-3 w-3 mr-1" />
+                    Movimientos
                     {movCount > 0 && (
-                      <Badge variant="secondary" className="ml-1.5 h-4 px-1 text-[10px]">
+                      <Badge variant="secondary" className="ml-1 h-4 px-1 text-[9px]">
                         {movCount}
                       </Badge>
                     )}
@@ -323,6 +338,38 @@ const MonthlyRentsView: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Paginación */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2 border-t">
+            <p className="text-xs text-muted-foreground">
+              {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedRents.length)} de {filteredAndSortedRents.length}
+            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs font-medium px-2">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Dialog de movimientos del mes */}

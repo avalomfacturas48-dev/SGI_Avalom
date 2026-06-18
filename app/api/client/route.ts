@@ -7,9 +7,44 @@ import { stringifyWithBigInt } from "@/utils/converters";
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const clients = await prisma.ava_cliente.findMany();
+      const { searchParams } = new URL(request.url);
+      const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+      const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "10")));
+      const skip = (page - 1) * limit;
+      const search = searchParams.get("search")?.trim() || "";
+
+      const where: any = search
+        ? {
+            OR: [
+              { cli_nombre: { contains: search, mode: "insensitive" } },
+              { cli_papellido: { contains: search, mode: "insensitive" } },
+              { cli_cedula: { contains: search, mode: "insensitive" } },
+              { cli_correo: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {};
+
+      const [total, clients] = await prisma.$transaction([
+        prisma.ava_cliente.count({ where }),
+        prisma.ava_cliente.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { cli_papellido: "asc" },
+        }),
+      ]);
+
       return NextResponse.json(
-        { success: true, data: stringifyWithBigInt(clients) },
+        {
+          success: true,
+          data: stringifyWithBigInt(clients),
+          pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+          },
+        },
         { status: 200 }
       );
     } catch (error: any) {
@@ -37,8 +72,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Teléfono y correo son opcionales: normalizar "" → null para evitar
+      // colisiones en el índice único del correo entre clientes sin correo.
       const newClient = await prisma.ava_cliente.create({
-        data: body,
+        data: {
+          ...body,
+          cli_telefono: body.cli_telefono?.trim() || null,
+          cli_correo: body.cli_correo?.trim() || null,
+        },
       });
 
       return NextResponse.json(

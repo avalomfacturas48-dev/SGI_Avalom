@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Home, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, Home, Plus } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import cookie from "js-cookie";
 import axios from "axios";
 import {
@@ -59,15 +60,56 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <div className="p-4">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </Card>
+        <Card>
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-6 w-52" />
+            <Skeleton className="h-4 w-40" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-10" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-9 w-36" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="space-y-2">
+                  <Skeleton className="h-5 w-28" />
+                  <Skeleton className="h-4 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-20" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!building) {
     return (
-      <div className="mx-auto p-4 max-w-7xl space-y-4">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <p className="text-muted-foreground">Edificio no encontrado.</p>
         <Button variant="outline" onClick={() => router.push("/mantBuild")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -80,7 +122,7 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
   const properties = building.ava_propiedad || [];
 
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {/* Header */}
       <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <CardHeader>

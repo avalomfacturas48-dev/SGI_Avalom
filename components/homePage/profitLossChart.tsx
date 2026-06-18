@@ -56,8 +56,12 @@ export function ProfitLossChart({
       }))
     : [];
 
+  const minValue = Math.min(
+    ...formattedData.flatMap((item) => [item.revenue, item.expenses, item.profit]),
+    0
+  );
   const maxValue = Math.max(
-    ...formattedData.flatMap((item) => [item.revenue, item.expenses]),
+    ...formattedData.flatMap((item) => [item.revenue, item.expenses, item.profit]),
     0
   ) * 1.2;
 
@@ -68,6 +72,14 @@ export function ProfitLossChart({
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
+
+  const formatYAxisTick = (value: number) => {
+    const sign = value < 0 ? "-" : "";
+    const abs = Math.abs(value);
+    if (abs >= 1_000_000) return `${sign}₡${(abs / 1_000_000).toFixed(1)}M`;
+    if (abs >= 1_000) return `${sign}₡${Math.round(abs / 1_000)}K`;
+    return `${sign}₡${abs}`;
+  };
 
   const CustomTooltip = ({ active, payload, label }: any) =>
     active && payload && payload.length ? (
@@ -112,7 +124,7 @@ export function ProfitLossChart({
   return (
     <Card className="overflow-hidden border shadow-lg">
       <CardHeader className="p-4 sm:p-6 border-b">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:justify-between">
           <div>
             <CardTitle className="text-lg sm:text-xl font-bold text-foreground">
               Ganancias y Pérdidas
@@ -144,7 +156,7 @@ export function ProfitLossChart({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={formattedData}
-                margin={{ top: 16, right: 16, left: 35, bottom: 8 }}
+                margin={{ top: 16, right: 8, left: 0, bottom: 8 }}
               >
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -165,18 +177,20 @@ export function ProfitLossChart({
                   dataKey="month"
                   tickLine={false}
                   axisLine={false}
-                  tickMargin={8}
+                  tickMargin={4}
                   tickFormatter={(v) => v.slice(0, 3)}
                   interval={0}
                   stroke="hsl(var(--muted-foreground))"
+                  tick={{ fontSize: 9 }}
                 />
                 <YAxis
-                  domain={[0, maxValue]}
+                  domain={[minValue < 0 ? minValue * 1.2 : 0, maxValue]}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={formatCurrency}
-                  width={60}
+                  tickFormatter={formatYAxisTick}
+                  width={48}
                   stroke="hsl(var(--muted-foreground))"
+                  tick={{ fontSize: 10 }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend
@@ -220,7 +234,7 @@ export function ProfitLossChart({
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between items-center p-4 sm:p-6">
+      <CardFooter className="flex flex-wrap justify-between items-center gap-y-2 p-4 sm:p-6">
         <div className="flex items-center gap-4 text-xs sm:text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded bg-emerald-500"></div>

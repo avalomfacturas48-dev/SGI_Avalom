@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Plus } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import cookie from "js-cookie";
 import axios from "axios";
 import {
@@ -17,6 +18,8 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { DataTable } from "@/components/dataTable/data-table";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import PropertyForm from "./propertyFormProps";
 import RentalForm from "./mantRent/rentForm";
 import { columnsRent } from "./mantRent/columnRent";
@@ -83,15 +86,52 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-4 w-56" />
+            <Skeleton className="h-7 w-44" />
+          </CardHeader>
+          <div className="p-4">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </Card>
+        <Card>
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-44" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <Skeleton key={i} className="h-10" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-6 w-28" />
+            <Skeleton className="h-4 w-52" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-10 w-full mb-4" />
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 py-3 border-b last:border-0">
+                <Skeleton className="h-5 flex-1" />
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-5 w-20" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!selectedProperty) {
     return (
-      <div className="mx-auto p-4 max-w-7xl space-y-4">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
         <p className="text-muted-foreground">Propiedad no encontrada.</p>
         <Button
           variant="outline"
@@ -107,7 +147,7 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
   const building = selectedProperty.ava_edificio;
 
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {/* Header */}
       <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <CardHeader>
@@ -188,6 +228,34 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
                 columns={columnsRent}
                 data={selectedProperty.ava_alquiler || []}
                 onRowClick={handleSelectRental}
+                renderMobileCard={(rental, actions) => (
+                  <Card className="hover:bg-muted/50 transition-colors">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-base">
+                          {rental.alq_monto
+                            ? formatCurrencyNoDecimals(Number(rental.alq_monto))
+                            : "Sin monto"}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={rental.alq_estado} />
+                          <div onClick={(e) => e.stopPropagation()}>{actions}</div>
+                        </div>
+                      </div>
+                      {rental.alq_fechapago && (
+                        <div className="border-t pt-3 text-sm">
+                          <span className="text-muted-foreground">Fecha de pago: </span>
+                          <span>
+                            {new Date(rental.alq_fechapago).toLocaleDateString(
+                              "es-CR",
+                              { day: "2-digit", month: "long", year: "numeric" }
+                            )}
+                          </span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               />
               {selectedRental && (
                 <>

@@ -63,7 +63,7 @@ const BodyPayments: React.FC = () => {
   }, [alqId, setSelectedRental, setLoadingState]);
 
   return (
-    <div className="mx-auto p-4 space-y-8 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
           <div className="flex flex-col sm:flex-row justify-between items-center">
@@ -110,7 +110,7 @@ const BodyPayments: React.FC = () => {
                 <Skeleton className="h-8 w-36" />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
                 {[...Array(8)].map((_, index) => (
                   <div key={index} className="p-4 space-y-3">
                     <Skeleton className="h-5 w-32" />
@@ -172,7 +172,7 @@ const BodyPayments: React.FC = () => {
           </Card>
 
           {/* Inquilino y Depósito */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
             {selectedRental?.ava_clientexalquiler[0]?.ava_cliente && (
               <ClientInfoCard
                 cliente={selectedRental.ava_clientexalquiler[0].ava_cliente}

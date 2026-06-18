@@ -213,7 +213,7 @@ export async function GET(req: NextRequest) {
     const row = [
       String(idx + 1),
       nombreCompleto,
-      c.cli_correo,
+      c.cli_correo ?? "—",
       c.cli_telefono ?? "—",
       fechaCreacion,
       estado,

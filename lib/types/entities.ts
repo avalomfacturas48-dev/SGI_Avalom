@@ -34,8 +34,8 @@ export interface Cliente {
   cli_papellido: string;
   cli_sapellido?: string;
   cli_cedula: string;
-  cli_telefono: string;
-  cli_correo: string;
+  cli_telefono?: string | null;
+  cli_correo?: string | null;
   cli_fechacreacion?: string;
   cli_direccion?: string;
   cli_estadocivil?: string;
@@ -67,6 +67,7 @@ export interface AvaPropiedad {
   prop_id: string;
   prop_identificador: string;
   prop_descripcion?: string;
+  prop_descripcioncontrato?: string | null;
   edi_id?: string;
   tipp_id?: string;
   ava_alquiler: AvaAlquiler[];
@@ -93,6 +94,7 @@ export interface AvaAlquiler {
   alq_contrato?: string;
   alq_estado: "A" | "F" | "C";
   alq_fechacreacion?: string;
+  alq_fechafirma?: string | null;
   prop_id?: string;
   ava_propiedad?: AvaPropiedad;
   ava_alquilermensual: AvaAlquilerMensual[];

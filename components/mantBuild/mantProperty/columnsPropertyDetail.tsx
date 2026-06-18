@@ -5,17 +5,17 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Wallet, Pencil } from "lucide-react";
+import {
+  ArrowUpDown,
+  Wallet,
+  Pencil,
+  Trash2,
+  KeyRound,
+  FileText,
+} from "lucide-react";
 import { toast } from "sonner";
 import AlertDialog from "@/components/alertDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import useBuildingStore from "@/lib/zustand/buildStore";
@@ -23,7 +23,6 @@ import useTypeStore from "@/lib/zustand/typeStore";
 import { AvaPropiedad } from "@/lib/types";
 import DateRangeDialog from "@/components/DateRangeDialog";
 import { getClientFullName } from "@/utils/rentalHelpers";
-import Link from "next/link";
 
 export const createColumnsPropertyDetail = (
   ediId: string,
@@ -97,7 +96,7 @@ export const createColumnsPropertyDetail = (
     cell: ({ row }) => {
       const property = row.original;
       const { removeProperty } = useBuildingStore();
-      const [dropdownOpen, setDropdownOpen] = useState(false);
+      const [openDelete, setOpenDelete] = useState(false);
       const [openDateDialog, setOpenDateDialog] = useState(false);
       const activeRental = property.ava_alquiler?.[0];
       const router = useRouter();
@@ -134,80 +133,55 @@ export const createColumnsPropertyDetail = (
 
       return (
         <>
-          <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menú</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="text-center">
-                Acciones
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(
-                    `/mantBuild/${ediId}/propiedades/${property.prop_id}`
-                  );
-                }}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Ver / Editar
-              </DropdownMenuItem>
-
-              {activeRental && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/accounting/payments/${activeRental.alq_id}`}
-                      className="flex items-center"
-                    >
-                      <Wallet className="mr-2 h-4 w-4" />
-                      Ver contabilidad
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={`/mantRent/edit/${activeRental.alq_id}`}
-                      className="flex items-center"
-                    >
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Editar alquiler
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenDateDialog(true);
-                }}
-              >
-                Generar Reporte
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-                <AlertDialog
-                  title="¿Está seguro?"
-                  description="Esta acción no se puede deshacer. ¿Está seguro de que desea borrar esta propiedad?"
-                  triggerText="Borrar Propiedad"
-                  cancelText="Cancelar"
-                  actionText="Continuar"
-                  classn="p-4 m-0 h-8 w-full"
-                  variant="ghost"
-                  onAction={handleDelete}
+          <RowActions>
+            <RowActionButton
+              label="Ver / Editar"
+              icon={<Pencil className="h-4 w-4" />}
+              onClick={() =>
+                router.push(
+                  `/mantBuild/${ediId}/propiedades/${property.prop_id}`
+                )
+              }
+            />
+            {activeRental && (
+              <>
+                <RowActionButton
+                  label="Ver contabilidad"
+                  icon={<Wallet className="h-4 w-4" />}
+                  href={`/accounting/payments/${activeRental.alq_id}`}
                 />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <RowActionButton
+                  label="Editar alquiler"
+                  icon={<KeyRound className="h-4 w-4" />}
+                  href={`/mantRent/edit/${activeRental.alq_id}`}
+                />
+              </>
+            )}
+            <RowActionButton
+              label="Generar Reporte"
+              icon={<FileText className="h-4 w-4" />}
+              onClick={() => setOpenDateDialog(true)}
+            />
+            <RowActionButton
+              label="Borrar Propiedad"
+              icon={<Trash2 className="h-4 w-4" />}
+              variant="destructive"
+              onClick={() => setOpenDelete(true)}
+            />
+          </RowActions>
+
+          {/* Diálogos controlados por estado */}
+          <AlertDialog
+            hideTrigger
+            open={openDelete}
+            onOpenChange={setOpenDelete}
+            title="¿Está seguro?"
+            description="Esta acción no se puede deshacer. ¿Está seguro de que desea borrar esta propiedad?"
+            triggerText="Borrar Propiedad"
+            cancelText="Cancelar"
+            actionText="Continuar"
+            onAction={handleDelete}
+          />
 
           <DateRangeDialog
             open={openDateDialog}

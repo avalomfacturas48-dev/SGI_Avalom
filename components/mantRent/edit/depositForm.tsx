@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/utils/currencyConverter";
 
 const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
-  const { form, onSubmit, isFormDisabled, isEditing, deposit } =
+  const { form, onSubmit, hasPayments, isEditing, deposit } =
     useDepositForm();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -70,18 +70,18 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {Array.isArray(deposit?.ava_pago) &&
-              deposit?.ava_pago.length > 0 && (
-                <Alert className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
-                  <LockIcon className="h-4 w-4 text-yellow-600" />
-                  <AlertTitle className="text-yellow-800 dark:text-yellow-100">
-                    No se puede modificar
-                  </AlertTitle>
-                  <AlertDescription className="text-yellow-700 dark:text-yellow-200">
-                    Este depósito tiene pagos asociados y no puede ser modificado.
-                  </AlertDescription>
-                </Alert>
-              )}
+            {hasPayments && (
+              <Alert className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
+                <LockIcon className="h-4 w-4 text-yellow-600" />
+                <AlertTitle className="text-yellow-800 dark:text-yellow-100">
+                  Tiene pagos asociados
+                </AlertTitle>
+                <AlertDescription className="text-yellow-700 dark:text-yellow-200">
+                  Este depósito tiene pagos registrados. Al modificar el monto,
+                  verifique que el saldo siga siendo consistente.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {deposit && (
               <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
@@ -104,7 +104,7 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                         {...field}
                         type="number"
                         placeholder="Ingrese el monto total"
-                        disabled={isFormDisabled || isLoading}
+                        disabled={isLoading}
                         className="bg-background"
                       />
                     </FormControl>
@@ -114,18 +114,16 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
               />
             </div>
 
-            {!isFormDisabled && (
-              <div className="flex justify-end pt-2">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex items-center gap-2"
-                >
-                  {isLoading && <Loader2Icon className="h-4 w-4 animate-spin" />}
-                  {isEditing ? "Actualizar Depósito" : "Crear Depósito"}
-                </Button>
-              </div>
-            )}
+            <div className="flex justify-end pt-2">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                {isLoading && <Loader2Icon className="h-4 w-4 animate-spin" />}
+                {isEditing ? "Actualizar Depósito" : "Crear Depósito"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </form>

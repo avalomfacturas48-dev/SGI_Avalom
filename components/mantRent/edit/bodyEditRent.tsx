@@ -17,7 +17,8 @@ import DepositForm from "./depositForm";
 import ContractCard from "./contractCard";
 import { RentalContextBar } from "@/components/shared/RentalContextBar";
 import useRentalStore from "@/lib/zustand/useRentalStore";
-import { Eye, Plus, SaveIcon } from "lucide-react";
+import { Eye, FileText, Plus, SaveIcon } from "lucide-react";
+import Link from "next/link";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();
@@ -97,7 +98,7 @@ const BodyEditRent: React.FC = () => {
   }, [alqId, setSelectedRental, setLoadingState]);
 
   return (
-    <div className="mx-auto p-4 space-y-8 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
           <div className="space-y-2">
@@ -188,6 +189,14 @@ const BodyEditRent: React.FC = () => {
                   : "Modificar alquiler"}
               </CardTitle>
             </CardHeader>
+            <div className="px-6 pb-6 sm:pb-0">
+              <Link href={`/mantRent/edit/${alqId}/contrato`}>
+                <Button className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Generar contrato
+                </Button>
+              </Link>
+            </div>
           </Card>
 
           {/* Barra de contexto: edificio · propiedad · inquilino · estado */}

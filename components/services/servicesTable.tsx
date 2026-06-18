@@ -1,17 +1,9 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
+import { Pencil, Trash2 } from "lucide-react";
 import type { AvaServicio } from "@/lib/types/entities";
 
 interface ServicesTableProps {
@@ -48,25 +40,19 @@ export function ServicesTable({ services, onEdit, onDelete }: ServicesTableProps
                 <TableCell className="text-muted-foreground">{service.ser_negocio || "-"}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{service.ser_mediopago || "-"}</TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="size-8 p-0">
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onEdit(service)}>
-                        <Edit className="mr-2 size-4" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive" onClick={() => onDelete(service)}>
-                        <Trash2 className="mr-2 size-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <RowActions>
+                    <RowActionButton
+                      label="Editar"
+                      icon={<Pencil className="h-4 w-4" />}
+                      onClick={() => onEdit(service)}
+                    />
+                    <RowActionButton
+                      label="Eliminar"
+                      icon={<Trash2 className="h-4 w-4" />}
+                      variant="destructive"
+                      onClick={() => onDelete(service)}
+                    />
+                  </RowActions>
                 </TableCell>
               </TableRow>
             ))

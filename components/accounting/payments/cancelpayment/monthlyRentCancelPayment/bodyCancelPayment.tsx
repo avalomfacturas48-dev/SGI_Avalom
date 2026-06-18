@@ -15,7 +15,7 @@ const BodyCancelPayment: React.FC = () => {
   const { isLoading, selectedMonthlyRent } = useCancelPayment(alqmId);
 
   return (
-    <div className="mx-auto p-4 space-y-6 max-w-7xl">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
           <Card>
@@ -27,13 +27,13 @@ const BodyCancelPayment: React.FC = () => {
           </Card>
           <Card>
             <CardContent className="p-6 space-y-4">
-              <div className="grid grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                 {[...Array(6)].map((_, i) => (
                   <Skeleton key={i} className="h-4 w-full" />
                 ))}
               </div>
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="grid grid-cols-6 gap-4 items-center">
+                <div key={i} className="grid grid-cols-3 sm:grid-cols-6 gap-3 items-center">
                   {[...Array(6)].map((_, j) => (
                     <Skeleton key={j} className="h-8 w-full" />
                   ))}

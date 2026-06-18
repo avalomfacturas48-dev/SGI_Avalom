@@ -12,6 +12,53 @@ Este documento describe las **3 tareas** solicitadas, divididas en fases. Cada f
 | Arrendante | **Fijo en código** (constante): replica el encabezado legal completo de Fermín Ávila Mora / César Ávila Mora. |
 | Punto de entrada | **Pantalla dedicada** lanzada desde "Modificar alquiler", pre-rellenada desde cliente/propiedad/edificio/alquiler. |
 | Campos nuevos en BD | Todos **opcionales** (nullable). |
+| Migraciones | **Baseline + `migrate diff`** (sin shadow DB). Flujo versionado en git, aplicado a producción con `migrate deploy`. |
+
+---
+
+## Estrategia de migración (test → producción)
+
+**Contexto:** el proyecto nunca usó Prisma Migrate; el `schema.prisma` se obtuvo por introspección (`db pull`) de una CockroachDB existente. No hay historial de migraciones y hay un solo `DATABASE_URL` (se cambia para apuntar a test o a producción).
+
+**A favor:** todos los cambios del plan son **aditivos y opcionales** (columnas nuevas `NULL` y relajar `NOT NULL → NULL`). En CockroachDB son cambios *online* y **retrocompatibles**: se pueden aplicar a la BD antes de desplegar el código nuevo sin romper nada.
+
+### Paso 0 — Baseline (ya configurado, una sola vez)
+Se generó la migración inicial que representa el esquema actual:
+- `prisma/migrations/0_init/migration.sql` — esquema completo (no se ejecuta sobre BDs existentes).
+- `prisma/migrations/migration_lock.toml` — `provider = "cockroachdb"`.
+
+**Pendiente que corre el usuario** en CADA base (test y producción), apuntando `DATABASE_URL` a la BD correspondiente. Esto solo registra el baseline en la tabla `_prisma_migrations`; **no altera las tablas existentes**:
+```bash
+# 1) Apunta DATABASE_URL a la BD test → luego repetir con DATABASE_URL de producción
+npx prisma migrate resolve --applied 0_init
+```
+
+### Flujo por cada cambio (Tareas 1, 2, 3)
+1. Editar `prisma/schema.prisma`.
+2. Generar el SQL del cambio **sin shadow DB**, comparando el esquema **anterior** (desde git) contra el nuevo. `--from-migrations` NO sirve aquí porque exige `--shadow-database-url`; en su lugar se compara datamodel→datamodel:
+   ```bash
+   # 1) Esquema previo (estado ya aplicado en las BDs) desde git:
+   git show HEAD:prisma/schema.prisma > /tmp/old_schema.prisma
+   # 2) Editar prisma/schema.prisma con el cambio nuevo y luego:
+   mkdir prisma/migrations/<timestamp>_<nombre>
+   npx prisma migrate diff \
+     --from-schema-datamodel /tmp/old_schema.prisma \
+     --to-schema-datamodel prisma/schema.prisma \
+     --script > prisma/migrations/<timestamp>_<nombre>/migration.sql
+   ```
+3. **Revisar** el `migration.sql` generado (que solo contenga los `ALTER TABLE` esperados).
+4. Regenerar el cliente: `npx prisma generate`.
+5. Aplicar:
+   - En test: `npm run db:deploy` (con `DATABASE_URL` de test).
+   - En producción (cuando toque): `DATABASE_URL` de prod → `npm run db:deploy`.
+6. Commit de la carpeta de migración a git.
+
+> ⚠️ **Gotcha del diff contra HEAD:** si hay migraciones previas **sin commitear**, `git show HEAD:prisma/schema.prisma` no las refleja y el diff las vuelve a incluir. Solución: commitear entre tareas, o limpiar a mano el `migration.sql` dejando solo los `ALTER` de la tarea actual (lo aplicado antes ya está en `_prisma_migrations`).
+
+### Recomendaciones operativas
+- **Backup/snapshot de producción** antes de cada `migrate deploy` (CockroachDB Cloud lo ofrece).
+- Separar entornos: `.env` (test) y un `DATABASE_URL` explícito al desplegar a prod, para no aplicar a la BD equivocada.
+- Como los cambios son retrocompatibles, el orden seguro es: **migrar BD de prod → desplegar código nuevo**.
 
 ---
 

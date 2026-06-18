@@ -1,19 +1,13 @@
 "use client";
+import { useState } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, Trash2 } from "lucide-react";
 import { AvaAlquiler } from "@/lib/types";
 import usePropertyStore from "@/lib/zustand/propertyStore";
 import AlertDialog from "@/components/alertDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { Button } from "@/components/ui/button";
 import { parseISO, format } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
@@ -93,6 +87,7 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
     cell: ({ row }) => {
       const rent = row.original;
       const { removeRental } = usePropertyStore();
+      const [openDelete, setOpenDelete] = useState(false);
 
       const handleAction = async () => {
         try {
@@ -125,37 +120,28 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
       };
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir Menú</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                navigator.clipboard.writeText(rent.alq_id.toString());
-              }}
-            >
-              Copiar ID Alquiler
-            </DropdownMenuItem>
-            <div className="h-8 relative flex cursor-default select-none items-center rounded-sm text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
-              <AlertDialog
-                title="Está seguro?"
-                description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Alquiler?"
-                triggerText="Borrar Alquiler"
-                cancelText="Cancelar"
-                actionText="Continuar"
-                classn={"p-4 m-0 h-8 w-full"}
-                variant={"ghost"}
-                onAction={handleAction}
-              />
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <RowActions>
+            <RowActionButton
+              label="Borrar Alquiler"
+              icon={<Trash2 className="h-4 w-4" />}
+              variant="destructive"
+              onClick={() => setOpenDelete(true)}
+            />
+          </RowActions>
+
+          <AlertDialog
+            hideTrigger
+            open={openDelete}
+            onOpenChange={setOpenDelete}
+            title="Está seguro?"
+            description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Alquiler?"
+            triggerText="Borrar Alquiler"
+            cancelText="Cancelar"
+            actionText="Continuar"
+            onAction={handleAction}
+          />
+        </>
       );
     },
   },

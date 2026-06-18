@@ -24,17 +24,6 @@ export async function PUT(
         );
       }
 
-      if (deposit.ava_pago.length > 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "No se puede editar el depósito porque tiene pagos relacionados.",
-          },
-          { status: 409 }
-        );
-      }
-
       const updatedDeposit = await prisma.ava_deposito.update({
         where: { depo_id: BigInt(params.depoId) },
         data: {

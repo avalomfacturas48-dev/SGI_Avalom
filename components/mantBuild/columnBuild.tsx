@@ -2,19 +2,12 @@
 import axios from "axios";
 import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Home, KeyRound } from "lucide-react";
+import { ArrowUpDown, Home, KeyRound, Trash2 } from "lucide-react";
 import useBuildingStore from "@/lib/zustand/buildStore";
 import { Badge } from "@/components/ui/badge";
 import { AvaEdificio } from "@/lib/types";
 import AlertDialog from "@/components/alertDialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -110,7 +103,7 @@ export const columns: ColumnDef<AvaEdificio>[] = [
     cell: ({ row }) => {
       const building = row.original;
       const { removeBuilding } = useBuildingStore();
-      const [dropdownOpen, setDropdownOpen] = useState(false);
+      const [openDelete, setOpenDelete] = useState(false);
 
       const handleAction = async () => {
         try {
@@ -151,32 +144,28 @@ export const columns: ColumnDef<AvaEdificio>[] = [
       };
 
       return (
-        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir Menú</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuLabel className="text-center">
-              Acciones
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
-              <AlertDialog
-                title="Está seguro?"
-                description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Edificio?"
-                triggerText="Borrar Edificio"
-                cancelText="Cancelar"
-                actionText="Continuar"
-                classn={"p-4 m-0 h-8 w-full"}
-                variant={"ghost"}
-                onAction={handleAction}
-              />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <RowActions>
+            <RowActionButton
+              label="Borrar Edificio"
+              icon={<Trash2 className="h-4 w-4" />}
+              variant="destructive"
+              onClick={() => setOpenDelete(true)}
+            />
+          </RowActions>
+
+          <AlertDialog
+            hideTrigger
+            open={openDelete}
+            onOpenChange={setOpenDelete}
+            title="Está seguro?"
+            description="Esta acción no se puede deshacer. Está seguro de que desea borrar este Edificio?"
+            triggerText="Borrar Edificio"
+            cancelText="Cancelar"
+            actionText="Continuar"
+            onAction={handleAction}
+          />
+        </>
       );
     },
   },

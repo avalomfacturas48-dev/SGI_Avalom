@@ -28,13 +28,14 @@ const clienteFormSchema = z.object({
     .regex(/^\d+$/, "La cédula solo puede contener números"),
   cli_telefono: z
     .string()
-    .min(1, "El teléfono es requerido")
-    .max(15, "El teléfono no puede tener más de 15 caracteres"),
+    .max(15, "El teléfono no puede tener más de 15 caracteres")
+    .optional(),
   cli_correo: z
     .string()
-    .min(1, "El correo es requerido")
+    .max(50, "El correo no puede tener más de 50 caracteres")
     .email("Correo inválido")
-    .max(50, "El correo no puede tener más de 50 caracteres"),
+    .or(z.literal(""))
+    .optional(),
   cli_direccion: z
     .string()
     .max(200, "La dirección no puede tener más de 200 caracteres")
@@ -106,12 +107,20 @@ export const useClientForm = ({
         "Content-Type": "application/json",
       };
 
+      // El teléfono y el correo son opcionales: se envía null (no "") para no
+      // colisionar con el índice único del correo entre clientes sin correo.
+      const payload = {
+        ...formData,
+        cli_telefono: formData.cli_telefono?.trim() || null,
+        cli_correo: formData.cli_correo?.trim() || null,
+      };
+
       let response;
 
       if (action === "create") {
-        response = await axios.post("/api/client", formData, { headers });
+        response = await axios.post("/api/client", payload, { headers });
       } else if (action === "edit" && entity?.cli_id) {
-        response = await axios.put(`/api/client/${entity.cli_id}`, formData, {
+        response = await axios.put(`/api/client/${entity.cli_id}`, payload, {
           headers,
         });
       }
