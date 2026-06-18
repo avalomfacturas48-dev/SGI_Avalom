@@ -10,6 +10,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ClientAlertDialogProps {
   title: string;
@@ -30,6 +32,7 @@ interface ClientAlertDialogProps {
     | "orange"
     | null
     | undefined;
+  actionDestructive?: boolean;
   classn?: string;
   icon?: React.ReactNode;
   disabled?: boolean;
@@ -44,6 +47,7 @@ const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
   onAction,
   onCancel,
   variant,
+  actionDestructive,
   classn,
   icon,
   disabled,
@@ -51,7 +55,10 @@ const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant={variant} disabled={disabled} className={classn}>{icon}{triggerText}</Button>
+        <Button variant={variant} disabled={disabled} className={classn}>
+          {icon}
+          {triggerText}
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -60,7 +67,15 @@ const ClientAlertDialog: React.FC<ClientAlertDialogProps> = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onCancel}>{cancelText}</AlertDialogCancel>
-          <AlertDialogAction onClick={onAction}>{actionText}</AlertDialogAction>
+          <AlertDialogAction
+            onClick={onAction}
+            className={cn(
+              actionDestructive &&
+                buttonVariants({ variant: "destructive" })
+            )}
+          >
+            {actionText}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

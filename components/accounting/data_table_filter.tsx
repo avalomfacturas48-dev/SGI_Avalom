@@ -29,14 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Copy,
-  DeleteIcon,
-  MoreHorizontal,
-} from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { AvaAlquiler } from "@/lib/types";
 import { StatusFilter } from "@/components/dataTable/status-filter";
 import {
@@ -48,12 +41,22 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { TenantInline } from "@/components/shared/TenantCell";
+import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import Link from "next/link";
 
 const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
-  const { alq_monto, ava_propiedad } = row.original;
+  const { alq_monto, ava_propiedad, ava_clientexalquiler } = row.original;
   const propertyId = ava_propiedad?.prop_identificador;
   const buildingId = ava_propiedad?.ava_edificio?.edi_identificador;
+  const tenants = (ava_clientexalquiler ?? [])
+    .map((cxa) =>
+      cxa.ava_cliente
+        ? `${cxa.ava_cliente.cli_nombre} ${cxa.ava_cliente.cli_papellido} ${cxa.ava_cliente.cli_cedula}`
+        : ""
+    )
+    .join(" ");
 
   if (!filterValue) return true;
 
@@ -62,7 +65,8 @@ const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
   return (
     (alq_monto?.toString().toLowerCase().includes(lowerFilter) ?? false) ||
     (propertyId?.toString().toLowerCase().includes(lowerFilter) ?? false) ||
-    (buildingId?.toString().toLowerCase().includes(lowerFilter) ?? false)
+    (buildingId?.toString().toLowerCase().includes(lowerFilter) ?? false) ||
+    tenants.toLowerCase().includes(lowerFilter)
   );
 };
 
@@ -167,7 +171,7 @@ export function DataTable({
       <div className="sticky top-0 z-10 backdrop-blur p-4 space-y-4 border-b">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
           <Input
-            placeholder="Buscar por identificador, monto, edificio..."
+            placeholder="Buscar por inquilino, propiedad, edificio, monto..."
             value={globalFilterValue}
             onChange={(event) => setGlobalFilterValue(event.target.value)}
             className="w-full"
@@ -226,13 +230,19 @@ export function DataTable({
       </div>
 
       <div className="hidden rounded-md border sm:flex sm:w-full sm:flex-col">
-        <main className="grid flex-1 items-start rounded-md border">
+        <main className="grid flex-1 items-start rounded-md border overflow-x-auto">
           <UITable>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="whitespace-nowrap">
+                    <TableHead
+                      key={header.id}
+                      className={cn(
+                        "whitespace-nowrap",
+                        (header.column.columnDef.meta as any)?.headerClassName
+                      )}
+                    >
                       {flexRender(
                         header.column.columnDef.header,
                         header.getContext()
@@ -254,7 +264,9 @@ export function DataTable({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="max-w-[200px] truncate"
+                        className={cn(
+                          (cell.column.columnDef.meta as any)?.cellClassName
+                        )}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -283,12 +295,19 @@ export function DataTable({
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map((row) => {
             const data = row.original;
+            const isActive = data.alq_estado === "A";
             return (
               <Card key={row.id} className="cursor-pointer hover:bg-muted/50">
-                <CardContent className="p-4 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <div className="font-medium">
-                      ID: {data.ava_propiedad?.prop_identificador}
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant="outline" className="font-mono">
+                        {data.ava_propiedad?.ava_edificio?.edi_identificador ||
+                          "—"}
+                      </Badge>
+                      <Badge variant="secondary" className="font-mono">
+                        {data.ava_propiedad?.prop_identificador || "—"}
+                      </Badge>
                     </div>
                     <Badge variant={getStatusBadgeVariant(data.alq_estado)}>
                       {data.alq_estado === "A"
@@ -299,65 +318,67 @@ export function DataTable({
                     </Badge>
                   </div>
 
-                  <div className="text-sm text-muted-foreground">
-                    {data.ava_propiedad?.ava_edificio?.edi_identificador}
-                  </div>
+                  <TenantInline rental={data} />
 
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <div className="text-muted-foreground">Monto</div>
                       <div className="font-medium">
-                        ${data.alq_monto?.toLocaleString()}
+                        {formatCurrencyNoDecimals(Number(data.alq_monto))}
                       </div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">Fecha</div>
+                      <div className="text-muted-foreground">Día de pago</div>
                       <div>{formatDate(data.alq_fechapago)}</div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2 border-t">
-                    <Link
-                      href={`/accounting/payments/${data.alq_id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-full sm:w-auto"
-                    >
-                      <Button
-                        variant="green"
-                        size="sm"
-                        className="flex items-center gap-2 w-full sm:w-auto"
+                  <div className="flex flex-col gap-2 pt-2 border-t">
+                    {isActive && (
+                      <Link
+                        href={`/accounting/payments/${data.alq_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full"
                       >
-                        <ChevronRight className="h-4 w-4" />
-                        Realizar Movimiento
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/accounting/finishedrent/${data.alq_id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-full sm:w-auto"
-                    >
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="flex items-center gap-2 w-full sm:w-auto"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                        Finalizar Alquiler
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/accounting/canceledrent/${data.alq_id}`}
-                      className="w-full sm:w-auto"
-                    >
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex items-center gap-2 w-full sm:w-auto"
-                      >
-                        <DeleteIcon className="h-4 w-4" />
-                        Cancelar Alquiler
-                      </Button>
-                    </Link>
+                        <Button
+                          size="sm"
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                          Realizar movimiento
+                        </Button>
+                      </Link>
+                    )}
+                    {isActive && (
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/accounting/finishedrent/${data.alq_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1"
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                          >
+                            Finalizar
+                          </Button>
+                        </Link>
+                        <Link
+                          href={`/accounting/canceledrent/${data.alq_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex-1"
+                        >
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="w-full"
+                          >
+                            Cancelar
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -1,16 +1,7 @@
 "use client";
 
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Loader2Icon } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { CalendarIcon, Loader2Icon, Save } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -27,16 +18,41 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { usePaymentForm } from "@/hooks/accounting/monthlyRentPayment/usePaymentForm";
 import { toast } from "sonner";
-import {
-  convertToCostaRicaTime,
-  convertToUTC,
-  formatToCR,
-} from "@/utils/dateUtils";
+import { formatToCR } from "@/utils/dateUtils";
+import { parseISO } from "date-fns";
 
-type PaymentFormProps = {};
+const METODOS_PAGO = [
+  "SINPE Móvil",
+  "Transferencia",
+  "Efectivo",
+  "Tarjeta de crédito",
+  "Tarjeta de débito",
+  "Cheque",
+];
+
+const BANCOS_CR = [
+  "BAC San José",
+  "BCR (Banco de Costa Rica)",
+  "Banco Nacional",
+  "Banco Popular",
+  "Scotiabank",
+  "Davivienda",
+  "Coopealianza",
+  "Coopenae",
+  "Mucap",
+  "Lafise",
+  "Prival Bank",
+];
 
 export function PaymentForm({
   amountToPay,
@@ -51,188 +67,227 @@ export function PaymentForm({
     try {
       const paymentAmount = Number(amountToPay);
       if (paymentAmount <= 0) {
-        throw new Error("El monto a pagar debe ser mayor a 0.");
+        throw new Error("El monto a registrar debe ser mayor a ₡0.");
       }
       await handlePaymentSubmit({ ...data, amountToPay: paymentAmount });
-      toast.success("Pago realizado con éxito.");
+      toast.success("Pago registrado con éxito.");
       setAmountToPay("");
       form.reset();
     } catch (error: any) {
-      toast.error(error.message || "Error al realizar el pago.");
+      toast.error(error.message || "Error al registrar el pago.");
     }
   };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleFormSubmit)}
-        className="space-y-6"
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl text-primary font-semibold">
-              Detalles del Pago
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="pag_fechapago"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Fecha de pago</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                          disabled={isSubmitting}
-                        >
-                          {field.value
-                            ? formatToCR(field.value)
-                            : "Seleccione una fecha"}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={
-                          field.value ? parseISO(field.value) : undefined
-                        }
-                        onSelect={(date) =>
-                          field.onChange(
-                            date ? date.toISOString().split("T")[0] : ""
-                          )
-                        }
-                        disabled={(date) => date < new Date("1900-01-01")}
-                        initialFocus
-                        defaultMonth={
-                          field.value ? parseISO(field.value) : new Date()
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="pag_cuenta"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Cuenta</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Ingrese la cuenta"
-                      disabled={isSubmitting}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="pag_banco"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Banco</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Ingrese el banco"
-                      disabled={isSubmitting}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="pag_metodopago"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Método de Pago</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Ingrese el método de pago"
-                      disabled={isSubmitting}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="pag_referencia"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Referencia</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Ingrese la referencia"
-                      disabled={isSubmitting}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="md:col-span-2">
-              <FormField
-                control={form.control}
-                name="pag_descripcion"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel>Descripción</FormLabel>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Fecha de pago */}
+          <FormField
+            control={form.control}
+            name="pag_fechapago"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fecha de pago <span className="text-destructive">*</span></FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
                     <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Ingrese la descripción del pago"
-                        rows={4}
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
                         disabled={isSubmitting}
-                        className="w-full"
-                      />
+                      >
+                        {field.value ? formatToCR(field.value) : "Seleccione una fecha"}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? parseISO(field.value) : undefined}
+                      onSelect={(date) =>
+                        field.onChange(date ? date.toISOString().split("T")[0] : "")
+                      }
+                      disabled={(date) => date < new Date("1900-01-01")}
+                      initialFocus
+                      defaultMonth={field.value ? parseISO(field.value) : new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <CardFooter className="flex justify-between items-center">
+          {/* Método de pago */}
+          <FormField
+            control={form.control}
+            name="pag_metodopago"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Método de pago <span className="text-destructive">*</span></FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isSubmitting}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un método" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {METODOS_PAGO.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-1.5 flex-wrap">
+                  {["SINPE Móvil", "Transferencia"].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => field.onChange(v)}
+                      className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Banco */}
+          <FormField
+            control={form.control}
+            name="pag_banco"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Banco</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  disabled={isSubmitting}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccione un banco" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {BANCOS_CR.map((b) => (
+                      <SelectItem key={b} value={b}>
+                        {b}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange("Coopealianza")}
+                    className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
+                  >
+                    Coopealianza
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Cuenta */}
+          <FormField
+            control={form.control}
+            name="pag_cuenta"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cuenta</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="Ej. Ahorro a la vista, Corriente…"
+                    disabled={isSubmitting}
+                  />
+                </FormControl>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => field.onChange("Ahorro a la vista")}
+                    className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
+                  >
+                    Ahorro a la vista
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Referencia */}
+          <FormField
+            control={form.control}
+            name="pag_referencia"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Referencia</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="N° comprobante o SINPE"
+                    disabled={isSubmitting}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Descripción — ocupa el ancho completo */}
+          <div className="sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="pag_descripcion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Observaciones adicionales (opcional)"
+                      rows={3}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
           <Button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full sm:w-auto flex items-center gap-2"
+            disabled={isSubmitting || !amountToPay || Number(amountToPay) <= 0}
+            className="gap-2 min-w-[140px]"
           >
-            {isSubmitting && <Loader2Icon className="h-4 w-4 animate-spin" />}
-            Guardar Pago
+            {isSubmitting ? (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {isSubmitting ? "Guardando…" : "Guardar pago"}
           </Button>
-        </CardFooter>
+        </div>
       </form>
     </Form>
   );

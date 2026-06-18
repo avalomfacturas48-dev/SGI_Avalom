@@ -1,190 +1,243 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
+import { useParams } from "next/navigation";
 import {
   Card,
   CardHeader,
   CardTitle,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { PaymentForm } from "./paymentForm";
 import { usePayment } from "@/hooks/accounting/depositPayment/usePayment";
 import { formatCurrency } from "@/utils/currencyConverter";
-import { useParams } from "next/navigation";
-import { PaymentForm } from "./paymentForm";
-import { PaymentTable } from "./paymentTable";
-import { useState, useEffect } from "react";
+import { X, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const BodyPayment: React.FC = () => {
   const { depoId } = useParams<{ depoId: string }>();
   const { isLoading, selectedDeposit } = usePayment(depoId);
 
   const [amountToPay, setAmountToPay] = useState<string>("");
-  const [currentBalance, setCurrentBalance] = useState<number>(0);
-  const [newBalance, setNewBalance] = useState<number>(0);
+  const [payFull, setPayFull] = useState(false);
+
+  const currentBalance = selectedDeposit
+    ? Number(selectedDeposit.depo_total) - Number(selectedDeposit.depo_montoactual)
+    : 0;
+  const totalAmount = selectedDeposit ? Number(selectedDeposit.depo_total) : 0;
+  const alreadyPaid = selectedDeposit ? Number(selectedDeposit.depo_montoactual) : 0;
+  const paying = Number(amountToPay || 0);
+  const newBalance = currentBalance - paying;
+  const newPaid = alreadyPaid + paying;
+  const progressAfter = totalAmount > 0 ? (newPaid / totalAmount) * 100 : 0;
 
   useEffect(() => {
-    if (selectedDeposit) {
-      const calculatedCurrentBalance =
-        Number(selectedDeposit.depo_total) -
-        Number(selectedDeposit.depo_montoactual);
-
-      setCurrentBalance(calculatedCurrentBalance);
-      setNewBalance(calculatedCurrentBalance - Number(amountToPay || 0));
+    if (payFull && currentBalance > 0) {
+      setAmountToPay(currentBalance.toString());
     }
-  }, [selectedDeposit, amountToPay]);
+  }, [payFull, currentBalance]);
+
+  const handleAmountChange = (value: string) => {
+    const sanitized = value.replace(/[^\d.]/g, "");
+    const parts = sanitized.split(".");
+    const formatted = parts[0] + (parts.length > 1 ? "." + parts[1] : "");
+    const num = Number(formatted);
+    if (num <= currentBalance) {
+      setAmountToPay(formatted);
+      setPayFull(num === currentBalance);
+    }
+  };
+
+  const clearAmount = () => {
+    setAmountToPay("");
+    setPayFull(false);
+  };
 
   return (
-    <div className="mx-auto p-4 max-w-7xl space-y-8">
+    <div className="mx-auto p-4 max-w-7xl space-y-6">
       {isLoading ? (
-        <>
-          <div>
+        <div className="space-y-6">
+          <Card>
             <CardHeader>
-              <Skeleton className="h-6 w-[150px] mb-2" />
+              <Skeleton className="h-4 w-48 mb-2" />
+              <Skeleton className="h-7 w-40" />
+              <Skeleton className="h-5 w-40 mt-2" />
             </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <div className="grid grid-cols-5 items-center gap-4 min-w-[600px]">
-                <Skeleton className="h-4 w-8" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-24" />
+          </Card>
+          <Card>
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-2 w-full rounded-full" />
               </div>
-              <div className="grid grid-cols-5 items-center gap-4 mt-4 min-w-[600px]">
-                <Skeleton className="h-4 w-8" />
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-5 w-24" />
-                <Skeleton className="h-8 w-24 rounded-md" />
-                <Skeleton className="h-5 w-24" />
+              <Separator />
+              <div className="grid grid-cols-2 gap-4">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
               </div>
             </CardContent>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>
-                  <Skeleton className="h-5 w-32" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Skeleton className="h-4 w-24 mb-2" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-                <div>
-                  <Skeleton className="h-4 w-32 mb-2" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Skeleton className="h-9 w-36 rounded-md" />
-              </CardFooter>
-            </div>
-
-            <div>
-              <CardHeader>
-                <CardTitle>
-                  <Skeleton className="h-5 w-32" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-36" />
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-36" />
-              </CardContent>
-            </div>
-          </div>
-        </>
+          </Card>
+        </div>
       ) : (
         <>
-          <Card>
-            <CardHeader className="flex flex-col sm:flex-row justify-between items-center">
-              <div>
-                <BreadcrumbResponsive
-                  items={[
-                    { label: "Inicio", href: "/homePage" },
-                    { label: "Contabilidad", href: "/accounting" },
-                    {
-                      label: "Realizar movimiento",
-                      href: `/accounting/payments/${selectedDeposit?.alq_id}`,
-                    },
-                    { label: "Realizar Pago" },
-                  ]}
-                />
-                <CardTitle className="text-2xl text-primary font-bold mt-4">
-                  Realizar Pago
-                </CardTitle>
-              </div>
+          {/* Header */}
+          <Card className="border shadow-lg">
+            <CardHeader className="pb-4">
+              <BreadcrumbResponsive
+                items={[
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Contabilidad", href: "/accounting" },
+                  {
+                    label: "Movimientos",
+                    href: `/accounting/payments/${selectedDeposit?.alq_id}`,
+                  },
+                  { label: "Pago de Depósito" },
+                ]}
+              />
+              <CardTitle className="text-2xl text-primary font-bold mt-2">
+                Pago de Depósito
+              </CardTitle>
+              {selectedDeposit && (
+                <div className="flex items-center gap-2 pt-3 mt-1 border-t">
+                  <Badge variant="outline" className="gap-1">
+                    <Wallet className="h-3 w-3" />
+                    Depósito de garantía
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    ID {selectedDeposit.depo_id}
+                  </span>
+                </div>
+              )}
             </CardHeader>
           </Card>
 
-          <Card>
-            <CardContent className="p-6 overflow-x-auto">
-              <PaymentTable
-                amountToPay={amountToPay}
-                setAmountToPay={setAmountToPay}
-              />
-            </CardContent>
-          </Card>
+          {selectedDeposit && (
+            <Card className="border shadow-lg">
+              <CardContent className="p-6 space-y-6">
+                {/* Sección: Monto a pagar */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Wallet className="h-4 w-4 text-primary" />
+                    </div>
+                    <h3 className="text-base font-semibold text-foreground">
+                      Monto a registrar
+                    </h3>
+                  </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <PaymentForm
-                amountToPay={amountToPay}
-                setAmountToPay={setAmountToPay}
-              />
-            </div>
-
-            {selectedDeposit && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-xl text-primary font-semibold">
-                    Resumen de Pago
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="text-sm font-medium">Monto Total:</div>
-                      <div className="text-sm font-bold text-right">
-                        {formatCurrency(Number(selectedDeposit.depo_total))}
-                      </div>
-                      <div className="text-sm font-medium">Abono Total:</div>
-                      <div className="text-sm font-bold text-right">
-                        {formatCurrency(
-                          Number(selectedDeposit.depo_montoactual)
-                        )}
-                      </div>
-                      <div className="text-sm font-medium">
-                        Saldo Pendiente:
-                      </div>
-                      <div className="text-sm font-bold text-right text-red-600">
+                  {/* Resumen de saldos */}
+                  <div className="grid grid-cols-3 gap-4 p-4 rounded-lg border bg-muted/30">
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Total depósito</p>
+                      <p className="text-sm font-bold text-foreground">
+                        {formatCurrency(totalAmount)}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Ya pagado</p>
+                      <p className="text-sm font-semibold text-emerald-600">
+                        {formatCurrency(alreadyPaid)}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Pendiente</p>
+                      <p className="text-sm font-semibold text-amber-600">
                         {formatCurrency(currentBalance)}
-                      </div>
-                      <div className="text-sm font-medium">Monto a Abonar:</div>
-                      <div className="text-sm font-bold text-right text-green-600">
-                        {formatCurrency(Number(amountToPay))}
-                      </div>
-                      <div className="col-span-2 border-t pt-2">
-                        <div className="flex justify-between items-center">
-                          <div className="text-base font-medium">
-                            Nuevo Saldo:
-                          </div>
-                          <div className="text-base font-bold text-blue-600">
-                            {formatCurrency(newBalance)}
-                          </div>
-                        </div>
-                      </div>
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+
+                  {/* Input y toggle */}
+                  <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <div className="relative flex-1 w-full">
+                      <Input
+                        value={amountToPay}
+                        onChange={(e) => handleAmountChange(e.target.value)}
+                        placeholder="₡0"
+                        className="pr-8 text-lg font-semibold h-11"
+                      />
+                      {amountToPay && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                          onClick={clearAmount}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Switch
+                        id="pay-full-deposit"
+                        checked={payFull}
+                        onCheckedChange={(checked) => {
+                          setPayFull(checked);
+                          if (!checked) clearAmount();
+                        }}
+                      />
+                      <Label htmlFor="pay-full-deposit" className="text-sm cursor-pointer">
+                        Pagar total
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Barra de progreso predictiva */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Progreso tras este pago</span>
+                      <span className="font-semibold text-foreground">
+                        {Math.min(Math.round(progressAfter), 100)}%
+                      </span>
+                    </div>
+                    <Progress
+                      value={progressAfter}
+                      className="h-2"
+                      indicatorClassName={cn(
+                        progressAfter >= 100 ? "bg-emerald-500" : "bg-primary"
+                      )}
+                    />
+                    {paying > 0 && (
+                      <div className="flex items-center justify-between text-xs pt-1">
+                        <span className="text-muted-foreground">Nuevo saldo pendiente:</span>
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            newBalance <= 0 ? "text-emerald-600" : "text-amber-600"
+                          )}
+                        >
+                          {newBalance <= 0 ? "Saldado ✓" : formatCurrency(newBalance)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Formulario de detalles */}
+                <PaymentForm
+                  amountToPay={amountToPay}
+                  setAmountToPay={setAmountToPay}
+                />
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>

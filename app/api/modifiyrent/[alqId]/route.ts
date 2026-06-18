@@ -14,9 +14,21 @@ export async function GET(
       const rent = await prisma.ava_alquiler.findFirst({
         where: { alq_id: BigInt(params.alqId) },
         include: {
+          ava_propiedad: {
+            include: {
+              ava_edificio: true,
+              ava_tipopropiedad: true,
+            },
+          },
           ava_alquilermensual: {
             include: {
-              ava_pago: true,
+              ava_pago: {
+                include: {
+                  ava_anulacionpago: {
+                    include: { ava_usuario: true },
+                  },
+                },
+              },
             },
           },
           ava_clientexalquiler: {
@@ -26,7 +38,13 @@ export async function GET(
           },
           ava_deposito: {
             include: {
-              ava_pago: true,
+              ava_pago: {
+                include: {
+                  ava_anulacionpago: {
+                    include: { ava_usuario: true },
+                  },
+                },
+              },
             },
           },
         },

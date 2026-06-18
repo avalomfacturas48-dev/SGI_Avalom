@@ -42,11 +42,19 @@ import {
 } from "@/components/ui/select";
 import { AvaAlquiler } from "@/lib/types";
 import { StatusFilter } from "../dataTable/status-filter";
+import { cn } from "@/lib/utils";
 
 const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
-  const { alq_monto, ava_propiedad } = row.original;
+  const { alq_monto, ava_propiedad, ava_clientexalquiler } = row.original;
   const propertyId = ava_propiedad?.prop_identificador;
   const buildingId = ava_propiedad?.ava_edificio?.edi_identificador;
+  const tenants = (ava_clientexalquiler ?? [])
+    .map((cxa) =>
+      cxa.ava_cliente
+        ? `${cxa.ava_cliente.cli_nombre} ${cxa.ava_cliente.cli_papellido} ${cxa.ava_cliente.cli_cedula}`
+        : ""
+    )
+    .join(" ");
 
   if (!filterValue) return true;
 
@@ -55,7 +63,8 @@ const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
   return (
     (alq_monto?.toString().toLowerCase().includes(lowerFilter) ?? false) ||
     (propertyId?.toString().toLowerCase().includes(lowerFilter) ?? false) ||
-    (buildingId?.toString().toLowerCase().includes(lowerFilter) ?? false)
+    (buildingId?.toString().toLowerCase().includes(lowerFilter) ?? false) ||
+    tenants.toLowerCase().includes(lowerFilter)
   );
 };
 
@@ -128,7 +137,7 @@ export function DataTable({
       <div className="sticky top-0 z-10 backdrop-blur p-4 space-y-4 border-b">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
           <Input
-            placeholder="Buscar por identificador, monto, edificio..."
+            placeholder="Buscar por inquilino, propiedad, edificio, monto..."
             value={globalFilterValue}
             onChange={(event) => setGlobalFilterValue(event.target.value)}
             className="w-full sm:max-w-xs"
@@ -185,7 +194,7 @@ export function DataTable({
         </div>
       </div>
       <div className="flex w-full flex-col rounded-md border">
-        <main className="grid flex-1 items-start">
+        <main className="grid flex-1 items-start overflow-x-auto">
           <UITable>
             <TableHeader>
               {table
@@ -193,7 +202,13 @@ export function DataTable({
                 .map((headerGroup: HeaderGroup<AvaAlquiler>) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
+                      <TableHead
+                        key={header.id}
+                        className={cn(
+                          "whitespace-nowrap",
+                          (header.column.columnDef.meta as any)?.headerClassName
+                        )}
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -217,7 +232,12 @@ export function DataTable({
                     {row
                       .getVisibleCells()
                       .map((cell: Cell<AvaAlquiler, any>) => (
-                        <TableCell key={cell.id}>
+                        <TableCell
+                          key={cell.id}
+                          className={cn(
+                            (cell.column.columnDef.meta as any)?.cellClassName
+                          )}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()

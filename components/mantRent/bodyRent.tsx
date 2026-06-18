@@ -8,6 +8,7 @@ import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsRent";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
+import { RentalSummaryCards } from "../shared/RentalSummaryCards";
 import useRentalStore from "@/lib/zustand/rentalStore";
 
 const BodyRent: React.FC = () => {
@@ -90,65 +91,21 @@ const BodyRent: React.FC = () => {
               <CardTitle className="text-2xl text-primary font-bold">
                 Gestión de Alquileres
               </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {rentals.length} alquileres registrados · {activeCount} activos.
+                Gestiona contratos, inquilinos y mensualidades.
+              </p>
             </CardHeader>
           </Card>
 
-          {/* Tarjetas de resumen */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="border shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Activos
-                    </p>
-                    <p className="text-3xl font-bold text-emerald-600">
-                      {activeCount}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full bg-emerald-500/10">
-                    <div className="h-6 w-6 rounded-full bg-emerald-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Finalizados
-                    </p>
-                    <p className="text-3xl font-bold text-blue-600">
-                      {finishedCount}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full bg-blue-500/10">
-                    <div className="h-6 w-6 rounded-full bg-blue-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Cancelados
-                    </p>
-                    <p className="text-3xl font-bold text-red-600">
-                      {canceledCount}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full bg-red-500/10">
-                    <div className="h-6 w-6 rounded-full bg-red-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Tarjetas de resumen (clic para filtrar) */}
+          <RentalSummaryCards
+            activeCount={activeCount}
+            finishedCount={finishedCount}
+            canceledCount={canceledCount}
+            statusFilter={statusFilter}
+            onFilter={setStatusFilter}
+          />
 
           <Card className="border shadow-lg">
             <CardContent className="p-6">

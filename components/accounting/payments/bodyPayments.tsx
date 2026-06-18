@@ -4,6 +4,7 @@ import type React from "react";
 
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import axios from "axios";
 import cookie from "js-cookie";
@@ -14,6 +15,10 @@ import MonthlyRentsView from "./monthlyRentsView";
 import { DepositView } from "./depositView";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClientInfoCard } from "./clientInfoCard";
+import { MovementsHistory } from "./movementsHistory";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Building2, Home, Wallet } from "lucide-react";
+import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 
 const BodyPayments: React.FC = () => {
   const {
@@ -124,22 +129,49 @@ const BodyPayments: React.FC = () => {
         </>
       ) : (
         <>
+          {/* Header unificado con contexto del alquiler */}
           <Card className="border shadow-lg">
-            <CardHeader>
+            <CardHeader className="pb-4">
               <BreadcrumbResponsive
                 items={[
                   { label: "Inicio", href: "/homePage" },
                   { label: "Contabilidad", href: "/accounting" },
-                  { label: "Realizar movimiento" },
+                  { label: "Movimientos" },
                 ]}
               />
-              <CardTitle className="text-2xl text-primary font-bold">
-                Realizar movimiento
+              <CardTitle className="text-2xl text-primary font-bold mt-2">
+                Movimientos
               </CardTitle>
+              {selectedRental && (
+                <div className="flex flex-wrap items-center gap-2 pt-3 mt-1 border-t">
+                  {selectedRental.ava_propiedad?.ava_edificio?.edi_identificador && (
+                    <Badge variant="outline" className="gap-1 font-mono">
+                      <Building2 className="h-3 w-3" />
+                      Edificio {selectedRental.ava_propiedad.ava_edificio.edi_identificador}
+                    </Badge>
+                  )}
+                  {selectedRental.ava_propiedad?.prop_identificador && (
+                    <Badge variant="secondary" className="gap-1 font-mono">
+                      <Home className="h-3 w-3" />
+                      {selectedRental.ava_propiedad.prop_identificador}
+                    </Badge>
+                  )}
+                  {selectedRental.ava_propiedad?.ava_tipopropiedad?.tipp_nombre && (
+                    <Badge variant="outline" className="capitalize">
+                      {selectedRental.ava_propiedad.ava_tipopropiedad.tipp_nombre}
+                    </Badge>
+                  )}
+                  <StatusBadge status={selectedRental.alq_estado} />
+                  <span className="ml-auto text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+                    {formatCurrencyNoDecimals(Number(selectedRental.alq_monto))} / mes
+                  </span>
+                </div>
+              )}
             </CardHeader>
           </Card>
 
-          {/* Cliente y Depósito en una fila */}
+          {/* Inquilino y Depósito */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {selectedRental?.ava_clientexalquiler[0]?.ava_cliente && (
               <ClientInfoCard
@@ -167,6 +199,9 @@ const BodyPayments: React.FC = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Historial consolidado de pagos y anulaciones */}
+          <MovementsHistory />
         </>
       )}
     </div>

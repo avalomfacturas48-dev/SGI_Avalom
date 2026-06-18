@@ -14,7 +14,20 @@ export async function GET(
       const building = await prisma.ava_edificio.findFirst({
         where: { edi_id: BigInt(params.ediId) },
         include: {
-          ava_propiedad: true,
+          ava_propiedad: {
+            include: {
+              ava_tipopropiedad: true,
+              ava_alquiler: {
+                where: { alq_estado: "A" },
+                include: {
+                  ava_clientexalquiler: {
+                    include: { ava_cliente: true },
+                  },
+                },
+              },
+            },
+            orderBy: { prop_identificador: "asc" },
+          },
         },
       });
       if (!building) {

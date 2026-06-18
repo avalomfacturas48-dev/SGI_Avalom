@@ -46,6 +46,14 @@ export async function GET(request: NextRequest) {
                 ava_propiedad: {
                   select: { prop_identificador: true },
                 },
+                ava_clientexalquiler: {
+                  take: 1,
+                  select: {
+                    ava_cliente: {
+                      select: { cli_nombre: true, cli_papellido: true },
+                    },
+                  },
+                },
               },
             },
           },
@@ -69,6 +77,14 @@ export async function GET(request: NextRequest) {
                 prop_id: true,
                 ava_propiedad: {
                   select: { prop_identificador: true },
+                },
+                ava_clientexalquiler: {
+                  take: 1,
+                  select: {
+                    ava_cliente: {
+                      select: { cli_nombre: true, cli_papellido: true },
+                    },
+                  },
                 },
               },
             },

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import RentalForm from "@/components/mantRent/edit/rentalForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../../ui/card";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,11 +15,14 @@ import { DateRangeCalculator } from "./DateRangeCalculator";
 import MonthsBetween from "./MonthsBetween";
 import DepositForm from "./depositForm";
 import ContractCard from "./contractCard";
+import { RentalContextBar } from "@/components/shared/RentalContextBar";
 import useRentalStore from "@/lib/zustand/useRentalStore";
+import { Eye, Plus, SaveIcon } from "lucide-react";
 
 const BodyEditRent: React.FC = () => {
   const { alqId } = useParams();
   const {
+    selectedRental,
     setSelectedRental,
     monthlyRents,
     isLoading,
@@ -172,14 +175,23 @@ const BodyEditRent: React.FC = () => {
                 items={[
                   { label: "Inicio", href: "/homePage" },
                   { label: "Gestión de alquileres", href: "/mantRent" },
-                  { label: "Modificar alquiler" },
+                  {
+                    label: selectedRental?.ava_propiedad?.prop_identificador
+                      ? `Propiedad ${selectedRental.ava_propiedad.prop_identificador}`
+                      : "Modificar alquiler",
+                  },
                 ]}
               />
               <CardTitle className="text-2xl text-primary font-bold mb-4 sm:mb-0">
-                Modificar alquiler
+                {selectedRental?.ava_propiedad?.prop_identificador
+                  ? `Modificar alquiler · Propiedad ${selectedRental.ava_propiedad.prop_identificador}`
+                  : "Modificar alquiler"}
               </CardTitle>
             </CardHeader>
           </Card>
+
+          {/* Barra de contexto: edificio · propiedad · inquilino · estado */}
+          <RentalContextBar rental={selectedRental} />
 
           {/* Grid de 2 columnas para pantallas grandes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -195,9 +207,18 @@ const BodyEditRent: React.FC = () => {
 
           <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-xl text-primary font-semibold text-center sm:text-left">
-                Alquileres Mensuales
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl text-primary font-semibold">
+                    Alquileres Mensuales
+                  </CardTitle>
+                  <CardDescription className="mt-1">
+                    {monthlyRents.length > 0
+                      ? `${monthlyRents.length} período${monthlyRents.length !== 1 ? "s" : ""} registrado${monthlyRents.length !== 1 ? "s" : ""}`
+                      : "Sin períodos mensuales aún"}
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
 
             <CardContent>
@@ -207,37 +228,50 @@ const BodyEditRent: React.FC = () => {
                   setSelectedTab(value as "view" | "create")
                 }
               >
-                <TabsList className="flex flex-col sm:flex-row w-full gap-2 sm:gap-0">
+                <TabsList className="w-full sm:w-auto">
                   <TabsTrigger
                     value="view"
-                    className="flex-1"
+                    className="flex items-center gap-2 flex-1 sm:flex-none"
                     disabled={monthlyRents.length === 0}
                   >
-                    Alquileres Existentes
+                    <Eye className="h-4 w-4" />
+                    Existentes
+                    {monthlyRents.length > 0 && (
+                      <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">
+                        {monthlyRents.length}
+                      </span>
+                    )}
                   </TabsTrigger>
                   <TabsTrigger
                     value="create"
-                    className="flex-1"
+                    className="flex items-center gap-2 flex-1 sm:flex-none"
                     disabled={monthlyRents.length > 0}
                   >
-                    Crear Alquileres
+                    <Plus className="h-4 w-4" />
+                    Crear período
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="view" className="mt-4">
+                <TabsContent value="view" className="mt-6">
                   {monthlyRents.length > 0 ? (
                     <MonthsBetween mode="view" />
                   ) : (
-                    <p className="text-center text-muted-foreground">
+                    <p className="text-center text-muted-foreground py-8">
                       No hay alquileres mensuales registrados.
                     </p>
                   )}
                 </TabsContent>
 
-                <TabsContent value="create" className="mt-4">
+                <TabsContent value="create" className="mt-6">
                   <DateRangeCalculator />
-                  <div className="flex justify-end mt-4">
-                    <Button onClick={handleSaveAll}>Guardar Todos</Button>
+                  <div className="flex justify-end mt-6 pt-4 border-t">
+                    <Button
+                      onClick={handleSaveAll}
+                      className="flex items-center gap-2"
+                    >
+                      <SaveIcon className="h-4 w-4" />
+                      Guardar Períodos
+                    </Button>
                   </div>
                 </TabsContent>
               </Tabs>

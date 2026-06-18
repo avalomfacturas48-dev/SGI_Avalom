@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
-import { PencilIcon, TrashIcon } from "lucide-react";
+import { PencilIcon, TrashIcon, CalendarIcon, LockIcon, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -17,10 +17,47 @@ import ManageActions from "@/components/dataTable/manageActions";
 import { formatToCR } from "@/utils/dateUtils";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import AlertDialog from "@/components/alertDialog";
+import { cn } from "@/lib/utils";
 
 interface MonthsBetweenProps {
   mode: "view" | "create";
 }
+
+const MONTHLY_STATUS_CONFIG: Record<
+  string,
+  { label: string; borderClass: string; badgeClass: string }
+> = {
+  P: {
+    label: "Pagado",
+    borderClass: "border-l-emerald-500",
+    badgeClass:
+      "bg-emerald-500/10 text-emerald-700 border border-emerald-500/30 dark:text-emerald-400",
+  },
+  A: {
+    label: "Atrasado",
+    borderClass: "border-l-red-500",
+    badgeClass:
+      "bg-red-500/10 text-red-700 border border-red-500/30 dark:text-red-400",
+  },
+  I: {
+    label: "Incompleto",
+    borderClass: "border-l-amber-400",
+    badgeClass:
+      "bg-amber-500/10 text-amber-700 border border-amber-500/30 dark:text-amber-400",
+  },
+  R: {
+    label: "Cortesía",
+    borderClass: "border-l-blue-500",
+    badgeClass:
+      "bg-blue-500/10 text-blue-700 border border-blue-500/30 dark:text-blue-400",
+  },
+};
+
+const FALLBACK_STATUS = {
+  label: "Desconocido",
+  borderClass: "border-l-muted",
+  badgeClass: "bg-muted text-muted-foreground border border-border",
+};
 
 const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
   const { monthlyRents, deleteRent, createMonthlyRents } = useRentalStore();
@@ -38,13 +75,9 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
     if (mode === "create") {
       const { success } = deleteRent("createMonthlyRents", alqm_id);
       if (success) {
-        toast.success(
-          `Alquiler mensual ${alqm_identificador} eliminado correctamente.`
-        );
+        toast.success(`Alquiler ${alqm_identificador} eliminado.`);
       } else {
-        toast.error(
-          `Error al eliminar el alquiler mensual ${alqm_identificador}.`
-        );
+        toast.error(`Error al eliminar ${alqm_identificador}.`);
       }
     } else {
       try {
@@ -57,9 +90,7 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
 
         if (response?.data?.success) {
           deleteRent("monthlyRents", alqm_id);
-          toast.success(
-            `Alquiler mensual ${alqm_identificador} eliminado correctamente.`
-          );
+          toast.success(`Alquiler ${alqm_identificador} eliminado.`);
         } else {
           throw new Error(response?.data?.error || "Error al eliminar.");
         }
@@ -72,29 +103,28 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
   return (
     <>
       {mode === "view" && (
-        <ManageActions
-          open={openNew}
-          onOpenChange={setOpenNew}
-          titleButton="Crear Alquiler Mensual"
-          title="Crear Alquiler Mensual"
-          description="Ingrese los datos del alquiler mensual."
-          variant="default"
-          classn="ml-4 mb-4"
-          icon={<PencilIcon className="h-4 w-4" />}
-          FormComponent={
-            <MonthlyRentForm
-              action="create"
-              alqmId={null}
-              mode={mode}
-              onSuccess={() => {
-                setOpenNew(false);
-              }}
-            />
-          }
-        />
+        <div className="mb-5">
+          <ManageActions
+            open={openNew}
+            onOpenChange={setOpenNew}
+            titleButton="Nuevo Alquiler Mensual"
+            title="Crear Alquiler Mensual"
+            description="Ingrese los datos del alquiler mensual."
+            variant="default"
+            icon={<PlusIcon className="h-4 w-4" />}
+            FormComponent={
+              <MonthlyRentForm
+                action="create"
+                alqmId={null}
+                mode={mode}
+                onSuccess={() => setOpenNew(false)}
+              />
+            }
+          />
+        </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {rents
           .sort(
             (a, b) =>
@@ -104,14 +134,65 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
           .map((rent) => {
             const hasPayments = rent.ava_pago && rent.ava_pago.length > 0;
             const isThisOpen = openEditId === rent.alqm_id;
+            const status =
+              MONTHLY_STATUS_CONFIG[rent.alqm_estado] ?? FALLBACK_STATUS;
 
             return (
-              <Card key={rent.alqm_id} className="relative">
-                <div className="absolute text-primary top-2 left-2 z-10">
-                  <TooltipProvider delayDuration={200}>
+              <Card
+                key={rent.alqm_id}
+                className={cn(
+                  "border-l-4 flex flex-col overflow-hidden",
+                  status.borderClass
+                )}
+              >
+                {/* Header */}
+                <div className="px-4 pt-4 pb-2 flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold leading-tight truncate text-foreground">
+                    {rent.alqm_identificador}
+                  </p>
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium flex-shrink-0",
+                      status.badgeClass
+                    )}
+                  >
+                    {status.label}
+                  </span>
+                </div>
+
+                {/* Body */}
+                <CardContent className="px-4 py-2 flex-1 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <CalendarIcon className="h-3 w-3 flex-shrink-0" />
+                    <span>
+                      {formatToCR(rent.alqm_fechainicio)}
+                      <span className="mx-1 text-muted-foreground/50">→</span>
+                      {formatToCR(rent.alqm_fechafin)}
+                    </span>
+                  </div>
+
+                  <p className="text-base font-bold text-foreground">
+                    {Number(rent.alqm_montototal).toLocaleString("es-CR", {
+                      style: "currency",
+                      currency: "CRC",
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+
+                  {hasPayments && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <LockIcon className="h-3 w-3" />
+                      <span>Tiene pagos</span>
+                    </div>
+                  )}
+                </CardContent>
+
+                {/* Footer: acciones */}
+                <div className="border-t flex items-center justify-between px-2 py-1">
+                  <TooltipProvider delayDuration={150}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="inline-block">
+                        <div>
                           <ManageActions
                             open={isThisOpen}
                             onOpenChange={(open) =>
@@ -121,11 +202,12 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                             title="Editar Alquiler Mensual"
                             description="Modifique los datos del alquiler mensual."
                             variant="ghost"
-                            classn={`p-1 ${
-                              hasPayments ? "pointer-events-none" : ""
-                            }`}
+                            classn={cn(
+                              "h-8 w-8 p-0 text-muted-foreground hover:text-foreground",
+                              hasPayments && "pointer-events-none opacity-40"
+                            )}
                             disabled={hasPayments}
-                            icon={<PencilIcon className="h-4 w-4" />}
+                            icon={<PencilIcon className="h-3.5 w-3.5" />}
                             FormComponent={
                               <MonthlyRentForm
                                 action="edit"
@@ -139,28 +221,29 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                       </TooltipTrigger>
                       {hasPayments && (
                         <TooltipContent
-                          side="right"
-                          sideOffset={6}
-                          className="z-[999] text-xs max-w-[180px] text-left"
+                          side="top"
+                          className="text-xs max-w-[160px]"
                         >
-                          No se puede editar: tiene pagos registrados.
+                          Tiene pagos registrados, no se puede editar.
                         </TooltipContent>
                       )}
                     </Tooltip>
                   </TooltipProvider>
-                </div>
 
-                <div className="absolute text-destructive top-2 right-2 z-10">
-                  <TooltipProvider delayDuration={200}>
+                  <TooltipProvider delayDuration={150}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="inline-block">
+                        <div>
                           <AlertDialog
-                            title="¿Estás seguro?"
-                            description="Esta acción no se puede deshacer."
+                            title="¿Eliminar alquiler mensual?"
+                            description={`Se eliminará "${rent.alqm_identificador}". Esta acción no se puede deshacer.`}
                             cancelText="Cancelar"
-                            actionText="Continuar"
-                            classn="p-4 m-0 h-8 w-full"
+                            actionText="Eliminar"
+                            actionDestructive
+                            classn={cn(
+                              "h-8 w-8 p-0 text-muted-foreground hover:text-destructive",
+                              hasPayments && "pointer-events-none opacity-40"
+                            )}
                             variant="ghost"
                             onAction={() =>
                               handleDelete(
@@ -168,7 +251,7 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                                 rent.alqm_identificador
                               )
                             }
-                            icon={<TrashIcon className="h-4 w-4" />}
+                            icon={<TrashIcon className="h-3.5 w-3.5" />}
                             triggerText=""
                             disabled={hasPayments}
                           />
@@ -176,49 +259,15 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
                       </TooltipTrigger>
                       {hasPayments && (
                         <TooltipContent
-                          side="left"
-                          sideOffset={6}
-                          className="z-[999] text-xs max-w-[180px] text-left"
+                          side="top"
+                          className="text-xs max-w-[160px]"
                         >
-                          No se puede eliminar: tiene pagos registrados.
+                          Tiene pagos registrados, no se puede eliminar.
                         </TooltipContent>
                       )}
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-
-                <CardHeader>
-                  <CardTitle className="text-base text-primary font-semibold truncate mt-6">
-                    {rent.alqm_identificador}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm">
-                  <p>
-                    <strong>Inicio:</strong> {formatToCR(rent.alqm_fechainicio)}
-                  </p>
-                  <p>
-                    <strong>Fin:</strong> {formatToCR(rent.alqm_fechafin)}
-                  </p>
-                  <p>
-                    <strong>Total:</strong>{" "}
-                    {Number(rent.alqm_montototal).toLocaleString("es-CR", {
-                      style: "currency",
-                      currency: "CRC",
-                    })}
-                  </p>
-                  <p>
-                    <strong>Estado:</strong>{" "}
-                    {rent.alqm_estado === "P"
-                      ? "Pagado"
-                      : rent.alqm_estado === "A"
-                      ? "Atrasado"
-                      : rent.alqm_estado === "I"
-                      ? "Incompleto"
-                      : rent.alqm_estado === "R"
-                      ? "Cortesía"
-                      : rent.alqm_estado}
-                  </p>
-                </CardContent>
               </Card>
             );
           })}

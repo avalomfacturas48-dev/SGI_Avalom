@@ -1,11 +1,5 @@
-import MantBuild from "@/components/mantBuild/mantBuild";
+import BodyMantBuild from "@/components/mantBuild/bodyMantBuild";
 
-function page() {
-  return (
-    <>
-    <MantBuild></MantBuild>
-    </>
-  );
+export default function page() {
+  return <BodyMantBuild />;
 }
-
-export default page;

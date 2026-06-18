@@ -1,17 +1,14 @@
 "use client";
 import AuthRoute from "../AuthRoute";
-import SideNavbar from "../SideNavbar";
+import { AppShell } from "@/components/AppShell";
 import BodyMantClient from "./bodyMantClient";
 
 const MantClient: React.FC = () => {
   return (
     <AuthRoute allowedRoles={["A", "J", "E"]}>
-      <div className="flex min-h-screen bg-background">
-        <SideNavbar />
-        <main className="flex-1 pl-14 md:pl-16">
-          <BodyMantClient />
-        </main>
-      </div>
+      <AppShell>
+        <BodyMantClient />
+      </AppShell>
     </AuthRoute>
   );
 };

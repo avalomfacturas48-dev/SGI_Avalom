@@ -19,7 +19,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, ShieldCheck, LockIcon } from "lucide-react";
 import { useDepositForm } from "@/hooks/mantRent/useDepositForm";
 import { toast } from "sonner";
 import { formatCurrency } from "@/utils/currencyConverter";
@@ -53,26 +53,44 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
       >
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl text-primary font-bold">
-              Depósito
-            </CardTitle>
-            <CardDescription>
-              {isEditing ? "Edite el depósito del alquiler" : "Cree un nuevo depósito para el alquiler"}
-            </CardDescription>
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 p-2 rounded-lg bg-primary/10">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-primary font-bold">
+                  Depósito de Garantía
+                </CardTitle>
+                <CardDescription className="mt-0.5">
+                  {isEditing
+                    ? "Edite el depósito de garantía del alquiler"
+                    : "Cree un nuevo depósito para el alquiler"}
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {Array.isArray(deposit?.ava_pago) &&
               deposit?.ava_pago.length > 0 && (
                 <Alert className="border-yellow-400 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
+                  <LockIcon className="h-4 w-4 text-yellow-600" />
                   <AlertTitle className="text-yellow-800 dark:text-yellow-100">
                     No se puede modificar
                   </AlertTitle>
                   <AlertDescription className="text-yellow-700 dark:text-yellow-200">
-                    Este depósito tiene pagos asociados y no puede ser
-                    modificado.
+                    Este depósito tiene pagos asociados y no puede ser modificado.
                   </AlertDescription>
                 </Alert>
               )}
+
+            {deposit && (
+              <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Monto actual</p>
+                <p className="text-lg font-bold text-foreground">
+                  {formatCurrency(Number(deposit.depo_montoactual))}
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -94,23 +112,12 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                   </FormItem>
                 )}
               />
-
-              {deposit && (
-                <FormItem>
-                  <FormLabel>Monto Actual del Depósito</FormLabel>
-                  <Input
-                    value={formatCurrency(Number(deposit.depo_montoactual))}
-                    disabled
-                    className="bg-muted font-semibold"
-                  />
-                </FormItem>
-              )}
             </div>
-            
+
             {!isFormDisabled && (
               <div className="flex justify-end pt-2">
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isLoading}
                   className="flex items-center gap-2"
                 >

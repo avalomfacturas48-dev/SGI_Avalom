@@ -16,8 +16,8 @@ const paymentFormSchema = z.object({
     .optional(),
   pag_cuenta: z
     .string()
-    .min(1, "La cuenta es obligatoria.")
-    .max(50, "La cuenta debe tener como máximo 50 caracteres."),
+    .max(50, "La cuenta debe tener como máximo 50 caracteres.")
+    .optional(),
   pag_metodopago: z
     .string()
     .min(1, "El método de pago es obligatorio.")

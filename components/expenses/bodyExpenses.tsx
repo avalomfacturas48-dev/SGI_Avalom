@@ -174,7 +174,7 @@ const BodyExpenses: React.FC = () => {
   const { expenses } = useExpensesStore();
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
+    <div className="mx-auto p-4 space-y-6 max-w-7xl">
       {isInitialLoading ? (
         <div className="space-y-6">
           <div className="space-y-4 animate-pulse">

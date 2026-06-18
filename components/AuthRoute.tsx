@@ -17,12 +17,13 @@ interface DecodedToken {
 
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, allowedRoles }) => {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, loaded } = useUser();
 
   useEffect(() => {
+    if (!loaded) return;
+
     const token = cookie.get("token");
     if (!token) {
-      console.warn("No token found. Redirecting to login.");
       router.push("/");
       return;
     }
@@ -32,22 +33,17 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, allowedRoles }) => {
       const userRole = user?.usu_rol || decoded?.role;
 
       if (!userRole) {
-        console.error("User role is missing. Redirecting to login.");
         router.push("/");
         return;
       }
 
       if (!allowedRoles.includes(userRole)) {
-        console.warn(
-          `Role ${userRole} is not allowed. Redirecting to unauthorized.`
-        );
         router.push("/unauthorized");
       }
-    } catch (error) {
-      console.error("Error decoding the token:", error);
+    } catch {
       router.push("/");
     }
-  }, [router, allowedRoles, user]);
+  }, [router, allowedRoles, user, loaded]);
 
   return <>{children}</>;
 };

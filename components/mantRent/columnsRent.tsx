@@ -7,6 +7,9 @@ import {
   Building2,
   Home,
   Calendar,
+  User,
+  Pencil,
+  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,10 +24,16 @@ import {
 import { AvaAlquiler } from "@/lib/types";
 import Link from "next/link";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { TenantCell } from "@/components/shared/TenantCell";
 
 export const columns: ColumnDef<AvaAlquiler>[] = [
   {
-    accessorKey: "ava_propiedad.ava_edificio.edi_identificador",
+    id: "ubicacion",
+    accessorFn: (row) =>
+      `${row.ava_propiedad?.ava_edificio?.edi_identificador ?? ""} ${
+        row.ava_propiedad?.prop_identificador ?? ""
+      }`,
     header: ({ column }) => {
       return (
         <Button
@@ -32,49 +41,56 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           <Building2 className="h-4 w-4 mr-1" />
-          Edificio
+          Ubicación
           <ArrowUpDown className="text-primary ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const value = row.original.ava_propiedad?.ava_edificio?.edi_identificador;
+      const edificio = row.original.ava_propiedad?.ava_edificio?.edi_identificador;
+      const propiedad = row.original.ava_propiedad?.prop_identificador;
+      const tipo = row.original.ava_propiedad?.ava_tipopropiedad?.tipp_nombre;
       return (
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="font-mono">
-            {value || "—"}
-          </Badge>
+        <div className="flex flex-col gap-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge variant="outline" className="font-mono gap-1">
+              <Building2 className="h-3 w-3" />
+              {edificio || "—"}
+            </Badge>
+            <Badge variant="secondary" className="font-mono gap-1">
+              <Home className="h-3 w-3" />
+              {propiedad || "—"}
+            </Badge>
+          </div>
+          {tipo && (
+            <span className="text-xs text-muted-foreground capitalize lg:hidden">
+              {tipo}
+            </span>
+          )}
         </div>
       );
     },
   },
   {
-    accessorKey: "ava_propiedad.prop_identificador",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="table"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          <Home className="h-4 w-4 mr-1" />
-          Propiedad
-          <ArrowUpDown className="text-primary ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const value = row.original.ava_propiedad?.prop_identificador;
-      return (
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="font-mono">
-            {value || "—"}
-          </Badge>
-        </div>
-      );
-    },
+    id: "inquilino",
+    accessorFn: (row) =>
+      row.ava_clientexalquiler?.[0]?.ava_cliente
+        ? `${row.ava_clientexalquiler[0].ava_cliente.cli_nombre} ${row.ava_clientexalquiler[0].ava_cliente.cli_papellido}`
+        : "",
+    header: () => (
+      <span className="flex items-center font-medium">
+        <User className="h-4 w-4 mr-1" />
+        Inquilino
+      </span>
+    ),
+    cell: ({ row }) => <TenantCell rental={row.original} />,
   },
   {
     accessorKey: "ava_propiedad.ava_tipopropiedad.tipp_nombre",
+    meta: {
+      headerClassName: "hidden lg:table-cell",
+      cellClassName: "hidden lg:table-cell",
+    },
     header: ({ column }) => {
       return (
         <Button
@@ -119,6 +135,10 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
   },
   {
     accessorKey: "alq_fechapago",
+    meta: {
+      headerClassName: "hidden xl:table-cell",
+      cellClassName: "hidden xl:table-cell",
+    },
     header: ({ column }) => {
       return (
         <Button
@@ -157,38 +177,9 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
   {
     accessorKey: "alq_estado",
     header: "Estado",
-    cell: ({ row }) => {
-      const status = row.getValue("alq_estado") as string;
-
-      const statusConfig = {
-        A: {
-          label: "Activo",
-          className:
-            "bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400",
-        },
-        F: {
-          label: "Finalizado",
-          className:
-            "bg-blue-500/10 text-blue-700 border-blue-500/30 dark:text-blue-400",
-        },
-        C: {
-          label: "Cancelado",
-          className:
-            "bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400",
-        },
-      };
-
-      const config = statusConfig[status as keyof typeof statusConfig] || {
-        label: "Desconocido",
-        className: "bg-gray-500/10 text-gray-700 border-gray-500/30",
-      };
-
-      return (
-        <Badge variant="outline" className={config.className}>
-          {config.label}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <StatusBadge status={row.getValue("alq_estado") as string} />
+    ),
   },
   {
     id: "actions",
@@ -206,7 +197,16 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <Link href={`/mantRent/edit/${rental.alq_id}`}>
-              <DropdownMenuItem>Editar</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar alquiler
+              </DropdownMenuItem>
+            </Link>
+            <Link href={`/accounting/payments/${rental.alq_id}`}>
+              <DropdownMenuItem>
+                <LineChart className="mr-2 h-4 w-4" />
+                Ver contabilidad
+              </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
         </DropdownMenu>

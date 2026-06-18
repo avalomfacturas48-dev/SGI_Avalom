@@ -13,24 +13,30 @@ interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   logout: () => void;
+  loaded: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
+  const [user, setUser] = useState<User | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem("user");
+      }
     }
-    return null;
-  });
+    setLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
     }
   }, [user]);
 
@@ -41,7 +47,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, logout }}>
+    <UserContext.Provider value={{ user, setUser, logout, loaded }}>
       {children}
     </UserContext.Provider>
   );

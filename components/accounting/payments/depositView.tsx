@@ -67,12 +67,14 @@ export function DepositView() {
             Depósito
           </CardTitle>
           <div className="flex gap-2">
-            <Link href={`/accounting/payments/depositpayment/${deposit.depo_id}/`}>
-              <Button variant="default" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Ingresar Pago
-              </Button>
-            </Link>
+            {remaining > 0 && (
+              <Link href={`/accounting/payments/depositpayment/${deposit.depo_id}/`}>
+                <Button variant="default" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ingresar Pago
+                </Button>
+              </Link>
+            )}
             <Link href={`/accounting/payments/depositcancelpayment/${deposit.depo_id}/`}>
               <Button variant="destructive" size="sm">
                 <Ban className="h-4 w-4 mr-2" />

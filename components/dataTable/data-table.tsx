@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectTrigger,
@@ -133,14 +134,19 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
       <div className="flex w-full flex-col rounded-md border">
-        <main className="grid flex-1 items-start">
+        <main className="grid flex-1 items-start overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead
+                        key={header.id}
+                        className={cn(
+                          (header.column.columnDef.meta as any)?.headerClassName
+                        )}
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -163,7 +169,12 @@ export function DataTable<TData, TValue>({
                     className="cursor-pointer hover:bg-muted"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        className={cn(
+                          (cell.column.columnDef.meta as any)?.cellClassName
+                        )}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

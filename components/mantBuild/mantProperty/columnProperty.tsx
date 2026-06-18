@@ -15,12 +15,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import PropertyManager from "./propertyManager";
 import ManageActions from "@/components/dataTable/manageActions";
 import useBuildingStore from "@/lib/zustand/buildStore";
 import useTypeStore from "@/lib/zustand/typeStore";
 import { AvaPropiedad } from "@/lib/types";
 import DateRangeDialog from "@/components/DateRangeDialog";
+import { getClientFullName } from "@/utils/rentalHelpers";
+import Link from "next/link";
+import { Wallet, Pencil } from "lucide-react";
 
 export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
   {
@@ -59,6 +63,39 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
     },
   },
   {
+    id: "estado",
+    header: "Estado",
+    cell: ({ row }) => {
+      const alquiler = row.original.ava_alquiler?.[0];
+      if (!alquiler) {
+        return (
+          <Badge
+            variant="outline"
+            className="bg-muted text-muted-foreground"
+          >
+            Libre
+          </Badge>
+        );
+      }
+      const cliente = alquiler.ava_clientexalquiler?.[0]?.ava_cliente;
+      return (
+        <div className="flex flex-col gap-0.5">
+          <Badge
+            variant="outline"
+            className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400 w-fit"
+          >
+            Ocupada
+          </Badge>
+          {cliente && (
+            <span className="text-xs text-muted-foreground truncate max-w-[160px]">
+              {getClientFullName(cliente)}
+            </span>
+          )}
+        </div>
+      );
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const property = row.original;
@@ -66,6 +103,7 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
       const [dropdownOpen, setDropdownOpen] = useState(false);
       const [openEdit, setOpenEdit] = useState(false);
       const [openDateDialog, setOpenDateDialog] = useState(false);
+      const activeRental = property.ava_alquiler?.[0];
 
       const handleAction = async () => {
         try {
@@ -133,6 +171,31 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
                   }
                 />
               </DropdownMenuItem>
+
+              {activeRental && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`/accounting/payments/${activeRental.alq_id}`}
+                      className="p-4 m-0 h-8 w-full flex items-center"
+                    >
+                      <Wallet className="mr-2 h-4 w-4" />
+                      Ver contabilidad
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={`/mantRent/edit/${activeRental.alq_id}`}
+                      className="p-4 m-0 h-8 w-full flex items-center"
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Editar alquiler
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
 
               <DropdownMenuItem asChild onClick={(e) => e.stopPropagation()}>
                 <AlertDialog

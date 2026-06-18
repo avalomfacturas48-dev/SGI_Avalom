@@ -14,6 +14,11 @@ export async function GET(request: NextRequest) {
               ava_tipopropiedad: true,
             },
           },
+          ava_clientexalquiler: {
+            include: {
+              ava_cliente: true,
+            },
+          },
         },
         orderBy: {
           ava_propiedad: {
