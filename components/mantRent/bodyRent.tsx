@@ -3,10 +3,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { Card, CardContent, CardHeader } from "../ui/card";
 import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsRent";
-import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
 import { RentalSummaryCards } from "../shared/RentalSummaryCards";
 import useRentalStore from "@/lib/zustand/rentalStore";
@@ -86,13 +85,6 @@ const BodyRent: React.FC = () => {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading && rentals.length === 0 ? (
         <>
-          <Card className="border shadow-lg">
-            <CardHeader className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-80" />
-            </CardHeader>
-          </Card>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
               <Card key={i}>
@@ -122,24 +114,6 @@ const BodyRent: React.FC = () => {
         </>
       ) : (
         <>
-          <Card className="border shadow-lg">
-            <CardHeader>
-              <BreadcrumbResponsive
-                items={[
-                  { label: "Inicio", href: "/homePage" },
-                  { label: "Gestión de alquileres" },
-                ]}
-              />
-              <CardTitle className="text-2xl text-primary font-bold">
-                Gestión de Alquileres
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                {total} alquileres registrados · {counts.active} activos.
-                Gestiona contratos, inquilinos y mensualidades.
-              </p>
-            </CardHeader>
-          </Card>
-
           <RentalSummaryCards
             activeCount={counts.active}
             finishedCount={counts.finished}

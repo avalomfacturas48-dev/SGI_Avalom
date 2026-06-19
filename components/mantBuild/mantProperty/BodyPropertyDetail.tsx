@@ -87,15 +87,10 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
   if (isLoading) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <CardHeader className="space-y-2">
-            <Skeleton className="h-4 w-56" />
-            <Skeleton className="h-7 w-44" />
-          </CardHeader>
-          <div className="p-4">
-            <Skeleton className="h-9 w-28" />
-          </div>
-        </Card>
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-4 w-56" />
+          <Skeleton className="h-9 w-28" />
+        </div>
         <Card>
           <CardHeader className="space-y-2">
             <Skeleton className="h-6 w-32" />
@@ -148,40 +143,27 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      {/* Header */}
-      <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <CardHeader>
-          <BreadcrumbResponsive
-            items={[
-              { label: "Inicio", href: "/homePage" },
-              { label: "Edificios", href: "/mantBuild" },
-              {
-                label: building?.edi_identificador || "Edificio",
-                href: `/mantBuild/${ediId}`,
-              },
-              { label: selectedProperty.prop_identificador },
-            ]}
-          />
-          <CardTitle className="text-2xl text-primary font-bold">
-            {selectedProperty.prop_identificador}
-          </CardTitle>
-          {selectedProperty.prop_descripcion && (
-            <p className="text-sm text-muted-foreground">
-              {selectedProperty.prop_descripcion}
-            </p>
-          )}
-        </CardHeader>
-        <div className="flex gap-2 p-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/mantBuild/${ediId}`)}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {building?.edi_identificador || "Edificio"}
-          </Button>
-        </div>
-      </Card>
+      <div className="flex items-center justify-between">
+        <BreadcrumbResponsive
+          items={[
+            { label: "Inicio", href: "/homePage" },
+            { label: "Edificios", href: "/mantBuild" },
+            {
+              label: building?.edi_identificador || "Edificio",
+              href: `/mantBuild/${ediId}`,
+            },
+            { label: selectedProperty.prop_identificador },
+          ]}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push(`/mantBuild/${ediId}`)}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {building?.edi_identificador || "Edificio"}
+        </Button>
+      </div>
 
       {/* Formulario de propiedad */}
       <Card>

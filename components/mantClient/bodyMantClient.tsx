@@ -6,13 +6,12 @@ import cookie from "js-cookie";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { DataTable } from "@/components/dataTable/data-table";
 import { columnsClient } from "@/components/mantClient/columnsClient";
 import ManageActions from "@/components/dataTable/manageActions";
 import ClienteForm from "@/components/mantClient/clienteFormProps";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import useClientStore from "@/lib/zustand/clientStore";
 
 const BodyMantClient: React.FC = () => {
@@ -79,15 +78,9 @@ const BodyMantClient: React.FC = () => {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading && clients.length === 0 ? (
         <>
-          <Card className="flex flex-col sm:flex-row justify-between items-center">
-            <CardHeader className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-8 w-56" />
-            </CardHeader>
-            <div className="flex flex-wrap gap-2 p-4">
-              <Skeleton className="h-9 w-32" />
-            </div>
-          </Card>
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-32" />
+          </div>
           <Card>
             <CardContent className="p-0">
               <div className="flex items-center px-6 py-4 border-b">
@@ -106,40 +99,27 @@ const BodyMantClient: React.FC = () => {
         </>
       ) : (
         <>
-          <Card className="flex flex-col sm:flex-row justify-between items-center">
-            <CardHeader>
-              <BreadcrumbResponsive
-                items={[
-                  { label: "Inicio", href: "/homePage" },
-                  { label: "Gestión de clientes" },
-                ]}
-              />
-              <CardTitle className="text-2xl font-bold text-primary mb-4 sm:mb-0">
-                Gestión de Clientes
-              </CardTitle>
-            </CardHeader>
-            <div className="flex flex-wrap justify-center gap-2 p-4">
-              <ManageActions
-                variant="default"
-                titleButton="Nuevo Cliente"
-                icon={<Plus className="mr-2 h-4 w-4" />}
-                title="Nuevo Cliente"
-                description="Ingresa un nuevo cliente"
-                open={openNew}
-                onOpenChange={setOpenNew}
-                FormComponent={
-                  <ClienteForm
-                    action="create"
-                    onSuccess={() => {
-                      setOpenNew(false);
-                      setPage(1);
-                      fetchClients();
-                    }}
-                  />
-                }
-              />
-            </div>
-          </Card>
+          <div className="flex justify-end">
+            <ManageActions
+              variant="default"
+              titleButton="Nuevo Cliente"
+              icon={<Plus className="mr-2 h-4 w-4" />}
+              title="Nuevo Cliente"
+              description="Ingresa un nuevo cliente"
+              open={openNew}
+              onOpenChange={setOpenNew}
+              FormComponent={
+                <ClienteForm
+                  action="create"
+                  onSuccess={() => {
+                    setOpenNew(false);
+                    setPage(1);
+                    fetchClients();
+                  }}
+                />
+              }
+            />
+          </div>
 
           <Card>
             <CardContent>

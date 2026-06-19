@@ -14,7 +14,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import ManageActions from "@/components/dataTable/manageActions";
 import BuildForm from "./buildFormProps";
 import PropertyForm from "./mantProperty/propertyFormProps";
@@ -61,16 +60,9 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
   if (isLoading) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-          <CardHeader className="space-y-2">
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-7 w-40" />
-            <Skeleton className="h-4 w-64" />
-          </CardHeader>
-          <div className="p-4">
-            <Skeleton className="h-9 w-28" />
-          </div>
-        </Card>
+        <div className="flex">
+          <Skeleton className="h-9 w-28" />
+        </div>
         <Card>
           <CardHeader className="space-y-2">
             <Skeleton className="h-6 w-52" />
@@ -123,36 +115,16 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      {/* Header */}
-      <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <CardHeader>
-          <BreadcrumbResponsive
-            items={[
-              { label: "Inicio", href: "/homePage" },
-              { label: "Edificios", href: "/mantBuild" },
-              { label: building.edi_identificador },
-            ]}
-          />
-          <CardTitle className="text-2xl text-primary font-bold">
-            {building.edi_identificador}
-          </CardTitle>
-          {building.edi_descripcion && (
-            <p className="text-sm text-muted-foreground">
-              {building.edi_descripcion}
-            </p>
-          )}
-        </CardHeader>
-        <div className="flex gap-2 p-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push("/mantBuild")}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Edificios
-          </Button>
-        </div>
-      </Card>
+      <div className="flex">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push("/mantBuild")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Edificios
+        </Button>
+      </div>
 
       {/* Formulario del edificio */}
       <Card>

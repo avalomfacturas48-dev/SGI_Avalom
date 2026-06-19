@@ -1,11 +1,9 @@
 "use client";
 
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import ActivityCards from "@/components/homePage/activityCards";
 import { PendingPaymentsOverview } from "./pendingPaymentsOverview";
 import { ExpensesSummaryCards } from "./expensesSummaryCards";
 import ProfitLossChart from "./profitLossChart";
-import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { useHomePage } from "@/hooks/homePage/useHomePage";
 import { QuickActions } from "./quickActions";
@@ -25,21 +23,6 @@ const BodyHomePage: React.FC = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      {/* Header */}
-      <Card className="border shadow-sm">
-        <CardHeader>
-          <BreadcrumbResponsive
-            items={[
-              { label: "Inicio", href: "/homePage" },
-              { label: "Dashboard" },
-            ]}
-          />
-          <CardTitle className="text-xl sm:text-2xl text-primary font-bold">
-            Dashboard
-          </CardTitle>
-        </CardHeader>
-      </Card>
-
       {/* Acciones Rápidas */}
       <QuickActions />
 

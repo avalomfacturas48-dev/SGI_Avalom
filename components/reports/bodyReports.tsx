@@ -1,9 +1,8 @@
 "use client";
 
 import type React from "react";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
-import { FileText, TrendingUp, Receipt, Users as UsersIcon, Building } from "lucide-react";
+import { Card, CardHeader } from "@/components/ui/card";
+import { TrendingUp, Receipt, Users as UsersIcon, Building, FileText } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -26,26 +25,6 @@ import { ProfitLossReportCard } from "./reportCards/profitLossReportCard";
 const BodyReports: React.FC = () => {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      {/* Header */}
-      <Card className="border shadow-lg bg-gradient-to-r from-primary/5 to-primary/10">
-        <CardHeader>
-          <div className="flex flex-col gap-4">
-            <BreadcrumbResponsive
-              items={[{ label: "Inicio", href: "/homePage" }, { label: "Reportes" }]}
-            />
-            <div>
-              <CardTitle className="text-xl sm:text-3xl text-primary font-bold flex items-center gap-3">
-                <FileText className="h-8 w-8" />
-                Centro de Reportes
-              </CardTitle>
-              <CardDescription className="text-base mt-2">
-                Genera reportes detallados en PDF organizados por categoría
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
       {/* Acordeón de Reportes */}
       <Accordion type="multiple" className="space-y-4">
         

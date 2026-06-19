@@ -4,10 +4,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import useRentalStore from "@/lib/zustand/rentalStore";
 import axios from "axios";
 import cookie from "js-cookie";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import { Card, CardContent, CardHeader } from "../ui/card";
 import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsAccounting";
-import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
 import { RentalSummaryCards } from "../shared/RentalSummaryCards";
 
@@ -86,17 +85,6 @@ const BodyAccounting: React.FC = () => {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading && rentals.length === 0 ? (
         <>
-          <Card className="border shadow-lg">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="h-8 w-44" />
-                  <Skeleton className="h-4 w-80" />
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
               <Card key={i}>
@@ -126,28 +114,6 @@ const BodyAccounting: React.FC = () => {
         </>
       ) : (
         <>
-          <Card className="border shadow-lg">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <BreadcrumbResponsive
-                    items={[
-                      { label: "Inicio", href: "/homePage" },
-                      { label: "Contabilidad" },
-                    ]}
-                  />
-                  <CardTitle className="text-xl sm:text-2xl text-primary font-bold mt-2">
-                    Contabilidad
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Registra pagos, depósitos y anulaciones. Abre un alquiler
-                    para ver su historial de movimientos.
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-
           <RentalSummaryCards
             activeCount={counts.active}
             finishedCount={counts.finished}

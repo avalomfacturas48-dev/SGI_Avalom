@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { Building2, Plus } from "lucide-react";
 import cookie from "js-cookie";
 import axios from "axios";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import ManageActions from "@/components/dataTable/manageActions";
 import BuildForm from "./buildFormProps";
 import BuildingCard from "./BuildingCard";
@@ -47,19 +45,8 @@ const BodyMantBuild: React.FC = () => {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
-          <div className="space-y-4 mb-3">
-            <div className="h-4 w-40 rounded-md bg-muted animate-pulse" />
-            <div className="flex justify-between items-center gap-4">
-              <div className="w-60 h-8 rounded-md bg-muted animate-pulse" />
-              <div className="flex gap-2">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-8 w-28 rounded-md bg-muted animate-pulse"
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="flex justify-end">
+            <div className="h-9 w-32 rounded-md bg-muted animate-pulse" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[...Array(4)].map((_, i) => (
@@ -69,36 +56,23 @@ const BodyMantBuild: React.FC = () => {
         </>
       ) : (
         <>
-          <Card className="flex flex-col sm:flex-row justify-between items-center">
-            <CardHeader>
-              <BreadcrumbResponsive
-                items={[
-                  { label: "Inicio", href: "/homePage" },
-                  { label: "Gestión de edificios" },
-                ]}
-              />
-              <CardTitle className="text-2xl text-primary font-bold">
-                Gestión de Edificios
-              </CardTitle>
-            </CardHeader>
-            <div className="flex flex-wrap justify-center gap-2 p-4">
-              <ManageActions
-                open={openNew}
-                onOpenChange={setOpenNew}
-                variant="default"
-                titleButton="Nuevo Edificio"
-                icon={<Plus className="mr-2 h-4 w-4" />}
-                title="Nuevo Edificio"
-                description="Ingresa un nuevo Edificio"
-                FormComponent={
-                  <BuildForm
-                    action="create"
-                    onSuccess={() => setOpenNew(false)}
-                  />
-                }
-              />
-            </div>
-          </Card>
+          <div className="flex justify-end">
+            <ManageActions
+              open={openNew}
+              onOpenChange={setOpenNew}
+              variant="default"
+              titleButton="Nuevo Edificio"
+              icon={<Plus className="mr-2 h-4 w-4" />}
+              title="Nuevo Edificio"
+              description="Ingresa un nuevo Edificio"
+              FormComponent={
+                <BuildForm
+                  action="create"
+                  onSuccess={() => setOpenNew(false)}
+                />
+              }
+            />
+          </div>
 
           {buildings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground space-y-3">

@@ -7,9 +7,8 @@ import { Plus } from "lucide-react";
 import { columns } from "./columnsUser";
 import { DataTable } from "@/components/dataTable/data-table";
 import ManageActions from "@/components/dataTable/manageActions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import UserForm from "./UserFormProps";
 import useUserStore from "@/lib/zustand/userStore";
@@ -54,17 +53,9 @@ const BodyMantUser: React.FC = () => {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
       {isLoading ? (
         <>
-          <Card className="flex flex-col sm:flex-row justify-between items-center">
-            <CardHeader className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-8 w-56" />
-            </CardHeader>
-            <div className="flex flex-wrap gap-2 p-4">
-              <Skeleton className="h-9 w-32" />
-              <Skeleton className="h-9 w-24" />
-              <Skeleton className="h-9 w-28" />
-            </div>
-          </Card>
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-32" />
+          </div>
           <Card>
             <CardContent className="p-0">
               <div className="flex items-center px-6 py-4 border-b">
@@ -83,40 +74,25 @@ const BodyMantUser: React.FC = () => {
         </>
       ) : (
         <>
-          <Card className="flex flex-col sm:flex-row justify-between items-center">
-            <CardHeader>
-              <BreadcrumbResponsive
-                items={[
-                  { label: "Inicio", href: "/homePage" },
-                  { label: "Gestión de usuarios" },
-                ]}
-              />
-              <CardTitle className="text-2xl font-bold text-primary mb-4 sm:mb-0">
-                Gestión de Usuarios
-              </CardTitle>
-            </CardHeader>
-            <div className="flex flex-wrap justify-center gap-2 p-4">
-              {/* Nuevo Usuario */}
-              <ManageActions
-                open={openNew}
-                onOpenChange={setOpenNew}
-                variant="default"
-                titleButton="Nuevo Usuario"
-                icon={<Plus className="mr-2 h-4 w-4" />}
-                title="Nuevo Usuario"
-                description="Ingresa un nuevo usuario"
-                FormComponent={
-                  <UserForm
-                    action="create"
-                    onSuccess={() => {
-                      setOpenNew(false);
-                    }}
-                  />
-                }
-              />
-
-            </div>
-          </Card>
+          <div className="flex justify-end">
+            <ManageActions
+              open={openNew}
+              onOpenChange={setOpenNew}
+              variant="default"
+              titleButton="Nuevo Usuario"
+              icon={<Plus className="mr-2 h-4 w-4" />}
+              title="Nuevo Usuario"
+              description="Ingresa un nuevo usuario"
+              FormComponent={
+                <UserForm
+                  action="create"
+                  onSuccess={() => {
+                    setOpenNew(false);
+                  }}
+                />
+              }
+            />
+          </div>
 
           <Card>
             <CardContent>

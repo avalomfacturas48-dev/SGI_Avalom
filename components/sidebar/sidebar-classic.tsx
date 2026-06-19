@@ -18,7 +18,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { LogoutButton } from "@/components/sidebar/logout-button";
 import { ModeToggle } from "@/components/sidebar/mode-toggle";
@@ -43,7 +42,6 @@ export function SidebarClassic() {
               Gestión de alquileres
             </span>
           </div>
-          <SidebarTrigger className="ml-auto group-data-[collapsible=icon]:hidden" />
         </div>
       </SidebarHeader>
 
