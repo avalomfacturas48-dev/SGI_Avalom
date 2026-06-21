@@ -7,7 +7,7 @@ const Unauthorized: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <h1 className="text-3xl font-bold text-red-600 mb-4">Acceso Denegado</h1>
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-600 mb-4">Acceso Denegado</h1>
       <p className="text-gray-400 mb-8">
         No tienes permiso para acceder a esta página.
       </p>

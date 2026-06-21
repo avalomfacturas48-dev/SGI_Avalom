@@ -168,7 +168,7 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
       {/* Formulario de propiedad */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg text-primary font-semibold">
+          <CardTitle className="text-base sm:text-lg text-primary font-semibold">
             Información
           </CardTitle>
           <CardDescription>Editar datos de la propiedad.</CardDescription>
@@ -185,7 +185,7 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
       {/* Alquileres */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg text-primary font-semibold">
+          <CardTitle className="text-base sm:text-lg text-primary font-semibold">
             Alquileres
           </CardTitle>
           <CardDescription>

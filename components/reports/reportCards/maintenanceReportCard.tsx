@@ -44,7 +44,7 @@ export function MaintenanceReportCard() {
         </CardTitle>
         <CardDescription>Reporte detallado de gastos por mantenimientos de un edificio específico</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         <div className="space-y-2">
           <Label htmlFor="building-select-maintenance">
             Seleccione el Edificio <span className="text-red-500">*</span>

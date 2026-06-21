@@ -66,7 +66,7 @@ const BodyFinishedRent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6">
         <Card>
           <CardHeader className="space-y-2">
             <Skeleton className="h-4 w-40" />
@@ -92,7 +92,7 @@ const BodyFinishedRent: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6">
       <Card className="flex flex-col sm:flex-row justify-between items-center">
         <CardHeader>
           <BreadcrumbResponsive
@@ -114,7 +114,7 @@ const BodyFinishedRent: React.FC = () => {
             Finalizar Alquiler
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           <RentalInfoCard />
           <FinishedRentForm />
         </CardContent>

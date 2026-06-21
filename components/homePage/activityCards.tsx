@@ -9,6 +9,7 @@ import {
   UsersIcon,
   FilePenIcon,
   TrendingUpIcon,
+  Receipt,
 } from "lucide-react";
 
 interface ActivityCardsProps {
@@ -18,6 +19,7 @@ interface ActivityCardsProps {
   totalClients?: number;
   activeRentals?: number;
   monthlyRevenue?: number;
+  monthlyExpenses?: number;
 }
 
 export function ActivityCards({
@@ -33,6 +35,7 @@ export function ActivityCards({
   totalClients = 0,
   activeRentals = 0,
   monthlyRevenue = 0,
+  monthlyExpenses = 0,
 }: ActivityCardsProps) {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
@@ -78,6 +81,19 @@ export function ActivityCards({
     ringColor: "ring-emerald-500/30",
     value: monthlyRevenue,
     href: "/accounting",
+    isMonetary: true,
+  };
+
+  const gastosCard = {
+    id: "monthlyExpenses",
+    title: "Gastos del Mes",
+    icon: Receipt,
+    color: "text-rose-500",
+    bgColor: "bg-rose-50 dark:bg-rose-950",
+    ringColor: "ring-rose-500/30",
+    value: monthlyExpenses,
+    href: "/expenses",
+    isMonetary: true,
   };
 
   const cardClass = (id: string, ringColor: string) =>
@@ -122,37 +138,42 @@ export function ActivityCards({
           })}
         </div>
 
-        {/* Revenue: ancho completo */}
-        <Link href={revenueCard.href} className="block">
-          <Card
-            className={cardClass(revenueCard.id, revenueCard.ringColor)}
-            onMouseEnter={() => setHoveredCard(revenueCard.id)}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            <CardContent className="p-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg ${revenueCard.bgColor}`}>
-                  <TrendingUpIcon className={`w-4 h-4 ${revenueCard.color}`} />
-                </div>
-                <span className="text-sm font-medium text-muted-foreground">
-                  {revenueCard.title}
-                </span>
-              </div>
-              {loading ? (
-                <Skeleton className="h-7 w-28" />
-              ) : (
-                <p className="text-xl font-bold text-foreground">
-                  {formatCurrency(revenueCard.value)}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </Link>
+        {/* Revenue + Gastos: anchos completos apilados */}
+        {[revenueCard, gastosCard].map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link href={card.href} key={card.id} className="block">
+              <Card
+                className={cardClass(card.id, card.ringColor)}
+                onMouseEnter={() => setHoveredCard(card.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <CardContent className="p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg ${card.bgColor}`}>
+                      <Icon className={`w-4 h-4 ${card.color}`} />
+                    </div>
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {card.title}
+                    </span>
+                  </div>
+                  {loading ? (
+                    <Skeleton className="h-7 w-28" />
+                  ) : (
+                    <p className="text-xl font-bold text-foreground">
+                      {formatCurrency(card.value)}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
 
-      {/* Desktop (sm+): los 4 en fila */}
-      <div className="hidden sm:grid sm:grid-cols-4 gap-4">
-        {[...countCards, revenueCard].map((card) => {
+      {/* Tablet: 2x2+1 — Desktop (lg+): los 5 en fila */}
+      <div className="hidden sm:grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {[...countCards, revenueCard, gastosCard].map((card) => {
           const Icon = card.icon;
           return (
             <Link href={card.href} key={card.id} className="block h-full">
@@ -174,7 +195,7 @@ export function ActivityCards({
                     <Skeleton className="h-8 w-24" />
                   ) : (
                     <p className="text-2xl font-bold text-foreground truncate">
-                      {card.id === "monthlyRevenue" ? formatCurrency(card.value) : card.value}
+                      {"isMonetary" in card ? formatCurrency(card.value) : card.value}
                     </p>
                   )}
                 </CardContent>

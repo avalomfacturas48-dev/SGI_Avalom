@@ -41,15 +41,15 @@ export function ProfitLossReportCard() {
           Reporte ejecutivo con análisis completo de ingresos, gastos y rentabilidad
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 pt-6">
+      <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6">
         <div className="space-y-2">
           <Label>
             Rango de fechas <span className="text-red-500">*</span>
           </Label>
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
         </div>
-        
-        <div className="rounded-lg bg-muted/50 p-4 space-y-2">
+
+        <div className="rounded-lg bg-muted/50 p-3 sm:p-4 space-y-2">
           <p className="text-sm font-semibold text-primary">Incluye:</p>
           <ul className="text-xs text-muted-foreground space-y-1 ml-4 list-disc">
             <li>Resumen ejecutivo con KPIs principales</li>

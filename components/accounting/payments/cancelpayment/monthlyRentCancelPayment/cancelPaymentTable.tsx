@@ -75,7 +75,7 @@ export function CancelPaymentTable() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-primary" />
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-foreground">
                     {formatCurrency(Number(payment.pag_monto))}
                   </span>
                 </div>
@@ -375,7 +375,7 @@ export function CancelPaymentTable() {
     <>
       <Card className="border shadow-lg">
         <CardHeader className="border-b">
-          <CardTitle className="text-xl font-bold text-foreground">
+          <CardTitle className="text-base sm:text-xl font-bold text-foreground">
             Pagos Asociados
           </CardTitle>
         </CardHeader>
@@ -434,7 +434,7 @@ export function CancelPaymentTable() {
                   <p className="relative text-xs font-medium text-muted-foreground mb-2">
                     Monto Anulado
                   </p>
-                  <p className="relative text-3xl font-bold text-foreground">
+                  <p className="relative text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                     {formatCurrency(Number(selectedAnulacion.payment.pag_monto))}
                   </p>
                 </div>

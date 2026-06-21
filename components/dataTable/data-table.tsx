@@ -155,7 +155,7 @@ export function DataTable<TData, TValue>({
           placeholder="Buscar..."
           value={searchInput}
           onChange={(e) => handleSearchInput(e.target.value)}
-          className="w-full sm:max-w-xs"
+          className="w-full sm:max-w-xs text-sm"
           aria-label="Buscar en la tabla"
         />
         <div className={cn(renderMobileCard && "hidden sm:block")}>

@@ -42,6 +42,10 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
   {
     accessorKey: "prop_descripcion",
     header: "Descripción",
+    meta: {
+      headerClassName: "hidden lg:table-cell",
+      cellClassName: "hidden lg:table-cell",
+    },
   },
   {
     accessorKey: "tipp_id",

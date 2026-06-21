@@ -57,11 +57,11 @@ export const FinishedRentForm = () => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleFormSubmit)}
-        className="space-y-6"
+        className="space-y-4 sm:space-y-6"
       >
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl font-semibold">
+            <CardTitle className="text-base sm:text-xl font-semibold">
               Finalizar Alquiler
             </CardTitle>
             <CardDescription>
@@ -72,7 +72,7 @@ export const FinishedRentForm = () => {
           </CardHeader>
 
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <FormField
                 control={form.control}
                 name="depo_montodevuelto"

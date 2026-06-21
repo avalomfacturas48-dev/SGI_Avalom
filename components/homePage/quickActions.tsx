@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PlusCircle, UserPlus, Building2, LineChart } from "lucide-react";
+import { PlusCircle, UserPlus, Building2, LineChart, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ManageActions from "@/components/dataTable/manageActions";
@@ -53,6 +53,13 @@ export function QuickActions() {
             <Link href="/accounting">
               <LineChart className="mr-2 h-4 w-4" />
               Contabilidad
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" size="sm">
+            <Link href="/expenses">
+              <Receipt className="mr-2 h-4 w-4" />
+              Gastos
             </Link>
           </Button>
         </div>

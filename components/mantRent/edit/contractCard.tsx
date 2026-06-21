@@ -18,7 +18,7 @@ const ContractCard: React.FC<{ isFormDisabled?: boolean }> = ({ isFormDisabled =
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl text-primary font-bold">
+        <CardTitle className="text-base sm:text-xl text-primary font-bold">
           Contrato
         </CardTitle>
         <CardDescription>

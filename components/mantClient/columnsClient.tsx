@@ -42,9 +42,17 @@ export const columnsClient: ColumnDef<Cliente>[] = [
   {
     accessorKey: "cli_cedula",
     header: "Cédula",
+    meta: {
+      headerClassName: "hidden md:table-cell",
+      cellClassName: "hidden md:table-cell",
+    },
   },
   {
     accessorKey: "cli_correo",
+    meta: {
+      headerClassName: "hidden xl:table-cell",
+      cellClassName: "hidden xl:table-cell",
+    },
     header: ({ column }) => (
       <Button
         variant="ghost"

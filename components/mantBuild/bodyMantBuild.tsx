@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Building2, Plus } from "lucide-react";
 import cookie from "js-cookie";
 import axios from "axios";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import ManageActions from "@/components/dataTable/manageActions";
 import BuildForm from "./buildFormProps";
 import BuildingCard from "./BuildingCard";
@@ -56,23 +58,36 @@ const BodyMantBuild: React.FC = () => {
         </>
       ) : (
         <>
-          <div className="flex justify-end">
-            <ManageActions
-              open={openNew}
-              onOpenChange={setOpenNew}
-              variant="default"
-              titleButton="Nuevo Edificio"
-              icon={<Plus className="mr-2 h-4 w-4" />}
-              title="Nuevo Edificio"
-              description="Ingresa un nuevo Edificio"
-              FormComponent={
-                <BuildForm
-                  action="create"
-                  onSuccess={() => setOpenNew(false)}
-                />
-              }
-            />
-          </div>
+          <Card className="flex flex-col sm:flex-row justify-between items-center">
+            <CardHeader>
+              <BreadcrumbResponsive
+                items={[
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Gestión de edificios" },
+                ]}
+              />
+              <CardTitle className="text-2xl text-primary font-bold">
+                Gestión de Edificios
+              </CardTitle>
+            </CardHeader>
+            <div className="flex flex-wrap justify-center gap-2 p-4">
+              <ManageActions
+                open={openNew}
+                onOpenChange={setOpenNew}
+                variant="default"
+                titleButton="Nuevo Edificio"
+                icon={<Plus className="mr-2 h-4 w-4" />}
+                title="Nuevo Edificio"
+                description="Ingresa un nuevo Edificio"
+                FormComponent={
+                  <BuildForm
+                    action="create"
+                    onSuccess={() => setOpenNew(false)}
+                  />
+                }
+              />
+            </div>
+          </Card>
 
           {buildings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground space-y-3">

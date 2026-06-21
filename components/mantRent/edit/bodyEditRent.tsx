@@ -9,6 +9,7 @@ import RentalForm from "@/components/mantRent/edit/rentalForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../../ui/card";
 import { Button } from "@/components/ui/button";
+import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateRangeCalculator } from "./DateRangeCalculator";
 import MonthsBetween from "./MonthsBetween";
@@ -168,14 +169,34 @@ const BodyEditRent: React.FC = () => {
         </>
       ) : (
         <>
-          <div className="flex justify-end">
-            <Link href={`/mantRent/edit/${alqId}/contrato`}>
-              <Button className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Generar contrato
-              </Button>
-            </Link>
-          </div>
+          <Card className="flex flex-col sm:flex-row justify-between items-center">
+            <CardHeader>
+              <BreadcrumbResponsive
+                items={[
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Gestión de alquileres", href: "/mantRent" },
+                  {
+                    label: selectedRental?.ava_propiedad?.prop_identificador
+                      ? `Propiedad ${selectedRental.ava_propiedad.prop_identificador}`
+                      : "Modificar alquiler",
+                  },
+                ]}
+              />
+              <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary font-bold mb-4 sm:mb-0">
+                {selectedRental?.ava_propiedad?.prop_identificador
+                  ? `Modificar alquiler · Propiedad ${selectedRental.ava_propiedad.prop_identificador}`
+                  : "Modificar alquiler"}
+              </CardTitle>
+            </CardHeader>
+            <div className="px-6 pb-6 sm:pb-0">
+              <Link href={`/mantRent/edit/${alqId}/contrato`}>
+                <Button className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Generar contrato
+                </Button>
+              </Link>
+            </div>
+          </Card>
 
           {/* Barra de contexto: edificio · propiedad · inquilino · estado */}
           <RentalContextBar rental={selectedRental} />
@@ -196,7 +217,7 @@ const BodyEditRent: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-xl text-primary font-semibold">
+                  <CardTitle className="text-base sm:text-xl text-primary font-semibold">
                     Alquileres Mensuales
                   </CardTitle>
                   <CardDescription className="mt-1">

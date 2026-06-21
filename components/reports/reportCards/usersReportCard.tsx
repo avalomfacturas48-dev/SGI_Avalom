@@ -23,7 +23,7 @@ export function UsersReportCard() {
         </CardTitle>
         <CardDescription>Listado de usuarios del sistema con roles y estados</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         <p className="text-sm text-muted-foreground">Este reporte no requiere filtros adicionales</p>
       </CardContent>
       <CardFooter>

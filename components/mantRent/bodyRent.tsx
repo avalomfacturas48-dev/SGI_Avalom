@@ -3,9 +3,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import cookie from "js-cookie";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsRent";
+import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
 import { RentalSummaryCards } from "../shared/RentalSummaryCards";
 import useRentalStore from "@/lib/zustand/rentalStore";
@@ -114,6 +115,24 @@ const BodyRent: React.FC = () => {
         </>
       ) : (
         <>
+          <Card className="border shadow-lg">
+            <CardHeader>
+              <BreadcrumbResponsive
+                items={[
+                  { label: "Inicio", href: "/homePage" },
+                  { label: "Gestión de alquileres" },
+                ]}
+              />
+              <CardTitle className="text-2xl text-primary font-bold">
+                Gestión de Alquileres
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {total} alquileres registrados · {counts.active} activos.
+                Gestiona contratos, inquilinos y mensualidades.
+              </p>
+            </CardHeader>
+          </Card>
+
           <RentalSummaryCards
             activeCount={counts.active}
             finishedCount={counts.finished}

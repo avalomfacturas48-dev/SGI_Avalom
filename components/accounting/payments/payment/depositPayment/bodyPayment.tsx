@@ -63,7 +63,7 @@ const BodyPayment: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6">
       {isLoading ? (
         <div className="space-y-6">
           <Card>
@@ -108,7 +108,7 @@ const BodyPayment: React.FC = () => {
                   { label: "Pago de Depósito" },
                 ]}
               />
-              <CardTitle className="text-2xl text-primary font-bold mt-2">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary font-bold mt-2">
                 Pago de Depósito
               </CardTitle>
               {selectedDeposit && (
@@ -127,7 +127,7 @@ const BodyPayment: React.FC = () => {
 
           {selectedDeposit && (
             <Card className="border shadow-lg">
-              <CardContent className="p-6 space-y-6">
+              <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Sección: Monto a pagar */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">

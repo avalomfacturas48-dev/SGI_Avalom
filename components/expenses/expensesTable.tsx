@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 import { RowActions, RowActionButton } from "@/components/dataTable/rowActions";
 import type { AvaGasto } from "@/lib/types/entities";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { convertToCostaRicaTime } from "@/utils/dateUtils";
 
@@ -143,6 +143,10 @@ export const ExpensesTable = memo(function ExpensesTable({
       {
         accessorKey: "ava_edificio",
         header: "Edificio/Propiedad",
+        meta: {
+          headerClassName: "hidden md:table-cell",
+          cellClassName: "hidden md:table-cell",
+        },
         cell: ({ row }) => {
           const edificio = row.original.ava_edificio;
           const propiedad = row.original.ava_propiedad;
@@ -160,6 +164,10 @@ export const ExpensesTable = memo(function ExpensesTable({
       {
         accessorKey: "ava_servicio",
         header: "Servicio",
+        meta: {
+          headerClassName: "hidden xl:table-cell",
+          cellClassName: "hidden xl:table-cell",
+        },
         cell: ({ row }) => {
           const servicio = row.original.ava_servicio;
           if (!servicio) return <span className="text-muted-foreground">-</span>;
@@ -181,6 +189,10 @@ export const ExpensesTable = memo(function ExpensesTable({
       {
         accessorKey: "gas_fecha",
         header: "Fecha",
+        meta: {
+          headerClassName: "hidden xl:table-cell",
+          cellClassName: "hidden xl:table-cell",
+        },
         cell: ({ row }) => {
           const fecha = row.getValue("gas_fecha") as string;
           if (!fecha) return <span className="text-muted-foreground">-</span>;
@@ -270,20 +282,20 @@ export const ExpensesTable = memo(function ExpensesTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 sm:max-w-xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="relative w-full sm:w-auto sm:flex-1 sm:min-w-[180px] sm:max-w-xs">
           <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar gastos..."
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-8"
+            className="pl-8 h-9 sm:h-10 text-sm"
           />
         </div>
 
         <div className="flex flex-wrap gap-2">
           <Select value={tipoFilter} onValueChange={handleTipoFilterChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] h-9 sm:h-10">
               <Filter className="mr-2 size-4" />
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
@@ -295,7 +307,7 @@ export const ExpensesTable = memo(function ExpensesTable({
           </Select>
 
           <Select value={estadoFilter} onValueChange={handleEstadoFilterChange}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] h-9 sm:h-10">
               <Filter className="mr-2 size-4" />
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
@@ -433,13 +445,16 @@ export const ExpensesTable = memo(function ExpensesTable({
       </div>
 
       {/* Desktop: tabla */}
-      <div className="hidden sm:block rounded-md border">
+      <div className="hidden sm:block rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead
+                    key={header.id}
+                    className={cn((header.column.columnDef.meta as any)?.headerClassName)}
+                  >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -456,7 +471,12 @@ export const ExpensesTable = memo(function ExpensesTable({
                   style={{ animationDelay: `${index * 30}ms`, animationFillMode: "backwards" }}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell
+                      key={cell.id}
+                      className={cn((cell.column.columnDef.meta as any)?.cellClassName)}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -477,7 +497,7 @@ export const ExpensesTable = memo(function ExpensesTable({
         </Table>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <div className="text-sm font-medium text-muted-foreground">
             Mostrando{" "}
@@ -499,7 +519,7 @@ export const ExpensesTable = memo(function ExpensesTable({
               onPageSizeChange(Number(value));
             }}
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] h-9 sm:h-10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -531,7 +551,7 @@ export const ExpensesTable = memo(function ExpensesTable({
             </Button>
             
             {/* Números de página */}
-            <div className="hidden items-center gap-1 md:flex">
+            <div className="hidden items-center gap-1 lg:flex">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum;
                 if (totalPages <= 5) {

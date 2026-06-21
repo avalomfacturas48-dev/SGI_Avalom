@@ -92,7 +92,7 @@ const PropertyManager: React.FC<PropertyManagerProps> = ({
         </TabsList>
         <TabsContent value="view" className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl text-primary font-semibold">
+            <h2 className="text-base sm:text-xl text-primary font-semibold">
               Historial de alquileres
             </h2>
           </div>

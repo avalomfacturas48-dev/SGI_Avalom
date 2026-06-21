@@ -58,7 +58,7 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 <ShieldCheck className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-xl text-primary font-bold">
+                <CardTitle className="text-base sm:text-xl text-primary font-bold">
                   Depósito de Garantía
                 </CardTitle>
                 <CardDescription className="mt-0.5">
@@ -86,7 +86,7 @@ const DepositForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
             {deposit && (
               <div className="rounded-lg border bg-muted/40 px-4 py-3 flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">Monto actual</p>
-                <p className="text-lg font-bold text-foreground">
+                <p className="text-sm sm:text-base md:text-lg font-bold text-foreground">
                   {formatCurrency(Number(deposit.depo_montoactual))}
                 </p>
               </div>

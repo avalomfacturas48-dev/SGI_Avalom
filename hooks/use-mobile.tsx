@@ -1,6 +1,8 @@
 import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+// Incluye móviles y tablets: por debajo de 1024px (lg) el sidebar se oculta
+// y solo se muestra mediante el botón de toggle (modo off-canvas).
+const MOBILE_BREAKPOINT = 1024
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)

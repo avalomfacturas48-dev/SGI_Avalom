@@ -37,7 +37,7 @@ export function DateRangeCalculator() {
     <div className="w-full mx-auto space-y-4 pb-4">
       <Card className="w-full">
         <CardHeader className="py-2">
-          <CardTitle className="text-center text-lg">
+          <CardTitle className="text-center text-base sm:text-lg">
             Selecciona un Rango de Fechas
           </CardTitle>
         </CardHeader>

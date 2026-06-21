@@ -23,7 +23,7 @@ export function ClientsReportCard() {
         </CardTitle>
         <CardDescription>Listado completo de clientes con su información de contacto</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         <p className="text-sm text-muted-foreground">Este reporte no requiere filtros adicionales</p>
       </CardContent>
       <CardFooter>

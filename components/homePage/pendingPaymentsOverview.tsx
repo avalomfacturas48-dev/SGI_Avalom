@@ -161,7 +161,7 @@ export function PendingPaymentsOverview({
       <Card className="border shadow-lg">
         <CardHeader className="border-b pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold">Pagos Pendientes</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-bold">Pagos Pendientes</CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <AlertCircleIcon className="w-4 h-4 text-amber-500" />
               Requieren atención

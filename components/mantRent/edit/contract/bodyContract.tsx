@@ -287,7 +287,7 @@ const BodyContract: React.FC = () => {
               { label: "Contrato" },
             ]}
           />
-          <CardTitle className="flex items-center gap-2 text-2xl text-primary font-bold">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl text-primary font-bold">
             <FileText className="h-6 w-6" />
             Contrato de arrendamiento
           </CardTitle>
@@ -311,7 +311,7 @@ const BodyContract: React.FC = () => {
       {/* Información de las partes */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <User className="h-4 w-4 text-primary" />
             Información del arrendatario
           </CardTitle>
@@ -353,7 +353,7 @@ const BodyContract: React.FC = () => {
       {/* Apartamento y contrato */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <FileText className="h-4 w-4 text-primary" />
             Apartamento y condiciones
           </CardTitle>

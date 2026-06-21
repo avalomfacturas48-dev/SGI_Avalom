@@ -118,7 +118,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl text-primary font-bold">
+            <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary font-bold">
               {action === "create" ? "Nuevo Alquiler" : "Editar Alquiler"}
             </CardTitle>
             <CardDescription>
@@ -286,7 +286,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
           <Card>
             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle className="text-xl font-semibold">
+                <CardTitle className="text-base sm:text-xl font-semibold">
                   Contrato
                 </CardTitle>
                 <CardDescription>

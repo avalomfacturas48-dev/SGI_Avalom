@@ -41,7 +41,7 @@ export function AllExpensesReportCard() {
           Reporte completo de todos los gastos (servicios y mantenimientos) en un rango de fechas
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         <div className="space-y-2">
           <Label>
             Rango de fechas <span className="text-red-500">*</span>

@@ -54,7 +54,7 @@ export function ExpenseDetailsDialog({ open, onOpenChange, expense, onEdit, onCa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Detalles del Gasto
@@ -119,7 +119,7 @@ export function ExpenseDetailsDialog({ open, onOpenChange, expense, onEdit, onCa
             <CardContent className="space-y-3">
               <div>
                 <div className="text-sm font-medium text-muted-foreground">Monto</div>
-                <div className="text-2xl font-bold text-primary">{formatCurrency(expense.gas_monto)}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary">{formatCurrency(expense.gas_monto)}</div>
               </div>
 
               <Separator />

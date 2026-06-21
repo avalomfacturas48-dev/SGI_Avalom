@@ -100,7 +100,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
           )}
           
           <CardHeader>
-            <CardTitle className="text-xl text-primary font-bold">
+            <CardTitle className="text-base sm:text-xl text-primary font-bold">
               Editar Alquiler
             </CardTitle>
             <CardDescription>
@@ -212,7 +212,7 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             {action !== "create" && (
               <div className="pt-6 border-t space-y-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1">
                     Clientes Asociados
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">

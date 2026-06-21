@@ -34,6 +34,7 @@ import { parseISO } from "date-fns";
 const METODOS_PAGO = [
   "SINPE Móvil",
   "Transferencia",
+  "Depósito",
   "Efectivo",
   "Tarjeta de crédito",
   "Tarjeta de débito",
@@ -149,7 +150,7 @@ export function PaymentForm({
                   </SelectContent>
                 </Select>
                 <div className="flex gap-1.5 flex-wrap">
-                  {["SINPE Móvil", "Transferencia"].map((v) => (
+                  {["SINPE Móvil", "Transferencia", "Depósito"].map((v) => (
                     <button
                       key={v}
                       type="button"

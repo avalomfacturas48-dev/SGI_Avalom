@@ -65,11 +65,11 @@ export const CanceledRentForm = () => {
               motivos y montos.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-4 sm:space-y-8">
             {/* Sección del Depósito */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-primary">
+                <h3 className="text-base sm:text-lg font-semibold text-primary">
                   Datos del Depósito
                 </h3>
                 <FormDescription className="text-muted-foreground">
@@ -79,7 +79,7 @@ export const CanceledRentForm = () => {
                 <Separator className="my-3" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <FormField
                   control={form.control}
                   name="depo_montodevuelto"
@@ -211,9 +211,9 @@ export const CanceledRentForm = () => {
             </div>
 
             {/* Sección del Alquiler Cancelado */}
-            <div className="space-y-4 pt-6">
+            <div className="space-y-3 sm:space-y-4 pt-4 sm:pt-6">
               <div>
-                <h3 className="text-lg font-semibold text-primary">
+                <h3 className="text-base sm:text-lg font-semibold text-primary">
                   Detalles de Cancelación
                 </h3>
                 <FormDescription className="text-muted-foreground">
@@ -223,7 +223,7 @@ export const CanceledRentForm = () => {
                 <Separator className="my-3" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <FormField
                   control={form.control}
                   name="alqc_motivo"

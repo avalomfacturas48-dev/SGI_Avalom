@@ -166,7 +166,7 @@ export function ExpenseFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Editar Gasto" : "Nuevo Gasto"}</DialogTitle>
           <DialogDescription>
@@ -177,10 +177,10 @@ export function ExpenseFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Información Básica</Label>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 sm:space-y-6">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-sm font-semibold sm:text-base">Información Básica</Label>
 
                 <FormField
                   control={form.control}
@@ -189,15 +189,15 @@ export function ExpenseFormDialog({
                     <FormItem>
                       <FormLabel>Tipo de Gasto *</FormLabel>
                       <FormControl>
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
-                          <div className="flex flex-1 items-center space-x-2 rounded-lg border p-4 hover:bg-accent">
+                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex flex-col gap-2 sm:flex-row sm:gap-4">
+                          <div className="flex flex-1 items-center space-x-2 rounded-lg border p-2 sm:p-3 hover:bg-accent">
                             <RadioGroupItem value="S" id="tipo-servicio" />
                             <Label htmlFor="tipo-servicio" className="flex flex-1 cursor-pointer items-center gap-2">
                               <Zap className="size-5 text-blue-500" />
                               <span>Servicio</span>
                             </Label>
                           </div>
-                          <div className="flex flex-1 items-center space-x-2 rounded-lg border p-4 hover:bg-accent">
+                          <div className="flex flex-1 items-center space-x-2 rounded-lg border p-2 sm:p-3 hover:bg-accent">
                             <RadioGroupItem value="M" id="tipo-mantenimiento" />
                             <Label
                               htmlFor="tipo-mantenimiento"
@@ -241,7 +241,7 @@ export function ExpenseFormDialog({
                   />
                 )}
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="gas_concepto"
@@ -281,7 +281,7 @@ export function ExpenseFormDialog({
                       <FormControl>
                         <Textarea
                           placeholder="Descripción adicional del gasto..."
-                          className="resize-none"
+                          className="resize-none min-h-[60px] sm:min-h-[80px]"
                           {...field}
                           maxLength={200}
                         />
@@ -309,10 +309,10 @@ export function ExpenseFormDialog({
                 />
               </div>
 
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Ubicación</Label>
+              <div className="space-y-2 sm:space-y-3">
+                <Label className="text-sm font-semibold sm:text-base">Ubicación</Label>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="edi_id"
@@ -374,10 +374,10 @@ export function ExpenseFormDialog({
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="payment">
                   <AccordionTrigger>
-                    <Label className="text-base font-semibold">Información de Pago</Label>
+                    <Label className="text-sm font-semibold sm:text-base">Información de Pago</Label>
                   </AccordionTrigger>
-                  <AccordionContent className="space-y-3 pt-3">
-                    <div className="grid gap-4 md:grid-cols-2">
+                  <AccordionContent className="space-y-2 sm:space-y-3 pt-2 sm:pt-3">
+                    <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="gas_metodopago"
@@ -407,7 +407,7 @@ export function ExpenseFormDialog({
                       />
                     </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="gas_cuenta"
@@ -441,10 +441,10 @@ export function ExpenseFormDialog({
 
                 <AccordionItem value="document">
                   <AccordionTrigger>
-                    <Label className="text-base font-semibold">Comprobante</Label>
+                    <Label className="text-sm font-semibold sm:text-base">Comprobante</Label>
                   </AccordionTrigger>
-                  <AccordionContent className="space-y-3 pt-3">
-                    <div className="rounded-lg border-2 border-dashed p-6">
+                  <AccordionContent className="space-y-2 sm:space-y-3 pt-2 sm:pt-3">
+                    <div className="rounded-lg border-2 border-dashed p-3 sm:p-6">
                       {uploadedFile ? (
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">

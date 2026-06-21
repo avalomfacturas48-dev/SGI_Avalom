@@ -35,7 +35,7 @@ export const RentalInfoCardCanceled = () => {
       </CardHeader>
 
       {deposito ? (
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-y-4 sm:gap-x-10 text-sm sm:text-base">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 sm:gap-y-4 sm:gap-x-10 text-sm sm:text-base">
           <InfoItem
             icon={<Building className="w-4 h-4 text-muted-foreground" />}
             label="Propiedad"

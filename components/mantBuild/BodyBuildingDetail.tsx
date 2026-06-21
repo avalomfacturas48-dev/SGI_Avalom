@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Home, Plus } from "lucide-react";
+import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Skeleton } from "@/components/ui/skeleton";
 import cookie from "js-cookie";
 import axios from "axios";
@@ -60,9 +61,16 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
   if (isLoading) {
     return (
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <div className="flex">
-          <Skeleton className="h-9 w-28" />
-        </div>
+        <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <div className="p-4">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </Card>
         <Card>
           <CardHeader className="space-y-2">
             <Skeleton className="h-6 w-52" />
@@ -115,21 +123,41 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-      <div className="flex">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push("/mantBuild")}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Edificios
-        </Button>
-      </div>
+      {/* Header */}
+      <Card className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <CardHeader>
+          <BreadcrumbResponsive
+            items={[
+              { label: "Inicio", href: "/homePage" },
+              { label: "Edificios", href: "/mantBuild" },
+              { label: building.edi_identificador },
+            ]}
+          />
+          <CardTitle className="text-2xl text-primary font-bold">
+            {building.edi_identificador}
+          </CardTitle>
+          {building.edi_descripcion && (
+            <p className="text-sm text-muted-foreground">
+              {building.edi_descripcion}
+            </p>
+          )}
+        </CardHeader>
+        <div className="flex gap-2 p-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/mantBuild")}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Edificios
+          </Button>
+        </div>
+      </Card>
 
       {/* Formulario del edificio */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg text-primary font-semibold">
+          <CardTitle className="text-base sm:text-lg text-primary font-semibold">
             Información del Edificio
           </CardTitle>
           <CardDescription>Editar datos del edificio.</CardDescription>
@@ -147,7 +175,7 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-primary">Propiedades</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-primary">Propiedades</h2>
             <p className="text-sm text-muted-foreground">
               {properties.length}{" "}
               {properties.length === 1

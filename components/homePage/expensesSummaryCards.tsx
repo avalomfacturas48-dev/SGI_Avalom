@@ -133,7 +133,7 @@ export function ExpensesSummaryCards({
                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">
                   {card.title}
                 </h3>
-                <div className="text-2xl font-bold text-foreground">
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
                   {loading ? (
                     <Skeleton className="h-7 w-24" />
                   ) : (

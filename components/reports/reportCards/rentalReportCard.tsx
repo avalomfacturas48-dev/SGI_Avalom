@@ -72,7 +72,7 @@ export function RentalReportCard() {
         </CardTitle>
         <CardDescription>Reporte completo de un alquiler específico con mensualidades y pagos</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {/* Búsqueda simple */}
         <div className="space-y-2">
           <Label htmlFor="search-rental">Buscar alquiler (opcional)</Label>

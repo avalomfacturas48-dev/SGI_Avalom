@@ -73,7 +73,7 @@ const BodyCanceledRent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6">
         <Card>
           <CardHeader className="space-y-2">
             <Skeleton className="h-4 w-40" />
@@ -99,7 +99,7 @@ const BodyCanceledRent: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6">
       <Card className="bg-background flex flex-col sm:flex-row justify-between items-center">
         <CardHeader>
           <BreadcrumbResponsive

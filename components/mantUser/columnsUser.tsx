@@ -43,9 +43,17 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "usu_cedula",
     header: "Cédula",
+    meta: {
+      headerClassName: "hidden lg:table-cell",
+      cellClassName: "hidden lg:table-cell",
+    },
   },
   {
     accessorKey: "usu_correo",
+    meta: {
+      headerClassName: "hidden xl:table-cell",
+      cellClassName: "hidden xl:table-cell",
+    },
     header: ({ column }) => (
       <Button
         variant="ghost"
@@ -83,6 +91,10 @@ export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "usu_rol",
     header: "Rol",
+    meta: {
+      headerClassName: "hidden lg:table-cell",
+      cellClassName: "hidden lg:table-cell",
+    },
     cell: ({ row }) => {
       const role = row.getValue("usu_rol") as string;
       return (

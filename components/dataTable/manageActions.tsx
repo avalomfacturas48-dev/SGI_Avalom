@@ -83,12 +83,12 @@ const ManageActions: React.FC<ManageActionsProps> = ({
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent className="sm:max-w-[425px] md:max-w-xl lg:max-w-3xl max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-[425px] md:max-w-xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="h-[60vh]">{FormComponent}</ScrollArea>
+          {FormComponent}
         </DialogContent>
       </Dialog>
     );

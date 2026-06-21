@@ -119,7 +119,7 @@ export const columns: ColumnDef<AvaAlquiler>[] = [
     },
     cell: ({ row }) => {
       const amount = Number(row.getValue("alq_monto"));
-      return <div className="font-semibold text-base">{formatCurrencyNoDecimals(amount)}</div>;
+      return <div className="font-semibold text-sm sm:text-base">{formatCurrencyNoDecimals(amount)}</div>;
     },
   },
   {

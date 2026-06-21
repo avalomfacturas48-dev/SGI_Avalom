@@ -72,7 +72,7 @@ export function RentalSummaryCards({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-2 sm:gap-3 2xl:gap-4">
       {CARDS.map((card) => {
         const Icon = card.icon;
         const isActive =
@@ -95,22 +95,32 @@ export function RentalSummaryCards({
               isActive && `ring-2 ${card.ring}`
             )}
           >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+            <CardContent className="p-2 sm:p-3 2xl:p-4">
+              {/* Mobile: columna compacta sin icono */}
+              <div className="sm:hidden">
+                <p className="text-[10px] text-muted-foreground mb-0.5">
+                  {card.label}
+                </p>
+                <p className={cn("text-xl font-bold", card.text)}>
+                  {counts[card.status]}
+                </p>
+              </div>
+              {/* sm+: fila con icono */}
+              <div className="hidden sm:flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">
+                  <p className="text-xs text-muted-foreground mb-0.5 2xl:text-sm 2xl:mb-1">
                     {card.label}
                   </p>
-                  <p className={cn("text-3xl font-bold", card.text)}>
+                  <p className={cn("text-2xl font-bold 2xl:text-3xl", card.text)}>
                     {counts[card.status]}
                   </p>
                 </div>
-                <div className={cn("p-3 rounded-full", card.bg)}>
-                  <Icon className={cn("h-6 w-6", card.text)} />
+                <div className={cn("p-2 rounded-full 2xl:p-3", card.bg)}>
+                  <Icon className={cn("h-5 w-5 2xl:h-6 2xl:w-6", card.text)} />
                 </div>
               </div>
               {clickable && (
-                <p className="text-[11px] text-muted-foreground mt-2">
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-1 sm:mt-1.5 2xl:text-[11px] 2xl:mt-2">
                   {isActive ? "Mostrando solo estos · clic para ver todos" : "Clic para filtrar"}
                 </p>
               )}

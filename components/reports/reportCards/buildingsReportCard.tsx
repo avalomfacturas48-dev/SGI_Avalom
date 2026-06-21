@@ -28,7 +28,7 @@ export function BuildingsReportCard() {
         </CardTitle>
         <CardDescription>Genera un reporte completo de edificios, propiedades y mensualidades</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         <div className="space-y-2">
           <Label>Rango de fechas (opcional)</Label>
           <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />

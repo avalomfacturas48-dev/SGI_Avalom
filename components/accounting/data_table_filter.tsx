@@ -210,15 +210,15 @@ export function DataTable({
     });
 
   return (
-    <div className="w-full space-y-4 p-4 sm:p-6">
+    <div className="w-full space-y-3 sm:space-y-4 p-4 sm:p-6">
       {/* Filtros */}
-      <div className="p-4 space-y-4 border-b">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
+      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 border-b">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto]">
           <Input
-            placeholder="Buscar por inquilino, propiedad, edificio, monto..."
+            placeholder="Buscar por inquilino, propiedad o edificio..."
             value={searchInput}
             onChange={(e) => handleSearchInput(e.target.value)}
-            className="w-full"
+            className="w-full h-9 sm:h-10 text-sm"
             aria-label="Buscar en la tabla"
           />
           <StatusFilter

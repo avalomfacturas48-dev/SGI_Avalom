@@ -167,7 +167,7 @@ const MonthlyRentsView: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Button
             onClick={toggleSort}
@@ -390,72 +390,148 @@ const MonthlyRentsView: React.FC = () => {
               No hay movimientos registrados para este mes.
             </p>
           ) : (
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead className="text-right">Monto</TableHead>
-                    <TableHead>Método</TableHead>
-                    <TableHead>Referencia</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {movementRent?.ava_pago?.map((pago) => {
-                    const anulado = pago.pag_estado === "D" || !!pago.ava_anulacionpago?.length;
-                    return (
-                      <TableRow key={pago.pag_id} className={cn(anulado && "bg-red-500/5")}>
-                        <TableCell className="text-sm whitespace-nowrap">
+            <>
+              {/* Vista de tabla — desktop */}
+              <div className="hidden sm:block rounded-md border min-w-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Monto</TableHead>
+                      <TableHead>Método</TableHead>
+                      <TableHead>Referencia</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {movementRent?.ava_pago?.map((pago) => {
+                      const anulado = pago.pag_estado === "D" || !!pago.ava_anulacionpago?.length;
+                      return (
+                        <TableRow key={pago.pag_id} className={cn(anulado && "bg-red-500/5")}>
+                          <TableCell className="text-sm whitespace-nowrap">
+                            {formatToCR(pago.pag_fechapago)}
+                          </TableCell>
+                          <TableCell
+                            className={cn(
+                              "text-right font-semibold whitespace-nowrap",
+                              anulado && "line-through text-muted-foreground"
+                            )}
+                          >
+                            {formatCurrencyNoDecimals(Number(pago.pag_monto))}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {pago.pag_metodopago ? (
+                              <span>
+                                {pago.pag_metodopago}
+                                {pago.pag_banco && (
+                                  <span className="text-muted-foreground"> · {pago.pag_banco}</span>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {pago.pag_referencia || "—"}
+                          </TableCell>
+                          <TableCell>
+                            {anulado ? (
+                              <Badge
+                                variant="outline"
+                                className="gap-1 bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400"
+                              >
+                                <Ban className="h-3 w-3" />
+                                Anulado
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400"
+                              >
+                                Activo
+                              </Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Vista de tarjetas — móvil */}
+              <div className="space-y-2 sm:hidden">
+                {movementRent?.ava_pago?.map((pago) => {
+                  const anulado = pago.pag_estado === "D" || !!pago.ava_anulacionpago?.length;
+                  return (
+                    <div
+                      key={pago.pag_id}
+                      className={cn(
+                        "rounded-md border p-3 space-y-2",
+                        anulado && "bg-red-500/5"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium whitespace-nowrap">
                           {formatToCR(pago.pag_fechapago)}
-                        </TableCell>
-                        <TableCell
+                        </span>
+                        <span
                           className={cn(
-                            "text-right font-semibold whitespace-nowrap",
+                            "text-sm font-bold whitespace-nowrap",
                             anulado && "line-through text-muted-foreground"
                           )}
                         >
                           {formatCurrencyNoDecimals(Number(pago.pag_monto))}
-                        </TableCell>
-                        <TableCell className="text-sm">
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-muted-foreground">Método</span>
+                        <span className="text-right">
                           {pago.pag_metodopago ? (
-                            <span>
+                            <>
                               {pago.pag_metodopago}
                               {pago.pag_banco && (
                                 <span className="text-muted-foreground"> · {pago.pag_banco}</span>
                               )}
-                            </span>
+                            </>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-muted-foreground">Referencia</span>
+                        <span className="text-right text-muted-foreground break-all">
                           {pago.pag_referencia || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {anulado ? (
-                            <Badge
-                              variant="outline"
-                              className="gap-1 bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400"
-                            >
-                              <Ban className="h-3 w-3" />
-                              Anulado
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="outline"
-                              className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400"
-                            >
-                              Activo
-                            </Badge>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground">Estado</span>
+                        {anulado ? (
+                          <Badge
+                            variant="outline"
+                            className="gap-1 bg-red-500/10 text-red-700 border-red-500/30 dark:text-red-400"
+                          >
+                            <Ban className="h-3 w-3" />
+                            Anulado
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 dark:text-emerald-400"
+                          >
+                            Activo
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>

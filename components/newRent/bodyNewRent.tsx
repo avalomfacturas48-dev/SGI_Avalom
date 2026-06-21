@@ -151,7 +151,7 @@ export function BodyNewRent() {
       {/* Step 1: Elegir edificio */}
       {step === 1 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold px-1">Paso 1 — Selecciona el edificio</h2>
+          <h2 className="text-base sm:text-lg font-semibold px-1">Paso 1 — Selecciona el edificio</h2>
           {loadingBuildings ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[...Array(4)].map((_, i) => (
@@ -220,7 +220,7 @@ export function BodyNewRent() {
               <ChevronLeft className="w-4 h-4" />
               Volver
             </Button>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-base sm:text-lg font-semibold">
               Paso 2 — Selecciona la propiedad en{" "}
               <span className="text-primary">{selectedBuilding.edi_identificador}</span>
             </h2>
@@ -275,7 +275,7 @@ export function BodyNewRent() {
               <ChevronLeft className="w-4 h-4" />
               Volver
             </Button>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-base sm:text-lg font-semibold">
               Paso 3 — Datos del alquiler
             </h2>
           </div>
@@ -300,7 +300,7 @@ export function BodyNewRent() {
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-primary font-bold">
+                  <CardTitle className="text-base sm:text-lg text-primary font-bold">
                     Detalles del Alquiler
                   </CardTitle>
                   <CardDescription>
@@ -400,7 +400,7 @@ export function BodyNewRent() {
               {/* Clientes */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg text-primary font-bold">
+                  <CardTitle className="text-base sm:text-lg text-primary font-bold">
                     Clientes Asociados
                   </CardTitle>
                   <CardDescription>

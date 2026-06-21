@@ -63,13 +63,13 @@ const BodyPayments: React.FC = () => {
   }, [alqId, setSelectedRental, setLoadingState]);
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6">
       {isLoading ? (
         <>
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <CardHeader>
               <Skeleton className="h-4 w-[160px] mb-4" />
-              <CardTitle className="text-2xl">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl">
                 <Skeleton className="h-6 w-[200px]" />
               </CardTitle>
             </CardHeader>
@@ -139,7 +139,7 @@ const BodyPayments: React.FC = () => {
                   { label: "Movimientos" },
                 ]}
               />
-              <CardTitle className="text-2xl text-primary font-bold mt-2">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary font-bold mt-2">
                 Movimientos
               </CardTitle>
               {selectedRental && (
@@ -183,11 +183,11 @@ const BodyPayments: React.FC = () => {
 
           <Card className="border shadow-lg">
             <CardHeader className="border-b">
-              <CardTitle className="text-xl font-bold text-foreground">
+              <CardTitle className="text-base sm:text-xl font-bold text-foreground">
                 Alquileres Mensuales
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-4 sm:pt-6">
               {monthlyRents.length > 0 ? (
                 <MonthlyRentsView />
               ) : (

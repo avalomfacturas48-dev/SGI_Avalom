@@ -57,7 +57,7 @@ const BodyCancelPayment: React.FC = () => {
                   { label: "Anular pago" },
                 ]}
               />
-              <CardTitle className="text-2xl text-primary font-bold mt-2">
+              <CardTitle className="text-lg sm:text-xl md:text-2xl text-primary font-bold mt-2">
                 Anular Pago
               </CardTitle>
               {selectedMonthlyRent && (
