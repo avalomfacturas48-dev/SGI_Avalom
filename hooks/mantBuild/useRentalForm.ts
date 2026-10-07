@@ -9,7 +9,6 @@ import cookie from "js-cookie";
 import { format } from "date-fns";
 import { toDate, toZonedTime } from "date-fns-tz";
 import usePropertyStore from "@/lib/zustand/propertyStore";
-import useClientStore from "@/lib/zustand/clientStore";
 import { Cliente } from "@/lib/types";
 import { RentalFormProps } from "@/lib/typesForm";
 import { convertToCostaRicaTime, convertToUTC, convertToUTCSV } from "@/utils/dateUtils";
@@ -37,7 +36,6 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
     setSelectedRental,
   } = usePropertyStore();
 
-  const { clients, setClients } = useClientStore();
   const [clientsInRental, setClientsInRental] = useState<Cliente[]>([]);
   const [hasPayments, setHasPayments] = useState(false);
 
@@ -196,24 +194,6 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
     setClientsInRental(clientsInRental.filter((c) => c.cli_id !== cliId));
   };
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      const res = await axios.get("/api/client", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setClients(res.data.data);
-    };
-
-    if (action === "edit") {
-      fetchClients();
-    }
-  }, [setClients]);
-
   const isFormDisabled = action === "edit" && !selectedRental;
   const disableEstadoField = action === "edit" && hasPayments;
 
@@ -226,7 +206,6 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
     handleClientRemove,
     isFormDisabled,
     disableEstadoField,
-    clients,
     clientsInRental,
     selectedRental,
   };

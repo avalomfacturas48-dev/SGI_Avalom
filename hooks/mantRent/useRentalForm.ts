@@ -38,7 +38,6 @@ export const useRentalForm = ({
     deleteRent,
   } = useRentalStore();
 
-  const [clients, setClients] = useState<Cliente[]>([]);
   const [clientsInRental, setClientsInRental] = useState<Cliente[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasPayments, setHasPayments] = useState(false);
@@ -102,25 +101,6 @@ export const useRentalForm = ({
       fetchHasPayments(selectedRental.alq_id);
     }
   }, [selectedRental, reset, defaultValues, setRents]);
-
-  const fetchClients = async () => {
-    try {
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
-      const response = await axios.get("/api/client", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setClients(response.data.data || []);
-    } catch (error: any) {
-      console.error("Error al cargar clientes:", error.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
 
   const onSubmit: SubmitHandler<RentalFormInputs> = async (formData) => {
     try {
@@ -191,7 +171,6 @@ export const useRentalForm = ({
     handleSubmit,
     onSubmit,
     handleClear,
-    clients,
     clientsInRental,
     handleClientSelect,
     handleClientRemove,

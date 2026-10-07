@@ -47,14 +47,26 @@ import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { toast } from "sonner";
 import AlertDialog from "@/components/alertDialog";
 import { AvaAlquilerMensual } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const ITEMS_PER_PAGE = 8;
+// 0 = mostrar todos los meses en una sola página
+const PAGE_SIZE_OPTIONS = [8, 12, 24, 48, 0];
+
+// Por defecto se ocultan los meses pagados
+const DEFAULT_STATUSES = ["atrasados", "incompletos", "pendientes", "regalados"];
 
 const MonthlyRentsView: React.FC = () => {
   const { monthlyRents, setRentStatus } = useRentalStore();
   const [rents, setRents] = useState(monthlyRents);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(DEFAULT_STATUSES);
+  const [pageSize, setPageSize] = useState(8);
   const [movementRent, setMovementRent] = useState<AvaAlquilerMensual | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -64,7 +76,7 @@ const MonthlyRentsView: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedStatuses, sortOrder]);
+  }, [selectedStatuses, sortOrder, pageSize]);
 
   const getStatusColor = (rent: AvaAlquilerMensual) => {
     const now = new Date();
@@ -128,15 +140,20 @@ const MonthlyRentsView: React.FC = () => {
     })
     .sort((a, b) => {
       const dateA = new Date(a.alqm_fechainicio).getTime();
-      const dateB = new Date(b.alqm_fechafin).getTime();
+      const dateB = new Date(b.alqm_fechainicio).getTime();
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  const totalPages = Math.max(1, Math.ceil(filteredAndSortedRents.length / ITEMS_PER_PAGE));
+  const showingAll = selectedStatuses.length === 0;
+  const effectivePageSize = pageSize === 0 ? filteredAndSortedRents.length || 1 : pageSize;
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedRents.length / effectivePageSize));
   const paginatedRents = filteredAndSortedRents.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * effectivePageSize,
+    currentPage * effectivePageSize
   );
+  const hiddenCount = showingAll
+    ? 0
+    : rents.length - rents.filter((r) => selectedStatuses.includes(getRentStatus(r))).length;
 
   const handleGiftToggle = async (rent: AvaAlquilerMensual) => {
     const isGifted = rent.alqm_estado !== "R";
@@ -179,7 +196,17 @@ const MonthlyRentsView: React.FC = () => {
             Ordenar {sortOrder === "asc" ? "Descendente" : "Ascendente"}
           </Button>
 
-          <div className="w-full sm:w-auto">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-start">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10"
+              onClick={() =>
+                setSelectedStatuses(showingAll ? DEFAULT_STATUSES : [])
+              }
+            >
+              {showingAll ? "Ocultar pagados" : "Mostrar todos"}
+            </Button>
             <StatusFilter
               filterName="Estado"
               selectedStatuses={selectedStatuses}
@@ -188,11 +215,20 @@ const MonthlyRentsView: React.FC = () => {
                 { label: "Pagados", value: "pagados" },
                 { label: "Atrasados", value: "atrasados" },
                 { label: "Incompletos", value: "incompletos" },
+                { label: "Pendientes", value: "pendientes" },
                 { label: "Regalados", value: "regalados" },
               ]}
             />
           </div>
         </div>
+
+        {filteredAndSortedRents.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {hiddenCount > 0
+              ? "No hay meses con los filtros seleccionados. Usa \"Mostrar todos\" para ver todos los meses."
+              : "No hay meses con los filtros seleccionados."}
+          </p>
+        )}
 
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
           {paginatedRents.map((rent) => {
@@ -340,11 +376,28 @@ const MonthlyRentsView: React.FC = () => {
         </div>
 
         {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-2 border-t">
-            <p className="text-xs text-muted-foreground">
-              {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedRents.length)} de {filteredAndSortedRents.length}
-            </p>
+        {filteredAndSortedRents.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t">
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {(currentPage - 1) * effectivePageSize + 1}–{Math.min(currentPage * effectivePageSize, filteredAndSortedRents.length)} de {filteredAndSortedRents.length}
+              </p>
+              <Select
+                value={String(pageSize)}
+                onValueChange={(value) => setPageSize(Number(value))}
+              >
+                <SelectTrigger className="h-8 w-[110px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size === 0 ? "Todos" : `${size} por página`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center gap-1">
               <Button
                 variant="outline"

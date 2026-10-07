@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import axios from "axios";
+import cookie from "js-cookie";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,14 +20,14 @@ import {
 } from "@/components/ui/popover";
 import type { Cliente } from "@/lib/types";
 
+const RESULTS_LIMIT = 20;
+
 interface ClientComboBoxProps {
-  clients: Cliente[];
   onClientSelect: (client: Cliente) => void;
   disabled?: boolean;
 }
 
 export const ClientComboBox: React.FC<ClientComboBoxProps> = ({
-  clients,
   onClientSelect,
   disabled = false,
 }) => {
@@ -57,8 +60,8 @@ export const ClientComboBox: React.FC<ClientComboBoxProps> = ({
         </Button>
       </PopoverTrigger>
       {!disabled && (
-        <PopoverContent className="w-[200px] p-0" align="start">
-          <ClientList clients={clients} onSelect={handleSelect} />
+        <PopoverContent className="w-[300px] p-0" align="start">
+          {open && <ClientList onSelect={handleSelect} />}
         </PopoverContent>
       )}
     </Popover>
@@ -66,35 +69,71 @@ export const ClientComboBox: React.FC<ClientComboBoxProps> = ({
 };
 
 interface ClientListProps {
-  clients: Cliente[];
   onSelect: (client: Cliente) => void;
 }
 
-const ClientList: React.FC<ClientListProps> = ({ clients, onSelect }) => {
-  const getSearchValue = (client: Cliente) => {
-    const nombreCompleto = `${client.cli_nombre} ${client.cli_papellido} ${
-      client.cli_sapellido || ""
-    }`.trim();
-    return `${nombreCompleto} ${client.cli_cedula}`.toLowerCase();
-  };
+// Busca en el servidor (con debounce) para no depender de la página de
+// clientes que se haya cargado.
+const ClientList: React.FC<ClientListProps> = ({ onSelect }) => {
+  const [query, setQuery] = React.useState("");
+  const [clients, setClients] = React.useState<Cliente[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const token = cookie.get("token");
+        if (!token) return;
+        const res = await axios.get("/api/client", {
+          params: { search: query.trim() || undefined, limit: RESULTS_LIMIT },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!cancelled) setClients(res.data.data ?? []);
+      } catch (error) {
+        console.error("Error al buscar clientes:", error);
+        if (!cancelled) setClients([]);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [query]);
 
   return (
-    <Command>
-      <CommandInput placeholder="Buscar cliente..." />
+    <Command shouldFilter={false}>
+      <CommandInput
+        placeholder="Buscar por nombre o cédula..."
+        value={query}
+        onValueChange={setQuery}
+      />
       <CommandList>
-        <CommandEmpty>No se encontraron clientes.</CommandEmpty>
-        <CommandGroup>
-          {clients.map((client) => (
-            <CommandItem
-              key={client.cli_id}
-              value={getSearchValue(client)}
-              onSelect={() => onSelect(client)}
-            >
-              {client.cli_nombre} {client.cli_papellido} {client.cli_sapellido}{" "}
-              - {client.cli_cedula}
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Buscando...
+          </div>
+        ) : (
+          <>
+            <CommandEmpty>No se encontraron clientes.</CommandEmpty>
+            <CommandGroup>
+              {clients.map((client) => (
+                <CommandItem
+                  key={client.cli_id}
+                  value={client.cli_id}
+                  onSelect={() => onSelect(client)}
+                >
+                  {client.cli_nombre} {client.cli_papellido}{" "}
+                  {client.cli_sapellido} - {client.cli_cedula}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
+        )}
       </CommandList>
     </Command>
   );

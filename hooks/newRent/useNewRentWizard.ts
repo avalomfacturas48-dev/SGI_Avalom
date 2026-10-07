@@ -31,7 +31,6 @@ export function useNewRentWizard() {
   const [loadingBuildings, setLoadingBuildings] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState<AvaEdificio | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<AvaPropiedad | null>(null);
-  const [clients, setClients] = useState<Cliente[]>([]);
   const [clientsInRental, setClientsInRental] = useState<Cliente[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,19 +57,6 @@ export function useNewRentWizard() {
     }
   };
 
-  const fetchClients = async () => {
-    try {
-      const token = cookie.get("token");
-      if (!token) return;
-      const res = await axios.get("/api/client", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setClients(res.data.data ?? []);
-    } catch {
-      // silently fail — combobox stays empty
-    }
-  };
-
   const selectBuilding = (building: AvaEdificio) => {
     setSelectedBuilding(building);
     setSelectedProperty(null);
@@ -79,7 +65,6 @@ export function useNewRentWizard() {
 
   const selectProperty = (property: AvaPropiedad) => {
     setSelectedProperty(property);
-    fetchClients();
     setStep(3);
   };
 
@@ -171,7 +156,6 @@ export function useNewRentWizard() {
     loadingBuildings,
     selectedBuilding,
     selectedProperty,
-    clients,
     clientsInRental,
     isSubmitting,
     form,
