@@ -7,7 +7,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -35,12 +34,7 @@ const BodyPayments: React.FC = () => {
     const fetchRental = async () => {
       setLoadingState(true);
       try {
-        const token = cookie.get("token");
-        if (!token) throw new Error("Token no disponible");
-
-        const response = await axios.get(`/api/modifiyrent/${alqId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(`/api/modifiyrent/${alqId}`);
 
         if (response?.data?.success) {
           setSelectedRental(response.data.data);

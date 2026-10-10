@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import type { ServiceFormValues } from "@/lib/schemas/expenseSchemas";
 
@@ -16,12 +15,7 @@ export const useServices = (options?: UseServicesOptions) => {
   const fetchServices = useCallback(async () => {
     setIsLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) return [];
-
-      const response = await axios.get("/api/expenses/servicios", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get("/api/expenses/servicios");
 
       return response.data.data || [];
     } catch (error) {
@@ -36,12 +30,7 @@ export const useServices = (options?: UseServicesOptions) => {
   const createService = useCallback(
     async (data: ServiceFormValues) => {
       try {
-        const token = cookie.get("token");
-        if (!token) return null;
-
-        const response = await axios.post("/api/expenses/servicios", data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.post("/api/expenses/servicios", data);
 
         toast.success("Servicio creado exitosamente");
         options?.onSuccess?.();
@@ -59,12 +48,7 @@ export const useServices = (options?: UseServicesOptions) => {
   const updateService = useCallback(
     async (id: string, data: ServiceFormValues) => {
       try {
-        const token = cookie.get("token");
-        if (!token) return null;
-
-        const response = await axios.put(`/api/expenses/servicios/${id}`, data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.put(`/api/expenses/servicios/${id}`, data);
 
         toast.success("Servicio actualizado exitosamente");
         options?.onSuccess?.();
@@ -82,12 +66,7 @@ export const useServices = (options?: UseServicesOptions) => {
   const deleteService = useCallback(
     async (id: string) => {
       try {
-        const token = cookie.get("token");
-        if (!token) return;
-
-        await axios.delete(`/api/expenses/servicios/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.delete(`/api/expenses/servicios/${id}`);
 
         toast.success("Servicio eliminado exitosamente");
         options?.onSuccess?.();

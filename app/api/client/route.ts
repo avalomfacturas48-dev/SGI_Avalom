@@ -4,6 +4,8 @@ import { authenticate } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { clientSchema } from "@/lib/schemas/apiSchemas";
 
 // Quita tildes y pasa a minúsculas ("André" → "andre")
 const normalizeSearch = (value: string) =>
@@ -82,22 +84,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const body = await request.json();
-
-      if (!body || typeof body !== "object") {
-        return NextResponse.json(
-          { success: false, error: "El cuerpo de la solicitud es inválido" },
-          { status: 400 }
-        );
-      }
+      const parsed = await parseBody(request, clientSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
 
       // Teléfono y correo son opcionales: normalizar "" → null para evitar
       // colisiones en el índice único del correo entre clientes sin correo.
       const newClient = await prisma.ava_cliente.create({
         data: {
           ...body,
-          cli_telefono: body.cli_telefono?.trim() || null,
-          cli_correo: body.cli_correo?.trim() || null,
+          cli_telefono: body.cli_telefono ?? null,
+          cli_correo: body.cli_correo ?? null,
         },
       });
 

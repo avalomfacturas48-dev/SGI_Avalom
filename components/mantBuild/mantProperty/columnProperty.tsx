@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDown,
@@ -109,14 +108,7 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
 
       const handleAction = async () => {
         try {
-          const token = cookie.get("token");
-          if (!token) {
-            console.error("No hay token disponible");
-            return;
-          }
-
           const headers = {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           };
 
@@ -205,14 +197,10 @@ export const columnsProperty: ColumnDef<AvaPropiedad>[] = [
             onOpenChange={setOpenDateDialog}
             onGenerate={async (from, to) => {
               try {
-                const token = cookie.get("token");
                 const response = await axios.get(
                   `/api/propertytypes/report/${property.prop_id}?from=${from}&to=${to}`,
                   {
                     responseType: "blob",
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
                   }
                 );
 

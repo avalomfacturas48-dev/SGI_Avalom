@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
 import { propertyDetailInclude } from "@/lib/constants/prismaIncludes";
+import { parseBody } from "@/lib/validation";
+import { propertyCreateSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -30,7 +32,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const data = await req.json();
+      const parsed = await parseBody(req, propertyCreateSchema);
+      if (!parsed.success) return parsed.response;
+      const data = parsed.data;
       const property = await prisma.ava_propiedad.create({
         data,
         include: propertyDetailInclude,

@@ -1,11 +1,13 @@
 // app/api/export-users/route.ts
+import { authenticate } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import { NextRequest } from 'next/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { prisma } from '@/lib/prisma'
 import { formatInTimeZone } from 'date-fns-tz'
 import { es } from 'date-fns/locale'
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const fechaGeneracion = new Date()
 
   // 1) Traer usuarios con más información
@@ -219,4 +221,8 @@ export async function GET(req: NextRequest) {
       'Content-Disposition': `attachment; filename="${filename}"`,
     },
   })
+}
+
+export async function GET(req: NextRequest) {
+  return authenticate(() => handleGET(req), ["A", "J", "E"])(req, new NextResponse());
 }

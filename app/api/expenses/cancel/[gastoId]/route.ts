@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
 import { UserWithToken } from "@/lib/types/entities";
+import { parseBody } from "@/lib/validation";
+import { expenseCancelSchema } from "@/lib/schemas/apiSchemas";
 
 export async function POST(
   request: NextRequest,
@@ -12,14 +14,9 @@ export async function POST(
     try {
       const params = await context.params;
       const gastoId = BigInt(params.gastoId);
-      const body = await req.json();
-
-      if (!body.ang_motivo) {
-        return NextResponse.json(
-          { success: false, error: "El motivo de anulación es requerido" },
-          { status: 400 }
-        );
-      }
+      const parsed = await parseBody(req, expenseCancelSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
 
       // Verificar que el gasto existe
       const existingExpense = await prisma.ava_gasto.findUnique({
@@ -74,9 +71,7 @@ export async function POST(
             ang_motivo: body.ang_motivo,
             ang_descripcion: body.ang_descripcion || null,
             ang_montooriginal: existingExpense.gas_monto,
-            ang_montofinal: body.ang_montofinal
-              ? BigInt(body.ang_montofinal)
-              : BigInt(0),
+            ang_montofinal: BigInt(0),
             ang_fechaanulacion: new Date(),
             gas_id: gastoId,
             usu_id: usu_id,

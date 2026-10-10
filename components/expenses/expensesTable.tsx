@@ -44,6 +44,7 @@ import type { AvaGasto } from "@/lib/types/entities";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { convertToCostaRicaTime } from "@/utils/dateUtils";
+import { clickableRowClass, clickableRowProps } from "@/lib/clickableRow";
 
 interface ExpensesTableProps {
   data: AvaGasto[];
@@ -134,7 +135,10 @@ export const ExpensesTable = memo(function ExpensesTable({
           const descripcion = row.original.gas_descripcion;
           return (
             <div className="max-w-xs">
-              <div className="font-medium">{concepto}</div>
+              <div className="font-medium">
+                {concepto}
+                <span className="ml-1.5 text-xs font-normal text-muted-foreground">#{row.original.gas_id}</span>
+              </div>
               {descripcion && <div className="text-xs text-muted-foreground line-clamp-1">{descripcion}</div>}
               {row.original.gas_referencia && (
                 <div className="text-xs text-muted-foreground">Ref: {row.original.gas_referencia}</div>
@@ -375,7 +379,14 @@ export const ExpensesTable = memo(function ExpensesTable({
             const fechaCR = expense.gas_fecha ? convertToCostaRicaTime(expense.gas_fecha) : null;
             const fechaFormateada = fechaCR ? formatDate(fechaCR + "T00:00:00") : null;
             return (
-              <div key={row.id} className="rounded-lg border p-3 space-y-2">
+              <div
+                key={row.id}
+                {...clickableRowProps(() => onViewDetails(expense), `Ver gasto ${expense.gas_concepto}`)}
+                className={cn(
+                  "rounded-lg border p-3 space-y-2 hover:bg-muted/50",
+                  clickableRowClass
+                )}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {expense.gas_tipo === "S" ? (
@@ -470,7 +481,14 @@ export const ExpensesTable = memo(function ExpensesTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="hover:bg-muted/50 transition-colors duration-200 animate-in fade-in slide-in-from-left-5"
+                  {...clickableRowProps(
+                    () => onViewDetails(row.original),
+                    `Ver gasto ${row.original.gas_concepto}`
+                  )}
+                  className={cn(
+                    "hover:bg-muted/50 transition-colors duration-200 animate-in fade-in slide-in-from-left-5",
+                    clickableRowClass
+                  )}
                   style={{ animationDelay: `${index * 30}ms`, animationFillMode: "backwards" }}
                 >
                   {row.getVisibleCells().map((cell) => (

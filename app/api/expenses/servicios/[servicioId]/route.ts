@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { serviceSchema } from "@/lib/schemas/apiSchemas";
 
 // GET: Obtener un servicio específico
 export async function GET(
@@ -54,7 +56,9 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      const body = await request.json();
+      const parsed = await parseBody(request, serviceSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
       const { ser_codigo, ser_nombre, ser_servicio, ser_negocio, ser_mediopago } = body;
 
       // Verificar si el servicio existe

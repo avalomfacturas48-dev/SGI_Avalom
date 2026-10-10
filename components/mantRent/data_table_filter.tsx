@@ -48,6 +48,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { TenantInline } from "@/components/shared/TenantCell";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { cn } from "@/lib/utils";
+import { clickableRowClass, clickableRowProps } from "@/lib/clickableRow";
 import Link from "next/link";
 
 const globalFilterFn: FilterFn<AvaAlquiler> = (row, columnId, filterValue) => {
@@ -266,8 +267,8 @@ export function DataTable({
             return (
               <Card
                 key={row.id}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => onRowClick?.(rental)}
+                {...(onRowClick ? clickableRowProps(() => onRowClick(rental)) : {})}
+                className={cn("hover:bg-muted/50 transition-colors", onRowClick && clickableRowClass)}
               >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex justify-between items-start gap-2">
@@ -355,8 +356,10 @@ export function DataTable({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    onClick={() => onRowClick?.(row.original)}
-                    className="cursor-pointer hover:bg-muted"
+                    {...(onRowClick
+                      ? clickableRowProps(() => onRowClick(row.original))
+                      : {})}
+                    className={cn("hover:bg-muted", onRowClick && clickableRowClass)}
                   >
                     {row
                       .getVisibleCells()

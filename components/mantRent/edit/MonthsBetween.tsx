@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { PencilIcon, TrashIcon, CalendarIcon, LockIcon, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -81,12 +80,7 @@ const MonthsBetween: React.FC<MonthsBetweenProps> = ({ mode }) => {
       }
     } else {
       try {
-        const token = cookie.get("token");
-        if (!token) throw new Error("Token no disponible");
-
-        const response = await axios.delete(`/api/monthlyrent/${alqm_id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.delete(`/api/monthlyrent/${alqm_id}`);
 
         if (response?.data?.success) {
           deleteRent("monthlyRents", alqm_id);

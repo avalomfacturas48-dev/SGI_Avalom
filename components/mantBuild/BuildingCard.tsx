@@ -10,7 +10,6 @@ import {
   Banknote,
 } from "lucide-react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import {
   Card,
@@ -64,10 +63,8 @@ const BuildingCard: React.FC<BuildingCardProps> = ({ building }) => {
 
   const handleDelete = async () => {
     try {
-      const token = cookie.get("token");
       const response = await axios.delete(`/api/building/${building.edi_id}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });

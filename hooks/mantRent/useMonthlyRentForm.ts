@@ -4,18 +4,21 @@ import { act, useEffect, useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { isMontoEntero, MONTO_ENTERO_MSG } from "@/lib/schemas/formFields";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import { AvaAlquilerMensual } from "@/lib/types";
 import { convertToCostaRicaTime, convertToUTC, convertToUTCSV } from "@/utils/dateUtils";
 import axios from "axios";
-import cookie from "js-cookie";
 
 const monthlyRentSchema = z.object({
-  alqm_identificador: z.string().min(1, { message: "Identificador requerido" }),
+  alqm_identificador: z
+    .string()
+    .min(1, { message: "Identificador requerido" })
+    .max(15, { message: "El identificador no puede exceder 15 caracteres" }),
   alqm_montototal: z
     .string()
-    .refine((value) => !isNaN(Number(value)) && Number(value) > 0, {
-      message: "El monto debe ser un número positivo",
+    .refine((value) => isMontoEntero(value) && Number(value) > 0, {
+      message: `${MONTO_ENTERO_MSG}, mayor a 0`,
     }),
   alqm_fechainicio: z.string().refine((value) => !!value, {
     message: "Fecha de inicio requerida",
@@ -99,9 +102,6 @@ export const useMonthlyRentForm = ({
 
   const onSubmit: SubmitHandler<MonthlyRentFormInputs> = async (formData) => {
     try {
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
       let isDuplicateIdentifier = false;
       let isValid;
 
@@ -164,10 +164,7 @@ export const useMonthlyRentForm = ({
         if (mode === "view") {
           const response = await axios.put(
             `/api/monthlyrent/${Rent.alqm_id}`,
-            Rent,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            Rent
           );
 
           if (!response?.data?.success) {
@@ -195,9 +192,7 @@ export const useMonthlyRentForm = ({
         };
 
         if (mode === "view") {
-          const response = await axios.post(`/api/monthlyrent`, Rent, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await axios.post(`/api/monthlyrent`, Rent);
 
           if (!response?.data?.success) {
             throw new Error(response?.data?.error || "Error al crear.");

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
 import { pagoWithAnulacionInclude } from "@/lib/constants/prismaIncludes";
+import { parseBody } from "@/lib/validation";
+import { depositUpdateSchema } from "@/lib/schemas/apiSchemas";
 
 export async function PUT(
   request: NextRequest,
@@ -11,7 +13,9 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      const data = await req.json();
+      const parsed = await parseBody(req, depositUpdateSchema);
+      if (!parsed.success) return parsed.response;
+      const data = parsed.data;
 
       const deposit = await prisma.ava_deposito.findUnique({
         where: { depo_id: BigInt(params.depoId) },
@@ -22,6 +26,16 @@ export async function PUT(
         return NextResponse.json(
           { success: false, error: "Depósito no encontrado" },
           { status: 404 }
+        );
+      }
+
+      if (data.depo_total < deposit.depo_montoactual) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "El total del depósito no puede ser menor a lo ya pagado.",
+          },
+          { status: 400 }
         );
       }
 

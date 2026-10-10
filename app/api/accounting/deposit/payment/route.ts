@@ -2,55 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { depositPaymentSchema } from "@/lib/schemas/apiSchemas";
+import { BusinessRuleError } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const data = await req.json();
-
-      const {
-        pag_monto,
-        pag_fechapago,
-        pag_estado,
-        pag_cuenta,
-        pag_descripcion,
-        pag_metodopago,
-        pag_banco,
-        pag_referencia,
-        depo_id,
-      } = data;
-
-      const paymentAmount = BigInt(pag_monto);
+      const parsed = await parseBody(req, depositPaymentSchema);
+      if (!parsed.success) return parsed.response;
+      const { depo_id, pag_monto, ...pago } = parsed.data;
 
       const result = await prisma.$transaction(async (tx) => {
-        const payment = await tx.ava_pago.create({
-          data: {
-            pag_monto: paymentAmount,
-            pag_fechapago: new Date(pag_fechapago),
-            pag_estado,
-            pag_cuenta,
-            pag_descripcion,
-            pag_metodopago,
-            pag_banco,
-            pag_referencia,
-            depo_id: BigInt(depo_id),
-          },
-        });
-
         const currentDeposit = await tx.ava_deposito.findUnique({
-          where: { depo_id: BigInt(depo_id) },
+          where: { depo_id },
         });
 
         if (!currentDeposit) {
-          throw new Error("El depósito no existe.");
+          throw new BusinessRuleError("El depósito no existe.");
         }
 
-        const newMontoActual = currentDeposit.depo_montoactual + paymentAmount;
+        const pendiente = currentDeposit.depo_total - currentDeposit.depo_montoactual;
+        if (pag_monto > pendiente) {
+          throw new BusinessRuleError(
+            `El monto supera el saldo pendiente del depósito (₡${pendiente.toString()}).`
+          );
+        }
+
+        const payment = await tx.ava_pago.create({
+          data: { ...pago, pag_monto, pag_estado: "A", depo_id },
+        });
 
         const updatedDeposit = await tx.ava_deposito.update({
-          where: { depo_id: BigInt(depo_id) },
+          where: { depo_id },
           data: {
-            depo_montoactual: newMontoActual,
+            depo_montoactual: currentDeposit.depo_montoactual + pag_monto,
           },
         });
 
@@ -62,6 +48,12 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     } catch (error) {
+      if (error instanceof BusinessRuleError) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 400 }
+        );
+      }
       console.error("Error al procesar el pago:", error);
       return NextResponse.json(
         { success: false, error: "Error interno del servidor" },

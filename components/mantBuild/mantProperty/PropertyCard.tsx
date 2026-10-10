@@ -13,7 +13,6 @@ import {
   Users,
 } from "lucide-react";
 import axios from "axios";
-import cookie from "js-cookie";
 import Link from "next/link";
 import { toast } from "sonner";
 import {
@@ -92,10 +91,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
   const handleDelete = async () => {
     try {
-      const token = cookie.get("token");
       const response = await axios.delete(`/api/property/${property.prop_id}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -277,12 +274,10 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
         onOpenChange={setOpenDateDialog}
         onGenerate={async (from, to) => {
           try {
-            const token = cookie.get("token");
             const response = await axios.get(
               `/api/propertytypes/report/${property.prop_id}?from=${from}&to=${to}`,
               {
                 responseType: "blob",
-                headers: { Authorization: `Bearer ${token}` },
               }
             );
             const url = window.URL.createObjectURL(new Blob([response.data]));

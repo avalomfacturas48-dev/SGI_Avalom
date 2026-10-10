@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { buildingSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(
   request: NextRequest,
@@ -57,7 +59,9 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      const data = await req.json();
+      const parsed = await parseBody(req, buildingSchema);
+      if (!parsed.success) return parsed.response;
+      const data = parsed.data;
 
       const building = await prisma.ava_edificio.update({
         where: { edi_id: BigInt(params.ediId) },

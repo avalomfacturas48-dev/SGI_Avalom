@@ -30,9 +30,9 @@ export function Nav({ links, isCollapsed }: NavProps) {
   const { logout } = useUser();
   const router = useRouter();
 
-  const handleLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    logout();
+    await logout();
     router.push("/");
   };
 

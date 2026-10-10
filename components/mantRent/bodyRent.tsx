@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsRent";
@@ -10,8 +9,21 @@ import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
 import { RentalSummaryCards } from "../shared/RentalSummaryCards";
 import useRentalStore from "@/lib/zustand/rentalStore";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/UserContext";
+import type { AvaAlquiler } from "@/lib/types";
 
 const BodyRent: React.FC = () => {
+  const router = useRouter();
+  const { user } = useUser();
+  // Clic en la fila: editar si el rol puede (J/E); si no, ver su contabilidad
+  const canEditRent = user?.usu_rol === "J" || user?.usu_rol === "E";
+  const handleRowClick = (rental: AvaAlquiler) =>
+    router.push(
+      canEditRent
+        ? `/mantRent/edit/${rental.alq_id}`
+        : `/accounting/payments/${rental.alq_id}`
+    );
   const { rentals, setRentals } = useRentalStore();
   const [statusFilter, setStatusFilter] = useState<string[]>(["A"]);
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string[]>([]);
@@ -33,8 +45,6 @@ const BodyRent: React.FC = () => {
   }, [search]);
 
   const fetchRentals = useCallback(async () => {
-    const token = cookie.get("token");
-    if (!token) return;
     setIsLoading(true);
     try {
       const params: Record<string, string> = {
@@ -48,7 +58,6 @@ const BodyRent: React.FC = () => {
 
       const response = await axios.get("/api/accounting", {
         params,
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       setRentals(response.data.data);
@@ -146,6 +155,7 @@ const BodyRent: React.FC = () => {
               <DataTable
                 columns={columns}
                 data={rentals}
+                onRowClick={handleRowClick}
                 statusFilter={statusFilter}
                 propertyTypeFilter={propertyTypeFilter}
                 onStatusChange={handleStatusChange}

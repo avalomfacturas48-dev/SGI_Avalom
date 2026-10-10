@@ -1,8 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, ReactNode } from "react";
-import cookie from "js-cookie";
-import jwt from "jsonwebtoken";
 import { useUser } from "@/lib/UserContext";
 
 interface AuthRouteProps {
@@ -10,11 +8,8 @@ interface AuthRouteProps {
   allowedRoles: string[]; // Roles permitidos para esta ruta
 }
 
-interface DecodedToken {
-  id: string;
-  role: string;
-}
-
+// La sesión la valida middleware.ts en el servidor; aquí solo se decide si el
+// rol del usuario (leído de /api/me) puede ver la pantalla.
 const AuthRoute: React.FC<AuthRouteProps> = ({ children, allowedRoles }) => {
   const router = useRouter();
   const { user, loaded } = useUser();
@@ -22,28 +17,17 @@ const AuthRoute: React.FC<AuthRouteProps> = ({ children, allowedRoles }) => {
   useEffect(() => {
     if (!loaded) return;
 
-    const token = cookie.get("token");
-    if (!token) {
+    if (!user) {
       router.push("/");
       return;
     }
 
-    try {
-      const decoded = jwt.decode(token) as DecodedToken;
-      const userRole = user?.usu_rol || decoded?.role;
-
-      if (!userRole) {
-        router.push("/");
-        return;
-      }
-
-      if (!allowedRoles.includes(userRole)) {
-        router.push("/unauthorized");
-      }
-    } catch {
-      router.push("/");
+    if (!allowedRoles.includes(user.usu_rol)) {
+      router.push("/unauthorized");
     }
   }, [router, allowedRoles, user, loaded]);
+
+  if (!loaded || !user || !allowedRoles.includes(user.usu_rol)) return null;
 
   return <>{children}</>;
 };

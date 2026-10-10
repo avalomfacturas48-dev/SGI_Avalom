@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import cookie from "js-cookie";
 import { useUser } from "@/lib/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,7 @@ import Image from "next/image";
 
 const Login: React.FC = () => {
   const router = useRouter();
-  const { setUser } = useUser();
+  const { user, loaded, setUser } = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -35,10 +34,8 @@ const Login: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const { token, user } = data;
-
-        cookie.set("token", token, { expires: 7 });
-        setUser(user);
+        // El servidor dejó la sesión en una cookie httpOnly
+        setUser(data.user);
         router.push("/homePage");
       } else {
         const errorData = await response.json();
@@ -52,9 +49,8 @@ const Login: React.FC = () => {
   };
 
   useEffect(() => {
-    const token = cookie.get("token");
-    if (token) router.push("/homePage");
-  }, []);
+    if (loaded && user) router.push("/homePage");
+  }, [loaded, user, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background via-background to-muted/20">

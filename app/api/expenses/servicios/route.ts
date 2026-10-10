@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { serviceSchema } from "@/lib/schemas/apiSchemas";
 
 // GET: Obtener todos los servicios
 export async function GET(request: NextRequest) {
@@ -37,19 +39,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const body = await request.json();
+      const parsed = await parseBody(request, serviceSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
       const { ser_codigo, ser_nombre, ser_servicio, ser_negocio, ser_mediopago } = body;
-
-      // Validar campos requeridos
-      if (!ser_codigo || !ser_nombre) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Código y nombre son campos requeridos",
-          },
-          { status: 400 }
-        );
-      }
 
       // Verificar si el código ya existe
       const existingService = await prisma.ava_servicio.findFirst({

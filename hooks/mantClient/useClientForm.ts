@@ -4,7 +4,6 @@ import { useEffect, useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import cookie from "js-cookie";
 import axios from "axios";
 import useClientStore from "@/lib/zustand/clientStore";
 import { ClienteFormProps } from "@/lib/typesForm";
@@ -97,13 +96,7 @@ export const useClientForm = ({
 
   const onSubmit: SubmitHandler<ClienteFormInputs> = async (formData) => {
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        throw new Error("No hay token disponible");
-      }
-
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 

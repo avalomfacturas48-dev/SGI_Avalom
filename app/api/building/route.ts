@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { buildingSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -45,14 +47,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const body = await request.json();
-
-      if (!body.edi_identificador) {
-        return NextResponse.json(
-          { error: "El identificador del edificio es requerido" },
-          { status: 400 }
-        );
-      }
+      const parsed = await parseBody(request, buildingSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
 
       const building = await prisma.ava_edificio.create({
         data: {

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,11 +83,8 @@ const ClientList: React.FC<ClientListProps> = ({ onSelect }) => {
     setIsLoading(true);
     const t = setTimeout(async () => {
       try {
-        const token = cookie.get("token");
-        if (!token) return;
         const res = await axios.get("/api/client", {
           params: { search: query.trim() || undefined, limit: RESULTS_LIMIT },
-          headers: { Authorization: `Bearer ${token}` },
         });
         if (!cancelled) setClients(res.data.data ?? []);
       } catch (error) {

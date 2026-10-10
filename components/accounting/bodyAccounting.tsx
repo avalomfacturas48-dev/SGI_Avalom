@@ -3,15 +3,16 @@
 import React, { useEffect, useState, useCallback } from "react";
 import useRentalStore from "@/lib/zustand/rentalStore";
 import axios from "axios";
-import cookie from "js-cookie";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { DataTable } from "./data_table_filter";
 import { columns } from "./columnsAccounting";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Skeleton } from "../ui/skeleton";
 import { RentalSummaryCards } from "../shared/RentalSummaryCards";
+import { useRouter } from "next/navigation";
 
 const BodyAccounting: React.FC = () => {
+  const router = useRouter();
   const { rentals, setRentals } = useRentalStore();
   const [statusFilter, setStatusFilter] = useState<string[]>(["A"]);
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string[]>([]);
@@ -33,8 +34,6 @@ const BodyAccounting: React.FC = () => {
   }, [search]);
 
   const fetchRentals = useCallback(async () => {
-    const token = cookie.get("token");
-    if (!token) return;
     setIsLoading(true);
     try {
       const params: Record<string, string> = {
@@ -48,7 +47,6 @@ const BodyAccounting: React.FC = () => {
 
       const response = await axios.get("/api/accounting", {
         params,
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       setRentals(response.data.data);
@@ -148,6 +146,7 @@ const BodyAccounting: React.FC = () => {
               <DataTable
                 columns={columns}
                 data={rentals}
+                onRowClick={(rental) => router.push(`/accounting/payments/${rental.alq_id}`)}
                 statusFilter={statusFilter}
                 propertyTypeFilter={propertyTypeFilter}
                 onStatusChange={handleStatusChange}

@@ -1,10 +1,12 @@
+import { authenticate } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { prisma } from "@/lib/prisma";
 import { es } from "date-fns/locale";
 import { formatInTimeZone } from "date-fns-tz";
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const from = searchParams.get("from");
   const to = searchParams.get("to");
@@ -577,4 +579,8 @@ export async function GET(req: NextRequest) {
       "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
+}
+
+export async function GET(req: NextRequest) {
+  return authenticate(() => handleGET(req))(req, new NextResponse());
 }

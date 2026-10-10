@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { isMontoEntero, MONTO_ENTERO_MSG } from "@/lib/schemas/formFields";
 import axios from "axios";
-import cookie from "js-cookie";
 import { format } from "date-fns";
 import { toDate, toZonedTime } from "date-fns-tz";
 import usePropertyStore from "@/lib/zustand/propertyStore";
@@ -17,8 +17,8 @@ const rentalFormSchema = z.object({
   alq_monto: z
     .string()
     .min(1, "El monto es requerido")
-    .refine((value) => !isNaN(Number(value)) && Number(value) > 0, {
-      message: "Monto inválido",
+    .refine((value) => isMontoEntero(value) && Number(value) > 0, {
+      message: `${MONTO_ENTERO_MSG}, mayor a 0`,
     }),
   alq_fechapago: z.string().min(1, "La fecha de pago es requerida"),
   alq_estado: z.enum(["A", "F", "C"]),
@@ -41,14 +41,7 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
 
   const fetchHasPayments = async (alqId: string) => {
     try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      const response = await axios.get(`/api/rent/haspayments/${alqId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(`/api/rent/haspayments/${alqId}`);
 
       if (response?.data?.success) {
         setHasPayments(response.data.data.hasPayments);
@@ -117,11 +110,7 @@ export const useRentalForm = ({ action, onSuccess }: RentalFormProps) => {
 
   const onSubmit: SubmitHandler<RentalFormInputs> = async (formData) => {
     try {
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import cookie from "js-cookie";
 import { MonthlyTotal } from "@/components/homePage/revenueAreaChart";
 import { MonthlyExpense } from "@/components/homePage/expensesAreaChart";
 import { ProfitLossData } from "@/components/homePage/profitLossChart";
@@ -76,14 +75,8 @@ export const useHomePage = (): UseHomePageReturn => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const token = cookie.get("token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
 
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Building2, Plus } from "lucide-react";
-import cookie from "js-cookie";
 import axios from "axios";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
@@ -20,12 +19,9 @@ const BodyMantBuild: React.FC = () => {
 
   useEffect(() => {
     const fetchBuildings = async () => {
-      const token = cookie.get("token");
-      if (!token) return;
       try {
         const response = await axios.get("/api/building", {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });

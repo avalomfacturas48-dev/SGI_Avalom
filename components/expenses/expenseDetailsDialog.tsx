@@ -70,7 +70,9 @@ export function ExpenseDetailsDialog({ open, onOpenChange, expense, onEdit, onCa
               </Badge>
             )}
           </DialogTitle>
-          <DialogDescription>Información completa del gasto registrado</DialogDescription>
+          <DialogDescription>
+            Gasto #{expense.gas_id} · información completa del gasto registrado
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 md:grid-cols-2">

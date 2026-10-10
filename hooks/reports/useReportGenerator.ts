@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import cookie from "js-cookie";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
@@ -20,16 +19,6 @@ export const useReportGenerator = () => {
   ) => {
     setLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "No hay token de autenticación",
-          variant: "destructive",
-        });
-        return false;
-      }
-
       let url = endpoint;
       
       // Agregar ID si existe
@@ -45,11 +34,7 @@ export const useReportGenerator = () => {
         url += `${separator}from=${fromStr}&to=${toStr}`;
       }
 
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(url);
 
       if (!response.ok) {
         if (response.status === 400) {

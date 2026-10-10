@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { giftSchema } from "@/lib/schemas/apiSchemas";
 
 export async function PUT(
   request: NextRequest,
@@ -13,7 +15,9 @@ export async function PUT(
       const id = BigInt(alqmId);
 
       // extraemos el flag del body: { isGifted: boolean }
-      const { isGifted } = (await req.json()) as { isGifted: boolean };
+      const parsed = await parseBody(req, giftSchema);
+      if (!parsed.success) return parsed.response;
+      const { isGifted } = parsed.data;
 
       // 1) obtenemos la mensualidad
       const mensual = await prisma.ava_alquilermensual.findUnique({

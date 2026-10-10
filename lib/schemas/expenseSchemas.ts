@@ -17,18 +17,17 @@ export const expenseFormSchema = z.object({
   gas_monto: z
     .string()
     .min(1, "El monto es requerido")
-    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-      message: "El monto debe ser un número mayor a 0",
+    .refine((val) => /^\d+$/.test(val.trim()) && Number(val) > 0, {
+      message: "El monto debe ser un número entero mayor a 0 (sin decimales)",
     }),
   gas_fecha: z.string().min(1, "La fecha es requerida"),
   edi_id: z.string().min(1, "El edificio es requerido"),
   prop_id: z.string().optional(),
-  gas_metodopago: z.string().optional(),
-  gas_cuenta: z.string().optional(),
-  gas_banco: z.string().optional(),
-  gas_referencia: z.string().optional(),
+  gas_metodopago: z.string().max(30, "El método de pago no puede exceder 30 caracteres").optional(),
+  gas_cuenta: z.string().max(50, "La cuenta no puede exceder 50 caracteres").optional(),
+  gas_banco: z.string().max(50, "El banco no puede exceder 50 caracteres").optional(),
+  gas_referencia: z.string().max(100, "La referencia no puede exceder 100 caracteres").optional(),
   gas_comprobante: z.string().optional(),
-  usu_id: z.string(),
 }).refine(
   (data) => {
     if (data.gas_tipo === "S") {

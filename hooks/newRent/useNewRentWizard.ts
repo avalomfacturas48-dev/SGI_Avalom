@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { isMontoEntero, MONTO_ENTERO_MSG } from "@/lib/schemas/formFields";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useRouter } from "next/navigation";
 import { AvaEdificio, AvaPropiedad, Cliente } from "@/lib/types";
 import { convertToUTCSV } from "@/utils/dateUtils";
@@ -14,8 +14,8 @@ const schema = z.object({
   alq_monto: z
     .string()
     .min(1, "El monto es requerido")
-    .refine((v) => !isNaN(Number(v)) && Number(v) > 0, {
-      message: "Monto inválido",
+    .refine((v) => isMontoEntero(v) && Number(v) > 0, {
+      message: `${MONTO_ENTERO_MSG}, mayor a 0`,
     }),
   alq_fechapago: z.string().min(1, "La fecha de pago es requerida"),
   alq_estado: z.enum(["A", "F", "C"]),
@@ -46,11 +46,7 @@ export function useNewRentWizard() {
   const fetchBuildings = async () => {
     setLoadingBuildings(true);
     try {
-      const token = cookie.get("token");
-      if (!token) return;
-      const res = await axios.get("/api/building", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get("/api/building");
       if (res.data.data) setBuildings(res.data.data);
     } finally {
       setLoadingBuildings(false);
@@ -96,11 +92,7 @@ export function useNewRentWizard() {
     if (!selectedProperty) return;
     setIsSubmitting(true);
     try {
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 

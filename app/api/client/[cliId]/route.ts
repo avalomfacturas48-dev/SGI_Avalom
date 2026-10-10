@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { clientSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(
   request: NextRequest,
@@ -45,7 +47,9 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      const body = await request.json();
+      const parsed = await parseBody(request, clientSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
 
       let cliId: bigint;
       try {
@@ -64,8 +68,8 @@ export async function PUT(
           cli_cedula: body.cli_cedula,
           cli_papellido: body.cli_papellido,
           cli_sapellido: body.cli_sapellido,
-          cli_telefono: body.cli_telefono?.trim() || null,
-          cli_correo: body.cli_correo?.trim() || null,
+          cli_telefono: body.cli_telefono ?? null,
+          cli_correo: body.cli_correo ?? null,
           cli_direccion: body.cli_direccion,
           cli_estadocivil: body.cli_estadocivil,
         },

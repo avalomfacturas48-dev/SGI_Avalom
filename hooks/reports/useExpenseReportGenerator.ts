@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import cookie from "js-cookie";
 import { format } from "date-fns";
 
 export interface ExpenseReportOptions {
@@ -19,12 +18,6 @@ export const useExpenseReportGenerator = () => {
   ) => {
     setLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        toast.error("No hay token de autenticación");
-        return false;
-      }
-
       // Construir URL con parámetros
       const params = new URLSearchParams();
       if (options.ediId) params.append("edi_id", options.ediId);
@@ -33,11 +26,7 @@ export const useExpenseReportGenerator = () => {
 
       const url = `/api/expenses/reports/${reportType}?${params.toString()}`;
 
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(url);
 
       // Verificar el content-type antes de procesar
       const contentType = response.headers.get("content-type") || "";

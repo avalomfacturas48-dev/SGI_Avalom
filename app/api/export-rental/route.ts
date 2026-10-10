@@ -1,3 +1,5 @@
+import { authenticate } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { prisma } from "@/lib/prisma";
@@ -53,7 +55,7 @@ function drawWrappedText(
   return y - (lines.length - 1) * (size + 1.5);
 }
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const alq_id = Number(searchParams.get("alq_id"));
   const from = searchParams.get("from");
@@ -656,4 +658,8 @@ export async function GET(req: NextRequest) {
       "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
+}
+
+export async function GET(req: NextRequest) {
+  return authenticate(() => handleGET(req))(req, new NextResponse());
 }

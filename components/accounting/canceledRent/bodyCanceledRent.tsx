@@ -7,7 +7,6 @@ import { CanceledRentForm } from "./CanceledRentForm";
 import { RentalInfoCardCanceled } from "./rentalInfoCardCanceled";
 import useCanceledRentalStore from "@/lib/zustand/useCanceledRentalStore";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -28,14 +27,8 @@ const BodyCanceledRent: React.FC = () => {
     const fetchRental = async () => {
       setLoading(true);
       try {
-        const token = cookie.get("token");
-        if (!token) throw new Error("Token no disponible");
-
         const response = await axios.get(
-          `/api/accounting/canceledrent/cancel/${alqId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `/api/accounting/canceledrent/cancel/${alqId}`
         );
 
         if (response?.data?.success) {

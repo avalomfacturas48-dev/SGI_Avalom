@@ -1,18 +1,20 @@
 "use client";
 import {
   createContext,
+  useCallback,
   useContext,
   useState,
   ReactNode,
   useEffect,
 } from "react";
 import { User } from "./types";
-import cookie from "js-cookie";
+import { setupAxiosInterceptors } from "./axiosSetup";
 
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   loaded: boolean;
 }
 
@@ -22,32 +24,38 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem("user");
-      }
+  // El usuario (y su rol) siempre se pide al servidor: la sesión vive en una
+  // cookie httpOnly que el navegador no puede leer ni alterar.
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await fetch("/api/me", { cache: "no-store" });
+      const data = response.ok ? await response.json() : null;
+      setUser(data?.success ? data.data : null);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoaded(true);
     }
-    setLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    }
-  }, [user]);
+    setupAxiosInterceptors();
+    // Limpia el usuario que versiones anteriores guardaban en localStorage
+    try {
+      localStorage.removeItem("user");
+    } catch {}
+    refreshUser();
+  }, [refreshUser]);
 
-  const logout = () => {
+  const logout = useCallback(async () => {
     setUser(null);
-    cookie.remove("token");
-    localStorage.removeItem("user");
-  };
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch {}
+  }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, logout, loaded }}>
+    <UserContext.Provider value={{ user, setUser, logout, refreshUser, loaded }}>
       {children}
     </UserContext.Provider>
   );

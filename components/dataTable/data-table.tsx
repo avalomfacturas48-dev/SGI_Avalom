@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { clickableRowClass, clickableRowProps } from "@/lib/clickableRow";
 import {
   Select,
   SelectTrigger,
@@ -62,6 +63,8 @@ interface DataTableProps<TData, TValue> {
   onSearchChange?: (value: string) => void;
   serverPagination?: ServerPagination;
 }
+
+const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
 
 export function DataTable<TData, TValue>({
   columns,
@@ -201,7 +204,15 @@ export function DataTable<TData, TValue>({
                   )
                 : null;
               return (
-                <div key={row.id} onClick={() => onRowClick?.(row.original)}>
+                <div
+                  key={row.id}
+                  {...(onRowClick
+                    ? {
+                        ...clickableRowProps(() => onRowClick(row.original)),
+                        className: cn("rounded-lg", clickableRowClass),
+                      }
+                    : {})}
+                >
                   {renderMobileCard(row.original, actions)}
                 </div>
               );
@@ -250,8 +261,10 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    onClick={() => onRowClick?.(row.original)}
-                    className="cursor-pointer hover:bg-muted"
+                    {...(onRowClick
+                      ? clickableRowProps(() => onRowClick(row.original))
+                      : {})}
+                    className={cn("hover:bg-muted", onRowClick && clickableRowClass)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
@@ -259,6 +272,11 @@ export function DataTable<TData, TValue>({
                         className={cn(
                           (cell.column.columnDef.meta as any)?.cellClassName
                         )}
+                        // Los botones y diálogos de acciones (hijos de la fila en
+                        // React) no deben disparar el clic de la fila
+                        {...(cell.column.id === "actions"
+                          ? { onClick: stopPropagation, onKeyDown: stopPropagation }
+                          : {})}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

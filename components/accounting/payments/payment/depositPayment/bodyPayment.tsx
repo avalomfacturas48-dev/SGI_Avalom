@@ -47,9 +47,8 @@ const BodyPayment: React.FC = () => {
   }, [payFull, currentBalance]);
 
   const handleAmountChange = (value: string) => {
-    const sanitized = value.replace(/[^\d.]/g, "");
-    const parts = sanitized.split(".");
-    const formatted = parts[0] + (parts.length > 1 ? "." + parts[1] : "");
+    // Montos en colones enteros (la BD no guarda decimales)
+    const formatted = value.replace(/\D/g, "");
     const num = Number(formatted);
     if (num <= currentBalance) {
       setAmountToPay(formatted);

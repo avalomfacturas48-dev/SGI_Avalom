@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { isMontoEntero, MONTO_ENTERO_MSG } from "@/lib/schemas/formFields";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useParams } from "next/navigation";
 import useFinishedRentalStore from "@/lib/zustand/useFinishedRentalStore";
 
@@ -10,8 +10,8 @@ const finishedRentSchema = z.object({
   depo_montodevuelto: z
     .string()
     .min(1, "El monto devuelto es requerido")
-    .refine((value) => !isNaN(Number(value)) && Number(value) >= 0, {
-      message: "El monto debe ser un número y mayor o igual a 0",
+    .refine((value) => isMontoEntero(value), {
+      message: `${MONTO_ENTERO_MSG}, mayor o igual a 0`,
     }),
   depo_descmontodevuelto: z
     .string()
@@ -20,8 +20,8 @@ const finishedRentSchema = z.object({
   depo_montocastigo: z
     .string()
     .min(1, "El monto de castigo es requerido, puede ser 0 si no aplica")
-    .refine((value) => !isNaN(Number(value)) && Number(value) >= 0, {
-      message: "El monto debe ser un número y mayor o igual a 0",
+    .refine((value) => isMontoEntero(value), {
+      message: `${MONTO_ENTERO_MSG}, mayor o igual a 0`,
     }),
   depo_descrmontocastigo: z
     .string()
@@ -81,9 +81,6 @@ export const useFinishedRentForm = () => {
     }
 
     try {
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
       const response = await axios.put(
         `/api/accounting/finishedrent/${alqId}`,
         {
@@ -91,11 +88,6 @@ export const useFinishedRentForm = () => {
           depo_fechadevolucion: data.depo_fechadevolucion
             ? new Date(`${data.depo_fechadevolucion}T00:00:00`).toISOString()
             : null,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         }
       );
 

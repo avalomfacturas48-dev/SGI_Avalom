@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDown,
@@ -107,12 +106,10 @@ export const createColumnsPropertyDetail = (
 
       const handleDelete = async () => {
         try {
-          const token = cookie.get("token");
           const response = await axios.delete(
             `/api/property/${property.prop_id}`,
             {
               headers: {
-                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
             }
@@ -192,12 +189,10 @@ export const createColumnsPropertyDetail = (
             onOpenChange={setOpenDateDialog}
             onGenerate={async (from, to) => {
               try {
-                const token = cookie.get("token");
                 const response = await axios.get(
                   `/api/propertytypes/report/${property.prop_id}?from=${from}&to=${to}`,
                   {
                     responseType: "blob",
-                    headers: { Authorization: `Bearer ${token}` },
                   }
                 );
                 const url = window.URL.createObjectURL(

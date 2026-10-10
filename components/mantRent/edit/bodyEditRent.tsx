@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
 import RentalForm from "@/components/mantRent/edit/rentalForm";
@@ -36,15 +35,9 @@ const BodyEditRent: React.FC = () => {
 
   const handleSaveAll = async () => {
     try {
-      const token = cookie.get("token");
-      if (!token) toast.error("Token no disponible");
-
       const response = await axios.post(
         `/api/monthlyrent/saveall`,
-        { rents: createMonthlyRents, alqId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { rents: createMonthlyRents, alqId }
       );
 
       if (response?.data?.success) {
@@ -65,12 +58,7 @@ const BodyEditRent: React.FC = () => {
     const fetchRental = async () => {
       setLoadingState(true);
       try {
-        const token = cookie.get("token");
-        if (!token) throw new Error("Token no disponible");
-
-        const response = await axios.get(`/api/modifiyrent/${alqId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(`/api/modifiyrent/${alqId}`);
 
         if (response?.data?.success) {
           setSelectedRental(response.data.data);

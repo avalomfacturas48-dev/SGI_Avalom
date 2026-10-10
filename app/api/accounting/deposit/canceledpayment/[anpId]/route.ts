@@ -36,35 +36,5 @@ export async function GET(
   })(request, new NextResponse());
 }
 
-export async function PUT(
-  request: NextRequest,
-  context: { params: Promise<{ anpId: string }> }
-) {
-  return authenticate(async (req: NextRequest, res: NextResponse) => {
-    try {
-      const { anpId } = await context.params;
-      const data = await req.json();
-
-      const updatedAnnulment = await prisma.ava_anulacionpago.update({
-        where: { anp_id: BigInt(anpId) },
-        data: {
-          anp_motivo: data.anp_motivo,
-          anp_descripcion: data.anp_descripcion,
-          anp_montooriginal: BigInt(data.anp_montooriginal),
-          anp_montofinal: BigInt(data.anp_montofinal),
-        },
-      });
-
-      return NextResponse.json(
-        { success: true, data: stringifyWithBigInt(updatedAnnulment) },
-        { status: 200 }
-      );
-    } catch (error) {
-      console.error("Error al actualizar la anulación: ", error);
-      return NextResponse.json(
-        { success: false, error: "Error interno del servidor" },
-        { status: 500 }
-      );
-    }
-  })(request, new NextResponse());
-}
+// Sin PUT a propósito: los pagos y anulaciones no se editan; se anulan y
+// se registran de nuevo para no alterar la contabilidad.

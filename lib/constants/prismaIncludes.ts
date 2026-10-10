@@ -54,3 +54,17 @@ export const rentalDetailInclude = {
     include: pagoWithAnulacionInclude,
   },
 } satisfies Prisma.ava_alquilerInclude;
+
+/** Campos de usuario que se pueden enviar al cliente (sin la contraseña). */
+export const publicUserSelect = {
+  usu_id: true,
+  usu_nombre: true,
+  usu_papellido: true,
+  usu_sapellido: true,
+  usu_cedula: true,
+  usu_correo: true,
+  usu_telefono: true,
+  usu_fechacreacion: true,
+  usu_estado: true,
+  usu_rol: true,
+} satisfies Prisma.ava_usuarioSelect;

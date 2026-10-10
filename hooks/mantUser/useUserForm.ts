@@ -5,7 +5,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import useUserStore from "@/lib/zustand/userStore";
 import { UserFormProps } from "@/lib/typesForm";
 import { useUser } from "@/lib/UserContext";
@@ -38,7 +37,10 @@ const userFormSchema = z
       .max(50, "El correo no puede tener más de 50 caracteres"),
     usu_contrasena: z
       .string()
-      .max(50, "La contraseña no puede tener más de 30 caracteres")
+      .max(100, "La contraseña no puede tener más de 100 caracteres")
+      .refine((v) => v === "" || v.length >= 8, {
+        message: "La contraseña debe tener al menos 8 caracteres",
+      })
       .optional(),
     usu_estado: z.enum(["A", "I"]),
     usu_rol: z.enum(["A", "J", "E", "R"]),
@@ -108,13 +110,7 @@ export const useUserForm = ({ action, entity, onSuccess }: UserFormProps) => {
 
   const onSubmit: SubmitHandler<UserFormInputs> = async (formData) => {
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        throw new Error("Token no disponible");
-      }
-
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 

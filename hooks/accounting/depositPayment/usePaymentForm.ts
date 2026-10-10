@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import usePaymentStore from "@/lib/zustand/useDepositStore";
 import { useState } from "react";
 import { convertToUTCSV } from "@/utils/dateUtils";
@@ -83,17 +82,13 @@ export const usePaymentForm = () => {
         depo_id: selectedDeposit.depo_id,
       };
 
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
 
       setIsSubmitting(true);
 
-      const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.post(
         `/api/accounting/deposit/payment`,
-        paymentData,
-        { headers }
+        paymentData
       );
 
       if (response?.data?.success) {

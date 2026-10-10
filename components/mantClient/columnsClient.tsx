@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -75,11 +74,7 @@ export const columnsClient: ColumnDef<Cliente>[] = [
 
       const handleDelete = async () => {
         try {
-          const token = cookie.get("token");
-          if (!token) throw new Error("No hay token");
-          await axios.delete(`/api/client/${cliente.cli_id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          await axios.delete(`/api/client/${cliente.cli_id}`);
           removeClient(cliente.cli_id);
           toast.success("Cliente eliminado");
         } catch (err: any) {

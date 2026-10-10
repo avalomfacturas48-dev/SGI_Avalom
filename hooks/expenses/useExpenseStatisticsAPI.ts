@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import type { ExpenseStatistics } from "@/lib/types/forms";
 
@@ -22,12 +21,7 @@ export const useExpenseStatisticsAPI = () => {
   const fetchStatistics = useCallback(async () => {
     setIsLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      const response = await axios.get("/api/expenses/statistics", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get("/api/expenses/statistics");
 
       if (response.data.success) {
         setStatistics(response.data.data);
