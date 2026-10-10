@@ -24,6 +24,18 @@ import { Loader2, Zap, Wrench, Upload, XIcon } from "lucide-react";
 import { expenseFormSchema, type ExpenseFormValues } from "@/lib/schemas/expenseSchemas";
 import type { AvaGasto, AvaServicio, AvaEdificio, AvaPropiedad } from "@/lib/types/entities";
 import { convertToCostaRicaTime, convertToUTCSV } from "@/utils/dateUtils";
+import {
+  METODOS_PAGO,
+  BANCOS_CR,
+  METODOS_PAGO_RAPIDOS,
+  BANCOS_RAPIDOS,
+  CUENTAS_RAPIDAS,
+} from "@/lib/constants/payments";
+import { QuickPicks } from "@/components/shared/QuickPicks";
+
+// Incluye el valor actual si no está en la lista (gastos viejos con texto libre)
+const withCurrent = (options: string[], current?: string) =>
+  current && !options.includes(current) ? [current, ...options] : options;
 
 interface ExpenseFormDialogProps {
   open: boolean;
@@ -371,7 +383,7 @@ export function ExpenseFormDialog({
                 </div>
               </div>
 
-              <Accordion type="single" collapsible className="w-full">
+              <Accordion type="single" collapsible defaultValue="payment" className="w-full">
                 <AccordionItem value="payment">
                   <AccordionTrigger>
                     <Label className="text-sm font-semibold sm:text-base">Información de Pago</Label>
@@ -384,9 +396,21 @@ export function ExpenseFormDialog({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Método de Pago</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Ej: Efectivo, Transferencia, Tarjeta..." {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona un método" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {withCurrent(METODOS_PAGO, field.value).map((m) => (
+                                  <SelectItem key={m} value={m}>
+                                    {m}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <QuickPicks options={METODOS_PAGO_RAPIDOS} onPick={field.onChange} />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -398,9 +422,21 @@ export function ExpenseFormDialog({
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Banco</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Nombre del banco" {...field} />
-                            </FormControl>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona un banco" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {withCurrent(BANCOS_CR, field.value).map((b) => (
+                                  <SelectItem key={b} value={b}>
+                                    {b}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <QuickPicks options={BANCOS_RAPIDOS} onPick={field.onChange} />
                             <FormMessage />
                           </FormItem>
                         )}
@@ -415,8 +451,9 @@ export function ExpenseFormDialog({
                           <FormItem>
                             <FormLabel>Cuenta/Número</FormLabel>
                             <FormControl>
-                              <Input placeholder="Número de cuenta" {...field} />
+                              <Input placeholder="Ej. Ahorro a la vista, Corriente…" {...field} />
                             </FormControl>
+                            <QuickPicks options={CUENTAS_RAPIDAS} onPick={field.onChange} />
                             <FormMessage />
                           </FormItem>
                         )}
