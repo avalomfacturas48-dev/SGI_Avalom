@@ -100,7 +100,6 @@ export function BodyNewRent() {
     loadingBuildings,
     selectedBuilding,
     selectedProperty,
-    clients,
     clientsInRental,
     isSubmitting,
     form,
@@ -411,7 +410,6 @@ export function BodyNewRent() {
                   <div>
                     <FormLabel>Agregar Cliente</FormLabel>
                     <ClientComboBox
-                      clients={clients}
                       onClientSelect={handleClientSelect}
                       disabled={clientsInRental.length >= 2}
                     />

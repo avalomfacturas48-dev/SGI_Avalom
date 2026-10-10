@@ -59,7 +59,6 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
     handleClientSelect,
     handleClientRemove,
     isFormDisabled,
-    clients,
     clientsInRental,
     selectedRental,
     disableEstadoField,
@@ -229,7 +228,6 @@ const RentalForm: React.FC<RentalFormProps> = ({ action, onSuccess }) => {
             <CardContent>
               <FormLabel>Agregar Clientes</FormLabel>
               <ClientComboBox
-                clients={clients}
                 onClientSelect={handleClientSelect}
                 disabled={isFormDisabled}
               />

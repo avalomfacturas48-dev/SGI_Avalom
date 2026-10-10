@@ -1,8 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
+import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { stringifyWithBigInt } from "@/utils/converters";
+
+// Quita tildes y pasa a minúsculas ("André" → "andre")
+const normalizeSearch = (value: string) =>
+  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+// IDs de clientes cuyo nombre completo, cédula o correo contienen todas las
+// palabras buscadas, sin distinguir mayúsculas ni tildes.
+const findClientIdsBySearch = async (search: string): Promise<bigint[]> => {
+  const words = normalizeSearch(search)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => `%${w.replace(/[\\%_]/g, "\\$&")}%`);
+  if (words.length === 0) return [];
+
+  const haystack = Prisma.sql`translate(
+    lower(concat_ws(' ', cli_nombre, cli_papellido, cli_sapellido, cli_cedula, cli_correo)),
+    'áéíóúüñàèìòù', 'aeiouunaeiou'
+  )`;
+  const conditions = words.map((w) => Prisma.sql`${haystack} LIKE ${w}`);
+
+  const rows = await prisma.$queryRaw<{ cli_id: bigint }[]>`
+    SELECT cli_id FROM ava_cliente WHERE ${Prisma.join(conditions, " AND ")}
+  `;
+  return rows.map((r) => r.cli_id);
+};
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -13,15 +39,8 @@ export async function GET(request: NextRequest) {
       const skip = (page - 1) * limit;
       const search = searchParams.get("search")?.trim() || "";
 
-      const where: any = search
-        ? {
-            OR: [
-              { cli_nombre: { contains: search, mode: "insensitive" } },
-              { cli_papellido: { contains: search, mode: "insensitive" } },
-              { cli_cedula: { contains: search, mode: "insensitive" } },
-              { cli_correo: { contains: search, mode: "insensitive" } },
-            ],
-          }
+      const where: Prisma.ava_clienteWhereInput = search
+        ? { cli_id: { in: await findClientIdsBySearch(search) } }
         : {};
 
       const [total, clients] = await prisma.$transaction([

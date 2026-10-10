@@ -3,6 +3,14 @@
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Loader2Icon, Save } from "lucide-react";
 import { parseISO } from "date-fns";
+import {
+  METODOS_PAGO,
+  BANCOS_CR,
+  METODOS_PAGO_RAPIDOS,
+  BANCOS_RAPIDOS,
+  CUENTAS_RAPIDAS,
+} from "@/lib/constants/payments";
+import { QuickPicks } from "@/components/shared/QuickPicks";
 import { toast } from "sonner";
 import {
   Form,
@@ -31,29 +39,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { usePaymentForm } from "@/hooks/accounting/depositPayment/usePaymentForm";
 import { formatToCR } from "@/utils/dateUtils";
 
-const METODOS_PAGO = [
-  "SINPE Móvil",
-  "Transferencia",
-  "Depósito",
-  "Efectivo",
-  "Tarjeta de crédito",
-  "Tarjeta de débito",
-  "Cheque",
-];
-
-const BANCOS_CR = [
-  "BAC San José",
-  "BCR (Banco de Costa Rica)",
-  "Banco Nacional",
-  "Banco Popular",
-  "Scotiabank",
-  "Davivienda",
-  "Coopealianza",
-  "Coopenae",
-  "Mucap",
-  "Lafise",
-  "Prival Bank",
-];
 
 export function PaymentForm({
   amountToPay,
@@ -149,18 +134,7 @@ export function PaymentForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="flex gap-1.5 flex-wrap">
-                  {["SINPE Móvil", "Transferencia", "Depósito"].map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => field.onChange(v)}
-                      className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
+                <QuickPicks options={METODOS_PAGO_RAPIDOS} onPick={field.onChange} disabled={isSubmitting} />
                 <FormMessage />
               </FormItem>
             )}
@@ -191,15 +165,7 @@ export function PaymentForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <div className="flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => field.onChange("Coopealianza")}
-                    className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
-                  >
-                    Coopealianza
-                  </button>
-                </div>
+                <QuickPicks options={BANCOS_RAPIDOS} onPick={field.onChange} disabled={isSubmitting} />
                 <FormMessage />
               </FormItem>
             )}
@@ -219,15 +185,7 @@ export function PaymentForm({
                     disabled={isSubmitting}
                   />
                 </FormControl>
-                <div className="flex gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => field.onChange("Ahorro a la vista")}
-                    className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
-                  >
-                    Ahorro a la vista
-                  </button>
-                </div>
+                <QuickPicks options={CUENTAS_RAPIDAS} onPick={field.onChange} disabled={isSubmitting} />
                 <FormMessage />
               </FormItem>
             )}
