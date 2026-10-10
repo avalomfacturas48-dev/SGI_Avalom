@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { propertyDetailInclude } from "@/lib/constants/prismaIncludes";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
       const data = await req.json();
       const property = await prisma.ava_propiedad.create({
         data,
+        include: propertyDetailInclude,
       });
       return NextResponse.json(
         { success: true, data: stringifyWithBigInt(property) },

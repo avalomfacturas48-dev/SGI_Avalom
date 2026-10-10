@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { pagoWithAnulacionInclude } from "@/lib/constants/prismaIncludes";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
           depo_total: BigInt(data.depo_total),
           depo_montoactual: BigInt(0),
         },
+        include: pagoWithAnulacionInclude,
       });
 
       return NextResponse.json(

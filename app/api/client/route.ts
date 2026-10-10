@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           where,
           skip,
           take: limit,
-          orderBy: { cli_papellido: "asc" },
+          orderBy: [{ cli_papellido: "asc" }, { cli_id: "asc" }],
         }),
       ]);
 

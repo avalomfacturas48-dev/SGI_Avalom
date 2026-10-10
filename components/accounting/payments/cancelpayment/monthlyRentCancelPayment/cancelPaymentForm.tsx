@@ -44,8 +44,8 @@ export function CancelPaymentForm({
       await onSubmit({ ...data, usu_id: user?.usu_id });
       toast.success("Pago anulado correctamente");
     } catch (error: any) {
-      toast.success("Error", {
-        description: error.message ? error.message : error.message,
+      toast.error("Error", {
+        description: error.message || "Error al anular el pago",
       });
     } finally {
       setIsLoading(false);

@@ -73,9 +73,8 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: {
-          gas_fecha: "desc",
-        },
+        // gas_id desempata gastos con la misma fecha para que la paginación sea estable
+        orderBy: [{ gas_fecha: "desc" }, { gas_id: "desc" }],
         skip,
         take: limit,
       });

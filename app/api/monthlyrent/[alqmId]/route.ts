@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { pagoWithAnulacionInclude } from "@/lib/constants/prismaIncludes";
 
 export async function GET(
   request: NextRequest,
@@ -59,6 +60,7 @@ export async function PUT(
             : null,
           alqm_estado: data.alqm_estado,
         },
+        include: pagoWithAnulacionInclude,
       });
 
       return NextResponse.json(

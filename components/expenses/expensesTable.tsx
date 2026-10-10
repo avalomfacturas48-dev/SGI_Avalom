@@ -136,6 +136,9 @@ export const ExpensesTable = memo(function ExpensesTable({
             <div className="max-w-xs">
               <div className="font-medium">{concepto}</div>
               {descripcion && <div className="text-xs text-muted-foreground line-clamp-1">{descripcion}</div>}
+              {row.original.gas_referencia && (
+                <div className="text-xs text-muted-foreground">Ref: {row.original.gas_referencia}</div>
+              )}
             </div>
           );
         },
@@ -165,8 +168,8 @@ export const ExpensesTable = memo(function ExpensesTable({
         accessorKey: "ava_servicio",
         header: "Servicio",
         meta: {
-          headerClassName: "hidden xl:table-cell",
-          cellClassName: "hidden xl:table-cell",
+          headerClassName: "hidden md:table-cell",
+          cellClassName: "hidden md:table-cell",
         },
         cell: ({ row }) => {
           const servicio = row.original.ava_servicio;

@@ -177,7 +177,13 @@ export function ExpenseFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        // No cerrar mientras se guarda: el request seguiría corriendo por detrás
+        if (!isSubmitting) onOpenChange(next);
+      }}
+    >
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Editar Gasto" : "Nuevo Gasto"}</DialogTitle>

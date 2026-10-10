@@ -76,8 +76,11 @@ export function ExpenseCancellationDialog({ open, onOpenChange, expense, onConfi
     setIsSubmitting(true);
     try {
       await onConfirm(formData);
-      setShowConfirmation(false);
+      // Cerrar ambos en el mismo render: el diálogo principal ya está oculto
+      // mientras se muestra la confirmación, así solo se desmonta una capa de
+      // Radix y no queda `pointer-events: none` pegado en el body.
       onOpenChange(false);
+      setShowConfirmation(false);
       form.reset();
       setFormData(null);
     } catch (error) {
@@ -212,7 +215,12 @@ export function ExpenseCancellationDialog({ open, onOpenChange, expense, onConfi
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+      <AlertDialog
+        open={showConfirmation}
+        onOpenChange={(next) => {
+          if (!isSubmitting) setShowConfirmation(next);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -226,7 +234,12 @@ export function ExpenseCancellationDialog({ open, onOpenChange, expense, onConfi
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isSubmitting}>No, volver</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleConfirm}
+              onClick={(e) => {
+                // AlertDialogAction cierra la confirmación por defecto; eso reabría el
+                // diálogo principal mientras se anulaba. Se cierra al terminar.
+                e.preventDefault();
+                handleConfirm();
+              }}
               disabled={isSubmitting}
               className="bg-destructive hover:bg-destructive/90"
             >

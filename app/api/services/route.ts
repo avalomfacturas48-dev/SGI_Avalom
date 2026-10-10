@@ -19,9 +19,7 @@ export async function GET(request: NextRequest) {
 
       // Obtener servicios con paginación
       const services = await prisma.ava_servicio.findMany({
-        orderBy: {
-          ser_nombre: "asc",
-        },
+        orderBy: [{ ser_nombre: "asc" }, { ser_id: "asc" }],
         skip,
         take: limit,
       });

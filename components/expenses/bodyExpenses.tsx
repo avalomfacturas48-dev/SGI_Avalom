@@ -115,20 +115,25 @@ const BodyExpenses: React.FC = () => {
 
   const handleSubmitExpense = useCallback(
     async (data: ExpenseFormValues) => {
-      try {
-        if (selectedExpense) {
-          await updateExpense(selectedExpense.gas_id, data);
-        } else {
-          await createExpense(data);
-        }
+      // Si falla, el hook ya mostró el toast y el error se propaga para que
+      // el formulario quede abierto y no parezca que se guardó.
+      if (selectedExpense) {
+        await updateExpense(selectedExpense.gas_id, data);
+        // Al editar se mantiene la página actual
+        await Promise.all([fetchStatistics(), loadExpenses()]);
+        return;
+      }
+
+      await createExpense(data);
+      if (currentPage !== 1) {
+        // El efecto de paginación recarga la página 1
         resetPagination();
-        await Promise.all([fetchStaticData(), fetchStatistics(), loadExpenses()]);
-        setFormOpen(false);
-      } catch (error) {
-        // El error ya se maneja en el hook
+        await fetchStatistics();
+      } else {
+        await Promise.all([fetchStatistics(), loadExpenses()]);
       }
     },
-    [selectedExpense, createExpense, updateExpense, resetPagination, fetchStaticData, fetchStatistics, loadExpenses]
+    [selectedExpense, currentPage, createExpense, updateExpense, resetPagination, fetchStatistics, loadExpenses]
   );
 
   const handleConfirmCancellation = useCallback(

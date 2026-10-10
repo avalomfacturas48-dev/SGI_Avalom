@@ -50,9 +50,7 @@ export async function GET(req: NextRequest) {
           ava_edificio: true,
           ava_usuario: true,
         },
-        orderBy: {
-          gas_fecha: "asc", // Ordenar por fecha ascendente
-        },
+        orderBy: [{ gas_fecha: "asc" }, { gas_id: "asc" }], // Ordenar por fecha ascendente
       });
 
       // Crear PDF

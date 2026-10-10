@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { rentalDetailInclude } from "@/lib/constants/prismaIncludes";
 
 export async function GET(
   request: NextRequest,
@@ -74,11 +75,8 @@ export async function PUT(
 
         return prisma.ava_alquiler.findUnique({
           where: { alq_id: rentalId },
-          include: {
-            ava_clientexalquiler: {
-              include: { ava_cliente: true },
-            },
-          },
+          // Misma forma que /api/modifiyrent para no dejar el store incompleto
+          include: rentalDetailInclude,
         });
       });
 
