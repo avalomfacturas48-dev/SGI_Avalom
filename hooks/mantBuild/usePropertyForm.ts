@@ -5,7 +5,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import usePropertyStore from "@/lib/zustand/propertyStore";
 import useBuildingStore from "@/lib/zustand/buildStore";
 import useTypeStore from "@/lib/zustand/typeStore";
@@ -75,13 +74,7 @@ export const usePropertyForm = ({
 
   const onSubmit: SubmitHandler<PropertyFormInputs> = async (data) => {
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        throw new Error("No hay token disponible");
-      }
-
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 

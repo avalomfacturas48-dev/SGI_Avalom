@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { rentalDetailInclude } from "@/lib/constants/prismaIncludes";
 
 export async function GET(
   request: NextRequest,
@@ -13,41 +14,7 @@ export async function GET(
 
       const rent = await prisma.ava_alquiler.findFirst({
         where: { alq_id: BigInt(params.alqId) },
-        include: {
-          ava_propiedad: {
-            include: {
-              ava_edificio: true,
-              ava_tipopropiedad: true,
-            },
-          },
-          ava_alquilermensual: {
-            include: {
-              ava_pago: {
-                include: {
-                  ava_anulacionpago: {
-                    include: { ava_usuario: true },
-                  },
-                },
-              },
-            },
-          },
-          ava_clientexalquiler: {
-            include: {
-              ava_cliente: true,
-            },
-          },
-          ava_deposito: {
-            include: {
-              ava_pago: {
-                include: {
-                  ava_anulacionpago: {
-                    include: { ava_usuario: true },
-                  },
-                },
-              },
-            },
-          },
-        },
+        include: rentalDetailInclude,
       });
       if (!rent) {
         return NextResponse.json(

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { z } from "zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import usePaymentStore from "@/lib/zustand/monthlyPaymentStore";
@@ -84,17 +83,13 @@ export const usePaymentForm = () => {
         alqm_id: selectedMonthlyRent.alqm_id,
       };
 
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
 
       setIsSubmitting(true);
 
-      const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.post(
         `/api/accounting/payment`,
-        paymentData,
-        { headers }
+        paymentData
       );
 
       if (response?.data?.success) {

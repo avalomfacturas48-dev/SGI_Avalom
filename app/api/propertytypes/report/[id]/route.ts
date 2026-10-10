@@ -1,8 +1,10 @@
+import { authenticate } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-export async function GET(
+async function handleGET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
@@ -171,4 +173,8 @@ export async function GET(
       "Content-Disposition": `attachment; filename="reporte_propiedad_${property.prop_id}.pdf"`,
     },
   });
+}
+
+export async function GET(req: NextRequest, context: any) {
+  return authenticate(() => handleGET(req, context))(req, new NextResponse());
 }

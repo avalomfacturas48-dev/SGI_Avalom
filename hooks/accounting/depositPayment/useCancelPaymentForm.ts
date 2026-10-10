@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { CancelPaymentFormProps } from "@/lib/typesForm";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,10 +36,6 @@ export const useCancelPaymentForm = ({
 
   const onSubmit: SubmitHandler<CancelPaymentFormInputs> = async (data) => {
     try {
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
-
-      const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.post(
         `/api/accounting/deposit/canceledpayment`,
@@ -50,8 +45,7 @@ export const useCancelPaymentForm = ({
           anp_montofinal: "0",
           anp_fechaanulacion: new Date().toISOString(),
           pag_id: payment.pag_id,
-        },
-        { headers }
+        }
       );
 
       if (response?.data?.success) {

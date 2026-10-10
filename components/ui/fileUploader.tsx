@@ -14,7 +14,6 @@ import { X, Upload, FileText, Trash2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import usePropertyStore from "@/lib/zustand/propertyStore";
 import { AvaAlquiler } from "@/lib/types";
 
@@ -55,12 +54,6 @@ export default function FileUploader({
     if (!file || !selectedRental) return;
 
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        console.error("No hay token disponible");
-        return;
-      }
-
       const formDataFile = new FormData();
       formDataFile.append("file", file);
 
@@ -69,7 +62,6 @@ export default function FileUploader({
         formDataFile,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
         }
@@ -91,7 +83,6 @@ export default function FileUploader({
         rentalDataWithoutId,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -114,12 +105,6 @@ export default function FileUploader({
     if (!fileUrl || !selectedRental) return;
 
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        console.error("No hay token disponible");
-        return;
-      }
-
       const publicId = extractPublicIdFromUrl(fileUrl);
       console.log("Eliminando archivo con public ID:", publicId);
       await axios.post(
@@ -127,7 +112,6 @@ export default function FileUploader({
         { publicId },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -141,7 +125,6 @@ export default function FileUploader({
         updatedRentalData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }

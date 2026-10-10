@@ -18,6 +18,8 @@ jest.mock("js-cookie", () => ({
 
 jest.mock("@/lib/UserContext", () => ({
   useUser: () => ({
+    user: null,
+    loaded: true,
     setUser: mockSetUser,
   }),
 }));
@@ -62,8 +64,8 @@ describe("Login component", () => {
   it("realiza el login correctamente y redirige al home", async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
+      // El servidor ya no devuelve el token: lo deja en una cookie httpOnly
       json: async () => ({
-        token: "fake-token",
         user: { id: 1, name: "Juan Tester", email: "test@correo.com" },
       }),
     });
@@ -85,9 +87,8 @@ describe("Login component", () => {
         name: "Juan Tester",
         email: "test@correo.com",
       });
-      expect(mockCookieSet).toHaveBeenCalledWith("token", "fake-token", {
-        expires: 7,
-      });
+      // El navegador no debe crear ni manejar la cookie de sesión
+      expect(mockCookieSet).not.toHaveBeenCalled();
       expect(mockPush).toHaveBeenCalledWith("/homePage");
     });
   });

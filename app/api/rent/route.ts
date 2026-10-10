@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { rentCreateSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -37,7 +39,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const data = await req.json();
+      const parsed = await parseBody(req, rentCreateSchema);
+      if (!parsed.success) return parsed.response;
+      const data = parsed.data;
 
       const existingActiveRent = await prisma.ava_alquiler.findFirst({
         where: {

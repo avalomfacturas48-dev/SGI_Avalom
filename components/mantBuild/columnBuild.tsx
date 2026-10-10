@@ -1,6 +1,5 @@
 "use client";
 import axios from "axios";
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Home, KeyRound, Trash2 } from "lucide-react";
 import useBuildingStore from "@/lib/zustand/buildStore";
@@ -107,14 +106,7 @@ export const columns: ColumnDef<AvaEdificio>[] = [
 
       const handleAction = async () => {
         try {
-          const token = cookie.get("token");
-          if (!token) {
-            console.error("No hay token disponible");
-            return;
-          }
-
           const headers = {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           };
 

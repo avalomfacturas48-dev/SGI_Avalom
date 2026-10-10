@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { monthlyRentCreateSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -29,20 +31,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const data = await req.json();
+      const parsed = await parseBody(req, monthlyRentCreateSchema);
+      if (!parsed.success) return parsed.response;
+      const data = parsed.data;
 
+      // Una mensualidad nueva no tiene pagos todavía
       const monthlyRent = await prisma.ava_alquilermensual.create({
         data: {
-          alqm_identificador: data.alqm_identificador,
-          alqm_fechainicio: new Date(data.alqm_fechainicio),
-          alqm_fechafin: new Date(data.alqm_fechafin),
-          alqm_montototal: BigInt(data.alqm_montototal),
-          alqm_montopagado: BigInt(data.alqm_montopagado),
-          alqm_fechapago: data.alqm_fechapago
-            ? new Date(data.alqm_fechapago)
-            : null,
-          alqm_estado: data.alqm_estado,
-          alq_id: BigInt(data.alq_id),
+          ...data,
+          alqm_montopagado: BigInt(0),
+          alqm_fechapago: data.alqm_fechapago ?? null,
         },
       });
 

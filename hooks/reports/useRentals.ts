@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import cookie from "js-cookie";
 
 export interface Rental {
   alq_id: number;
@@ -28,21 +27,7 @@ export const useRentals = () => {
   const fetchRentals = async () => {
     setLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "No hay token de autenticación",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch("/api/rent", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch("/api/rent");
 
       if (!response.ok) {
         throw new Error("Error al cargar alquileres");

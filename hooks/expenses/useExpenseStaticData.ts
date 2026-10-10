@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import type { AvaServicio, AvaEdificio, AvaPropiedad } from "@/lib/types/entities";
 
@@ -15,19 +14,10 @@ export const useExpenseStaticData = () => {
   const fetchStaticData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) return;
-
       const [serviciosRes, edificiosRes, propiedadesRes] = await Promise.all([
-        axios.get("/api/expenses/servicios", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("/api/building", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("/api/property", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        axios.get("/api/expenses/servicios"),
+        axios.get("/api/building"),
+        axios.get("/api/property"),
       ]);
 
       setServicios(serviciosRes.data.data);

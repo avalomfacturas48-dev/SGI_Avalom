@@ -7,7 +7,6 @@ import { FinishedRentForm } from "./finishedRentForm";
 import { RentalInfoCard } from "./rentalInfoCard";
 import useFinishedRentalStore from "@/lib/zustand/useFinishedRentalStore";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -28,14 +27,8 @@ const BodyFinishedRent: React.FC = () => {
     const fetchRental = async () => {
       setLoading(true);
       try {
-        const token = cookie.get("token");
-        if (!token) throw new Error("Token no disponible");
-
         const response = await axios.get(
-          `/api/accounting/finishedrent/finalize/${alqId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `/api/accounting/finishedrent/finalize/${alqId}`
         );
 
         if (response?.data?.success) {

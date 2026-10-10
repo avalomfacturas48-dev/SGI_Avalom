@@ -71,7 +71,7 @@ const useBuildingStore = create<BuildingState>((set) => ({
               ...building,
               ava_propiedad: building.ava_propiedad.map((property) =>
                 property.prop_id === updatedProperty.prop_id
-                  ? updatedProperty
+                  ? { ...property, ...updatedProperty }
                   : property
               ),
             }

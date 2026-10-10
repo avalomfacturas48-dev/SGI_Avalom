@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import DateRangeDialog from "@/components/DateRangeDialog";
 
@@ -13,9 +12,7 @@ export function ExportBuildings() {
   const downloadPDF = async (url: string) => {
     try {
       setLoading(true);
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${cookie.get("token") ?? ""}` },
-      });
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`Error ${res.status}`);
 
       // Obtener el nombre del archivo del header

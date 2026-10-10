@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye, Pencil, Trash2 } from "lucide-react";
 import useUserStore from "@/lib/zustand/userStore";
@@ -133,11 +132,7 @@ export const columns: ColumnDef<User>[] = [
 
       const handleDelete = async () => {
         try {
-          const token = cookie.get("token");
-          if (!token) throw new Error("No hay token disponible");
-          await axios.delete(`/api/users/${user.usu_id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          await axios.delete(`/api/users/${user.usu_id}`);
           removeUser(user.usu_id);
           toast.success("Usuario eliminado", {
             description: `El usuario ${user.usu_nombre} fue eliminado correctamente.`,

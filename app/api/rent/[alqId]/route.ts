@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { rentalDetailInclude } from "@/lib/constants/prismaIncludes";
+import { parseBody } from "@/lib/validation";
+import { rentUpdateSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(
   request: NextRequest,
@@ -43,16 +46,14 @@ export async function PUT(
       const params = await context.params;
 
       const rentalId = BigInt(params.alqId);
-      const data = await req.json();
-      const { ava_clientexalquiler, ...alquilerData } = data;
+      const parsed = await parseBody(req, rentUpdateSchema);
+      if (!parsed.success) return parsed.response;
+      const { ava_clientexalquiler, ...alquilerData } = parsed.data;
 
       const updatedRental = await prisma.$transaction(async (prisma) => {
         const rent = await prisma.ava_alquiler.update({
           where: { alq_id: rentalId },
-          data: {
-            ...alquilerData,
-            alq_monto: BigInt(alquilerData.alq_monto),
-          },
+          data: alquilerData,
         });
 
         if (ava_clientexalquiler && Array.isArray(ava_clientexalquiler)) {
@@ -61,9 +62,13 @@ export async function PUT(
           });
 
           if (ava_clientexalquiler.length > 0) {
-            const clientConnections = ava_clientexalquiler.map((relation) => ({
+            // Sin repetidos: la PK es (alq_id, cli_id)
+            const uniqueIds = [
+              ...new Set(ava_clientexalquiler.map((r) => r.cli_id.toString())),
+            ];
+            const clientConnections = uniqueIds.map((cli_id) => ({
               alq_id: rentalId,
-              cli_id: relation.cli_id,
+              cli_id: BigInt(cli_id),
             }));
 
             await prisma.ava_clientexalquiler.createMany({
@@ -74,11 +79,8 @@ export async function PUT(
 
         return prisma.ava_alquiler.findUnique({
           where: { alq_id: rentalId },
-          include: {
-            ava_clientexalquiler: {
-              include: { ava_cliente: true },
-            },
-          },
+          // Misma forma que /api/modifiyrent para no dejar el store incompleto
+          include: rentalDetailInclude,
         });
       });
 

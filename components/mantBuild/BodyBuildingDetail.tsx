@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Home, Plus } from "lucide-react";
 import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { Skeleton } from "@/components/ui/skeleton";
-import cookie from "js-cookie";
 import axios from "axios";
 import {
   Card,
@@ -35,10 +34,8 @@ const BodyBuildingDetail: React.FC<BodyBuildingDetailProps> = ({ ediId }) => {
 
   const fetchBuilding = useCallback(async () => {
     try {
-      const token = cookie.get("token");
       const response = await axios.get(`/api/building/${ediId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });

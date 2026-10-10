@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import ClienteForm from "@/components/mantClient/clienteFormProps";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BreadcrumbResponsive } from "../breadcrumbResponsive";
 import useClientStore from "@/lib/zustand/clientStore";
+import type { Cliente } from "@/lib/types";
 
 const BodyMantClient: React.FC = () => {
   const { clients, setClients } = useClientStore((state) => ({
@@ -22,6 +22,8 @@ const BodyMantClient: React.FC = () => {
   }));
   const [isLoading, setIsLoading] = useState(true);
   const [openNew, setOpenNew] = useState(false);
+  // Clic en la fila abre el detalle del cliente
+  const [viewClient, setViewClient] = useState<Cliente | null>(null);
 
   // Estado de paginación servidor
   const [page, setPage] = useState(1);
@@ -40,9 +42,6 @@ const BodyMantClient: React.FC = () => {
   const fetchClients = useCallback(async () => {
     setIsLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) return;
-
       const params: Record<string, string> = {
         page: String(page),
         limit: String(pageSize),
@@ -51,7 +50,6 @@ const BodyMantClient: React.FC = () => {
 
       const response = await axios.get("/api/client", {
         params,
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       setClients(response.data.data);
@@ -140,6 +138,7 @@ const BodyMantClient: React.FC = () => {
               <DataTable
                 columns={columnsClient}
                 data={clients}
+                onRowClick={setViewClient}
                 searchValue={search}
                 onSearchChange={handleSearchChange}
                 serverPagination={{
@@ -178,6 +177,23 @@ const BodyMantClient: React.FC = () => {
               />
             </CardContent>
           </Card>
+
+          <ManageActions
+            hideTrigger
+            open={!!viewClient}
+            onOpenChange={(open) => !open && setViewClient(null)}
+            title="Detalles de Cliente"
+            description="Visualiza los datos del cliente"
+            FormComponent={
+              viewClient ? (
+                <ClienteForm
+                  action="view"
+                  entity={viewClient}
+                  onSuccess={() => setViewClient(null)}
+                />
+              ) : null
+            }
+          />
         </>
       )}
     </div>

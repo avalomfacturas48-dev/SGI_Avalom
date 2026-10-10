@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { pagoWithAnulacionInclude } from "@/lib/constants/prismaIncludes";
+import { parseBody } from "@/lib/validation";
+import { monthlyRentSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(
   request: NextRequest,
@@ -44,21 +47,44 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const { alqmId } = await context.params;
-      const data = await req.json();
+      const parsed = await parseBody(req, monthlyRentSchema);
+      if (!parsed.success) return parsed.response;
+      const { alqm_montopagado: _ignorado, ...data } = parsed.data;
+
+      const actual = await prisma.ava_alquilermensual.findUnique({
+        where: { alqm_id: BigInt(alqmId) },
+      });
+      if (!actual) {
+        return NextResponse.json(
+          { success: false, error: "Alquiler mensual no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      // El monto pagado sale de los pagos registrados; no se edita a mano
+      if (data.alqm_montototal < actual.alqm_montopagado) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "El monto total no puede ser menor a lo ya pagado.",
+          },
+          { status: 400 }
+        );
+      }
+      if (data.alqm_estado === "P" && actual.alqm_montopagado < data.alqm_montototal) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "No se puede marcar como pagado un mes con saldo pendiente.",
+          },
+          { status: 400 }
+        );
+      }
 
       const updatedMonthlyRent = await prisma.ava_alquilermensual.update({
         where: { alqm_id: BigInt(alqmId) },
-        data: {
-          alqm_identificador: data.alqm_identificador,
-          alqm_fechainicio: new Date(data.alqm_fechainicio),
-          alqm_fechafin: new Date(data.alqm_fechafin),
-          alqm_montototal: BigInt(data.alqm_montototal),
-          alqm_montopagado: BigInt(data.alqm_montopagado),
-          alqm_fechapago: data.alqm_fechapago
-            ? new Date(data.alqm_fechapago)
-            : null,
-          alqm_estado: data.alqm_estado,
-        },
+        data: { ...data, alqm_fechapago: data.alqm_fechapago ?? null },
+        include: pagoWithAnulacionInclude,
       });
 
       return NextResponse.json(

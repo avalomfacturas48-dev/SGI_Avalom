@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -20,7 +20,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2, Zap, Wrench, Upload, XIcon } from "lucide-react";
+import { Loader2, Zap, Wrench, Upload, XIcon, AlertTriangle } from "lucide-react";
+import axios from "axios";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { formatCurrency } from "@/lib/utils";
 import { expenseFormSchema, type ExpenseFormValues } from "@/lib/schemas/expenseSchemas";
 import type { AvaGasto, AvaServicio, AvaEdificio, AvaPropiedad } from "@/lib/types/entities";
 import { convertToCostaRicaTime, convertToUTCSV } from "@/utils/dateUtils";
@@ -59,6 +62,17 @@ export function ExpenseFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedEdificio, setSelectedEdificio] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  // Aviso de posibles duplicados: el segundo "Guardar" confirma
+  const [duplicates, setDuplicates] = useState<AvaGasto[]>([]);
+  const [duplicatesAcknowledged, setDuplicatesAcknowledged] = useState(false);
+  const duplicatesRef = useRef<HTMLDivElement>(null);
+
+  // El aviso queda al final del formulario: llevarlo a la vista al aparecer
+  useEffect(() => {
+    if (duplicates.length > 0) {
+      duplicatesRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [duplicates]);
 
   const isEditing = !!expense;
 
@@ -78,7 +92,6 @@ export function ExpenseFormDialog({
       gas_banco: "",
       gas_referencia: "",
       gas_comprobante: "",
-      usu_id: "1",
     },
   });
 
@@ -107,7 +120,6 @@ export function ExpenseFormDialog({
         gas_banco: expense.gas_banco || "",
         gas_referencia: expense.gas_referencia || "",
         gas_comprobante: expense.gas_comprobante || "",
-        usu_id: expense.usu_id || "1",
       });
       setSelectedEdificio(expense.edi_id);
       if (expense.gas_comprobante) {
@@ -131,7 +143,6 @@ export function ExpenseFormDialog({
         gas_banco: "",
         gas_referencia: "",
         gas_comprobante: "",
-        usu_id: "1",
       });
       setSelectedEdificio("");
       setUploadedFile(null);
@@ -142,7 +153,39 @@ export function ExpenseFormDialog({
     setSelectedEdificio(watchEdificio);
   }, [watchEdificio]);
 
+  // Si cambian los datos, el aviso de duplicados ya no aplica
+  useEffect(() => {
+    setDuplicates([]);
+    setDuplicatesAcknowledged(false);
+    const subscription = form.watch(() => {
+      setDuplicates([]);
+      setDuplicatesAcknowledged(false);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, open, expense]);
+
   const filteredPropiedades = propiedades.filter((prop) => prop.edi_id === selectedEdificio);
+
+  // Busca gastos parecidos (mismo servicio/concepto, mes y monto o referencia)
+  const findDuplicates = async (data: ExpenseFormValues, gasFecha?: string) => {
+    try {
+      const params = new URLSearchParams({
+        gas_tipo: data.gas_tipo,
+        edi_id: data.edi_id,
+        gas_monto: data.gas_monto,
+        gas_fecha: gasFecha ?? new Date().toISOString(),
+        gas_concepto: data.gas_concepto,
+      });
+      if (data.ser_id) params.set("ser_id", data.ser_id);
+      if (data.gas_referencia) params.set("gas_referencia", data.gas_referencia);
+      if (expense?.gas_id) params.set("exclude_id", expense.gas_id);
+      const response = await axios.get(`/api/expenses/duplicates?${params}`);
+      return (response.data?.data ?? []) as AvaGasto[];
+    } catch {
+      // Si la verificación falla no se bloquea el guardado
+      return [];
+    }
+  };
 
   const handleSubmit = async (data: ExpenseFormValues) => {
     setIsSubmitting(true);
@@ -152,6 +195,17 @@ export function ExpenseFormDialog({
         ...data,
         gas_fecha: data.gas_fecha ? convertToUTCSV(data.gas_fecha) : undefined,
       };
+
+      // Primer intento: avisar si ya existe un gasto parecido
+      if (!duplicatesAcknowledged) {
+        const found = await findDuplicates(data, dataToSubmit.gas_fecha);
+        if (found.length > 0) {
+          setDuplicates(found);
+          setDuplicatesAcknowledged(true);
+          return;
+        }
+      }
+
       await onSubmit(dataToSubmit as ExpenseFormValues);
       onOpenChange(false);
     } catch (error) {
@@ -177,7 +231,13 @@ export function ExpenseFormDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        // No cerrar mientras se guarda: el request seguiría corriendo por detrás
+        if (!isSubmitting) onOpenChange(next);
+      }}
+    >
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Editar Gasto" : "Nuevo Gasto"}</DialogTitle>
@@ -276,7 +336,7 @@ export function ExpenseFormDialog({
                       <FormItem>
                         <FormLabel>Monto *</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0.00" {...field} step="0.01" min="0" />
+                          <Input type="number" placeholder="0" {...field} step="1" min="1" inputMode="numeric" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -516,13 +576,49 @@ export function ExpenseFormDialog({
               </Accordion>
             </div>
 
+            {duplicates.length > 0 && (
+              <Alert ref={duplicatesRef} className="border-amber-500/40 bg-amber-500/10">
+                <AlertTriangle className="size-4 !text-amber-600" />
+                <AlertTitle>Posible gasto duplicado</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p className="text-sm">
+                    Ya hay {duplicates.length === 1 ? "un gasto parecido" : `${duplicates.length} gastos parecidos`}{" "}
+                    este mes (mismo {watchTipo === "S" ? "servicio" : "concepto"} y mismo monto o referencia):
+                  </p>
+                  <ul className="space-y-1 text-sm">
+                    {duplicates.map((d) => (
+                      <li key={d.gas_id} className="flex flex-wrap gap-x-2">
+                        <span className="font-medium">#{d.gas_id}</span>
+                        <span>{d.gas_concepto}</span>
+                        <span>· {formatCurrency(d.gas_monto)}</span>
+                        <span>· {convertToCostaRicaTime(d.gas_fecha)}</span>
+                        {d.gas_referencia && <span>· Ref: {d.gas_referencia}</span>}
+                        {d.ava_servicio && <span>· {d.ava_servicio.ser_nombre}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-muted-foreground">
+                    Revisa que no sea el mismo. Si es correcto, vuelve a presionar el botón para guardarlo.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant={duplicates.length > 0 ? "destructive" : "default"}
+              >
                 {isSubmitting && <Loader2 className="mr-2 size-4 animate-spin" />}
-                {isEditing ? "Actualizar" : "Guardar"}
+                {duplicates.length > 0
+                  ? "Guardar de todos modos"
+                  : isEditing
+                    ? "Actualizar"
+                    : "Guardar"}
               </Button>
             </DialogFooter>
           </form>

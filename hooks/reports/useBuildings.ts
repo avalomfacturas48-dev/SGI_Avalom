@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import cookie from "js-cookie";
 
 export interface Building {
   edi_id: number;
@@ -23,21 +22,7 @@ export const useBuildings = () => {
   const fetchBuildings = async () => {
     setLoading(true);
     try {
-      const token = cookie.get("token");
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "No hay token de autenticación",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const response = await fetch("/api/building", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch("/api/building");
 
       if (!response.ok) {
         throw new Error("Error al cargar edificios");

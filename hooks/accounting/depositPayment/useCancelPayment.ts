@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import usePaymentStore from "@/lib/zustand/useDepositStore";
 import { AvaPago } from "@/lib/types";
 
@@ -21,12 +20,8 @@ export function useCancelPayment(depoId: string | undefined) {
   const fetchPayments = async () => {
     try {
       setIsLoading(true);
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
 
-      const response = await axios.get(`/api/accounting/deposit/${depoId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(`/api/accounting/deposit/${depoId}`);
 
       if (response?.data?.success) {
         setSelectedDeposit(response.data.data);
@@ -72,7 +67,7 @@ export function useCancelPayment(depoId: string | undefined) {
   };
 
   const sortedPayments = useMemo(() => {
-    return payments.sort((a, b) => {
+    return [...payments].sort((a, b) => {
       if (a[sortField] < b[sortField]) return sortDirection === "asc" ? -1 : 1;
       if (a[sortField] > b[sortField]) return sortDirection === "asc" ? 1 : -1;
       return 0;

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { cancelRentSchema } from "@/lib/schemas/apiSchemas";
 
 export async function PUT(
   request: NextRequest,
@@ -10,21 +12,16 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const { alqId } = await context.params;
-      const requestData = await request.json();
-
+      const parsed = await parseBody(request, cancelRentSchema);
+      if (!parsed.success) return parsed.response;
       const {
         depo_montodevuelto,
         depo_descmontodevuelto,
         depo_montocastigo,
         depo_descrmontocastigo,
         depo_fechadevolucion,
-        alqc_motivo,
-        alqc_montodevuelto,
-        alqc_castigo,
-        alqc_motivomontodevuelto,
-        alqc_motivocastigo,
-        alqc_fecha_cancelacion,
-      } = requestData;
+        ...cancelacion
+      } = parsed.data;
 
       const rental = await prisma.ava_alquiler.findUnique({
         where: { alq_id: BigInt(alqId) },
@@ -38,17 +35,15 @@ export async function PUT(
         );
       }
 
-      if (!rental.ava_deposito) {
+      if (rental.alq_estado !== "A") {
         return NextResponse.json(
-          {
-            success: false,
-            error: "No se encontró un depósito asociado al alquiler.",
-          },
+          { success: false, error: "Solo se puede cancelar un alquiler activo." },
           { status: 400 }
         );
       }
 
-      const depoId = rental.ava_deposito[0].depo_id;
+      // ava_deposito es un arreglo; un alquiler puede no tener depósito
+      const depoId = rental.ava_deposito[0]?.depo_id;
 
       const result = await prisma.$transaction(async (tx) => {
         await tx.ava_alquiler.update({
@@ -56,31 +51,21 @@ export async function PUT(
           data: { alq_estado: "C" },
         });
 
-        await tx.ava_deposito.update({
-          where: { depo_id: depoId },
-          data: {
-            depo_montodevuelto: BigInt(depo_montodevuelto),
-            depo_descmontodevuelto,
-            depo_montocastigo: BigInt(depo_montocastigo),
-            depo_descrmontocastigo,
-            depo_fechadevolucion: depo_fechadevolucion
-            ? new Date(depo_fechadevolucion)
-            : null,
-          },
-        });
+        if (depoId) {
+          await tx.ava_deposito.update({
+            where: { depo_id: depoId },
+            data: {
+              depo_montodevuelto,
+              depo_descmontodevuelto,
+              depo_montocastigo,
+              depo_descrmontocastigo,
+              depo_fechadevolucion: depo_fechadevolucion ?? null,
+            },
+          });
+        }
 
         await tx.ava_alquilercancelado.create({
-          data: {
-            alqc_motivo,
-            alqc_montodevuelto: BigInt(alqc_montodevuelto),
-            alqc_castigo: BigInt(alqc_castigo),
-            alqc_motivomontodevuelto,
-            alqc_motivocastigo,
-            alqc_fecha_cancelacion: alqc_fecha_cancelacion
-            ? new Date(alqc_fecha_cancelacion)
-            : "",
-            alq_id: BigInt(alqId),
-          },
+          data: { ...cancelacion, alq_id: BigInt(alqId) },
         });
 
         return { success: true, message: "Alquiler cancelado correctamente" };

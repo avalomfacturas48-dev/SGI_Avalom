@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import type { UserWithToken } from "@/lib/types";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { parseBody } from "@/lib/validation";
+import { expenseSchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
@@ -73,9 +76,8 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy: {
-          gas_fecha: "desc",
-        },
+        // gas_id desempata gastos con la misma fecha para que la paginación sea estable
+        orderBy: [{ gas_fecha: "desc" }, { gas_id: "desc" }],
         skip,
         take: limit,
       });
@@ -109,37 +111,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const body = await request.json();
-
-      if (!body || typeof body !== "object") {
-        return NextResponse.json(
-          { success: false, error: "El cuerpo de la solicitud es inválido" },
-          { status: 400 }
-        );
-      }
-
-      // Validar que si es tipo 'S' (Servicio), debe tener ser_id
-      if (body.gas_tipo === "S" && !body.ser_id) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Los gastos de servicio deben tener un servicio asociado",
-          },
-          { status: 400 }
-        );
-      }
-
-      // Validar que si es tipo 'M' (Mantenimiento), no debe tener ser_id
-      if (body.gas_tipo === "M" && body.ser_id) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "Los gastos de mantenimiento no deben tener servicio asociado",
-          },
-          { status: 400 }
-        );
-      }
+      const parsed = await parseBody(request, expenseSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
 
       const newExpense = await prisma.ava_gasto.create({
         data: {
@@ -148,7 +122,7 @@ export async function POST(request: NextRequest) {
           gas_descripcion: body.gas_descripcion || null,
           gas_monto: BigInt(body.gas_monto),
           gas_fecha: body.gas_fecha ? new Date(body.gas_fecha) : new Date(),
-          gas_estado: body.gas_estado || "A",
+          gas_estado: "A",
           gas_metodopago: body.gas_metodopago || null,
           gas_cuenta: body.gas_cuenta || null,
           gas_banco: body.gas_banco || null,
@@ -157,7 +131,8 @@ export async function POST(request: NextRequest) {
           edi_id: BigInt(body.edi_id),
           prop_id: body.prop_id ? BigInt(body.prop_id) : null,
           ser_id: body.ser_id ? BigInt(body.ser_id) : null,
-          usu_id: body.usu_id ? BigInt(body.usu_id) : null,
+          // Quien registra es el usuario de la sesión
+          usu_id: BigInt((req.user as UserWithToken).userId),
         },
         include: {
           ava_edificio: true,

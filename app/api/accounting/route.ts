@@ -78,7 +78,10 @@ export async function GET(request: NextRequest) {
               },
               ava_clientexalquiler: { include: { ava_cliente: true } },
             },
-            orderBy: { ava_propiedad: { prop_identificador: "asc" } },
+            orderBy: [
+              { ava_propiedad: { prop_identificador: "asc" } },
+              { alq_id: "asc" },
+            ],
           }),
         ]);
 

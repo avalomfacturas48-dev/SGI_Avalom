@@ -42,6 +42,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { clickableRowClass, clickableRowProps } from "@/lib/clickableRow";
 import { TenantInline } from "@/components/shared/TenantCell";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import Link from "next/link";
@@ -300,8 +301,10 @@ export function DataTable({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    onClick={() => onRowClick?.(row.original)}
-                    className="cursor-pointer hover:bg-muted"
+                    {...(onRowClick
+                      ? clickableRowProps(() => onRowClick(row.original))
+                      : {})}
+                    className={cn("hover:bg-muted", onRowClick && clickableRowClass)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
@@ -340,7 +343,11 @@ export function DataTable({
             const rental = row.original;
             const isActive = rental.alq_estado === "A";
             return (
-              <Card key={row.id} className="cursor-pointer hover:bg-muted/50">
+              <Card
+                key={row.id}
+                {...(onRowClick ? clickableRowProps(() => onRowClick(rental)) : {})}
+                className={cn("hover:bg-muted/50", onRowClick && clickableRowClass)}
+              >
                 <CardContent className="p-4 space-y-3">
                   <div className="flex justify-between items-start gap-2">
                     <div className="flex flex-wrap items-center gap-1.5">

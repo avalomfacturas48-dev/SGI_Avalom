@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { propertyDetailInclude } from "@/lib/constants/prismaIncludes";
+import { parseBody } from "@/lib/validation";
+import { propertySchema } from "@/lib/schemas/apiSchemas";
 
 export async function GET(
   request: NextRequest,
@@ -13,22 +16,7 @@ export async function GET(
 
       const property = await prisma.ava_propiedad.findFirst({
         where: { prop_id: BigInt(params.propId) },
-        include: {
-          ava_alquiler: {
-        orderBy: {
-          alq_fechapago: "desc",
-        },
-        include: {
-          ava_clientexalquiler: {
-            include: {
-          ava_cliente: true,
-            },
-          },
-        },
-          },
-          ava_tipopropiedad: true,
-          ava_edificio: true,
-        },
+        include: propertyDetailInclude,
       });
       if (!property) {
         return NextResponse.json(
@@ -57,16 +45,19 @@ export async function PUT(
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const params = await context.params;
-      const data = await req.json();
+      const parsed = await parseBody(req, propertySchema);
+      if (!parsed.success) return parsed.response;
+      const data = parsed.data;
 
       const property = await prisma.ava_propiedad.update({
         where: { prop_id: BigInt(params.propId) },
         data: {
           prop_identificador: data.prop_identificador,
           prop_descripcion: data.prop_descripcion,
-          prop_descripcioncontrato: data.prop_descripcioncontrato || null,
+          prop_descripcioncontrato: data.prop_descripcioncontrato ?? null,
           tipp_id: data.tipp_id,
         },
+        include: propertyDetailInclude,
       });
       return NextResponse.json(
         { success: true, data: stringifyWithBigInt(property) },

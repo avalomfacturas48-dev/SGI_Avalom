@@ -1,4 +1,6 @@
 // app/api/generate-contract/route.ts
+import { authenticate } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 
@@ -31,7 +33,7 @@ interface ContractData {
   fechaFirma?: string;
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   const data: ContractData = await req.json();
 
   const pdf = await PDFDocument.create();
@@ -323,4 +325,8 @@ export async function POST(req: NextRequest) {
       "Content-Disposition": `attachment; filename="contrato_${fileApto}.pdf"`,
     },
   });
+}
+
+export async function POST(req: NextRequest) {
+  return authenticate(() => handlePOST(req))(req, new NextResponse());
 }

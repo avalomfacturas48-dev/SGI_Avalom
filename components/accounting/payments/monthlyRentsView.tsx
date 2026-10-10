@@ -46,7 +46,10 @@ import Link from "next/link";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { toast } from "sonner";
 import AlertDialog from "@/components/alertDialog";
-import { AvaAlquilerMensual } from "@/lib/types";
+import { AvaAlquilerMensual, AvaPago } from "@/lib/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { clickableRowClass, clickableRowProps } from "@/lib/clickableRow";
+import { PaymentDetailsContent } from "@/components/accounting/payments/paymentDetailsDialog";
 import {
   Select,
   SelectContent,
@@ -68,6 +71,13 @@ const MonthlyRentsView: React.FC = () => {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(DEFAULT_STATUSES);
   const [pageSize, setPageSize] = useState(8);
   const [movementRent, setMovementRent] = useState<AvaAlquilerMensual | null>(null);
+  // Pago abierto dentro del diálogo de movimientos (maestro-detalle, sin anidar modales)
+  const [movementPago, setMovementPago] = useState<AvaPago | null>(null);
+
+  const openMovements = (rent: AvaAlquilerMensual) => {
+    setMovementPago(null);
+    setMovementRent(rent);
+  };
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -246,8 +256,13 @@ const MonthlyRentsView: React.FC = () => {
             return (
               <Card
                 key={rent.alqm_id}
+                {...clickableRowProps(
+                  () => openMovements(rent),
+                  `Ver movimientos de ${rent.alqm_identificador}`
+                )}
                 className={cn(
                   "transition-all duration-200 ease-in-out hover:shadow-md border-2 flex flex-col",
+                  clickableRowClass,
                   getStatusColor(rent)
                 )}
               >
@@ -303,7 +318,12 @@ const MonthlyRentsView: React.FC = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-1.5 px-3 pt-2 pb-3 border-t">
+                <CardFooter
+                  className="flex flex-col gap-1.5 px-3 pt-2 pb-3 border-t"
+                  // Las acciones (y el diálogo de regalar) no deben abrir los movimientos
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
                   {/* Pagar — solo visible si no está pagado ni regalado */}
                   {!isSettled && (
                     <Button
@@ -359,7 +379,7 @@ const MonthlyRentsView: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     className="w-full text-[11px] h-7 text-muted-foreground hover:text-foreground"
-                    onClick={() => setMovementRent(rent)}
+                    onClick={() => openMovements(rent)}
                   >
                     <History className="h-3 w-3 mr-1" />
                     Movimientos
@@ -426,7 +446,15 @@ const MonthlyRentsView: React.FC = () => {
       </div>
 
       {/* Dialog de movimientos del mes */}
-      <Dialog open={!!movementRent} onOpenChange={(open) => !open && setMovementRent(null)}>
+      <Dialog
+        open={!!movementRent}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMovementRent(null);
+            setMovementPago(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -438,7 +466,29 @@ const MonthlyRentsView: React.FC = () => {
             </p>
           </DialogHeader>
 
-          {(movementRent?.ava_pago?.length ?? 0) === 0 ? (
+          {movementPago && movementRent ? (
+            <div className="space-y-3 min-w-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => setMovementPago(null)}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Volver a los movimientos
+              </Button>
+              <ScrollArea className="max-h-[60vh] pr-3">
+                <PaymentDetailsContent
+                  payment={movementPago}
+                  context={{
+                    tipo: "Mensualidad",
+                    concepto: movementRent.alqm_identificador,
+                    periodo: `${formatToCR(movementRent.alqm_fechainicio)} – ${formatToCR(movementRent.alqm_fechafin)}`,
+                  }}
+                />
+              </ScrollArea>
+            </div>
+          ) : (movementRent?.ava_pago?.length ?? 0) === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               No hay movimientos registrados para este mes.
             </p>
@@ -460,7 +510,11 @@ const MonthlyRentsView: React.FC = () => {
                     {movementRent?.ava_pago?.map((pago) => {
                       const anulado = pago.pag_estado === "D" || !!pago.ava_anulacionpago?.length;
                       return (
-                        <TableRow key={pago.pag_id} className={cn(anulado && "bg-red-500/5")}>
+                        <TableRow
+                          key={pago.pag_id}
+                          {...clickableRowProps(() => setMovementPago(pago), "Ver detalle del pago")}
+                          className={cn(clickableRowClass, anulado && "bg-red-500/5")}
+                        >
                           <TableCell className="text-sm whitespace-nowrap">
                             {formatToCR(pago.pag_fechapago)}
                           </TableCell>
@@ -519,8 +573,10 @@ const MonthlyRentsView: React.FC = () => {
                   return (
                     <div
                       key={pago.pag_id}
+                      {...clickableRowProps(() => setMovementPago(pago), "Ver detalle del pago")}
                       className={cn(
-                        "rounded-md border p-3 space-y-2",
+                        "rounded-md border p-3 space-y-2 hover:bg-muted/50",
+                        clickableRowClass,
                         anulado && "bg-red-500/5"
                       )}
                     >

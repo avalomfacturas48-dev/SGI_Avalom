@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { authenticate } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+async function handleGET() {
   try {
     const clients = await prisma.ava_cliente.findMany({
       orderBy: { cli_nombre: "asc" },
@@ -32,4 +33,8 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+export async function GET(req: NextRequest) {
+  return authenticate(() => handleGET())(req, new NextResponse());
 }

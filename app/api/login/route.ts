@@ -1,52 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { comparePassword, generateToken } from "@/lib/auth";
+import { comparePassword, generateToken, setSessionCookie } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { stringifyWithBigInt } from "@/utils/converters";
 
 export async function POST(req: NextRequest) {
-  const { email, password } = await req.json();
+  const body = await req.json().catch(() => null);
+  const email = typeof body?.email === "string" ? body.email.trim() : "";
+  const password = typeof body?.password === "string" ? body.password : "";
 
-  const emailLowerCase = email.toLowerCase();
+  if (!email || !password) {
+    return NextResponse.json(
+      { success: false, error: "Email y contraseña son requeridos" },
+      { status: 400 }
+    );
+  }
 
   const user = await prisma.ava_usuario.findFirst({
-    where: { usu_correo: emailLowerCase },
+    where: { usu_correo: email.toLowerCase() },
+    omit: { usu_contrasena: false },
   });
 
-  if (!user) {
+  // Mismo mensaje para usuario inexistente y contraseña incorrecta
+  if (!user || !(await comparePassword(password, user.usu_contrasena))) {
     return NextResponse.json(
       { success: false, error: "Email o contraseña invalidos" },
       { status: 401 }
     );
   }
 
-  const isPasswordValid = await comparePassword(password, user.usu_contrasena);
-  if (!isPasswordValid) {
-    return NextResponse.json(
-      { success: false, error: "Email o contraseña invalidos" },
-      { status: 401 }
-    );
-  }
-
-  const isUserActive = user.usu_estado === "A";
-  if (!isUserActive) {
+  if (user.usu_estado !== "A") {
     return NextResponse.json(
       { success: false, error: "Usuario inactivo" },
       { status: 401 }
     );
   }
 
-  const token = generateToken(String(user.usu_id), user.usu_rol);
+  // El hash de la contraseña nunca sale del servidor
+  const { usu_contrasena, rowid, ...publicUser } = user;
 
-  const response = {
-    message: "Login successful",
-    token: token,
-    user: {
-      ...user,
-      usu_id: user.usu_id.toString(),
-    },
-  };
-
-  return NextResponse.json(stringifyWithBigInt(response), {
-    headers: { "Content-Type": "application/json" },
-  });
+  const response = NextResponse.json(
+    stringifyWithBigInt({ message: "Login successful", user: publicUser })
+  );
+  // El token va solo en una cookie httpOnly; el navegador no lo puede leer
+  setSessionCookie(response, generateToken(String(user.usu_id), user.usu_rol));
+  return response;
 }

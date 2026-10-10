@@ -41,6 +41,11 @@ import { formatToCR } from "@/utils/dateUtils";
 import { formatCurrencyNoDecimals } from "@/utils/currencyConverter";
 import { AvaPago } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { clickableRowClass, clickableRowProps } from "@/lib/clickableRow";
+import {
+  PaymentDetailsDialog,
+  type PaymentContext,
+} from "@/components/accounting/payments/paymentDetailsDialog";
 
 const PAGE_SIZE = 10;
 
@@ -58,12 +63,16 @@ interface Movement {
   anulacionDescripcion?: string;
   anulacionFecha?: string;
   anulacionUsuario?: string;
+  /** Pago original y a qué corresponde, para el detalle */
+  pago: AvaPago;
+  context: PaymentContext;
 }
 
 function mapPayment(
   pago: AvaPago,
   tipo: Movement["tipo"],
-  concepto: string
+  concepto: string,
+  periodo?: string
 ): Movement {
   const anulacion = pago.ava_anulacionpago?.[0];
   const anulado = pago.pag_estado === "D" || !!anulacion;
@@ -84,6 +93,8 @@ function mapPayment(
     anulacionUsuario: usuario
       ? `${usuario.usu_nombre} ${usuario.usu_papellido}`
       : undefined,
+    pago,
+    context: { tipo, concepto, periodo },
   };
 }
 
@@ -94,13 +105,21 @@ export function MovementsHistory() {
   }));
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [page, setPage] = useState(0);
+  const [detail, setDetail] = useState<Movement | null>(null);
 
   const movements = useMemo<Movement[]>(() => {
     const list: Movement[] = [];
 
     monthlyRents.forEach((mr) => {
       (mr.ava_pago ?? []).forEach((pago) => {
-        list.push(mapPayment(pago, "Mensualidad", mr.alqm_identificador));
+        list.push(
+          mapPayment(
+            pago,
+            "Mensualidad",
+            mr.alqm_identificador,
+            `${formatToCR(mr.alqm_fechainicio)} – ${formatToCR(mr.alqm_fechafin)}`
+          )
+        );
       });
     });
 
@@ -206,8 +225,10 @@ export function MovementsHistory() {
               {paginated.map((m) => (
                 <div
                   key={m.id}
+                  {...clickableRowProps(() => setDetail(m), `Ver detalle del pago de ${m.concepto}`)}
                   className={cn(
-                    "rounded-lg border p-3 space-y-2",
+                    "rounded-lg border p-3 space-y-2 hover:bg-muted/50",
+                    clickableRowClass,
                     m.anulado && "bg-red-500/5 border-red-200 dark:border-red-900"
                   )}
                 >
@@ -293,7 +314,11 @@ export function MovementsHistory() {
                 </TableHeader>
                 <TableBody>
                   {paginated.map((m) => (
-                    <TableRow key={m.id} className={cn(m.anulado && "bg-red-500/5")}>
+                    <TableRow
+                      key={m.id}
+                      {...clickableRowProps(() => setDetail(m), `Ver detalle del pago de ${m.concepto}`)}
+                      className={cn(clickableRowClass, m.anulado && "bg-red-500/5")}
+                    >
                       <TableCell className="whitespace-nowrap text-sm">
                         {formatToCR(m.date)}
                       </TableCell>
@@ -416,6 +441,13 @@ export function MovementsHistory() {
           </div>
         </CardFooter>
       )}
+
+      <PaymentDetailsDialog
+        open={!!detail}
+        onOpenChange={(open) => !open && setDetail(null)}
+        payment={detail?.pago ?? null}
+        context={detail?.context}
+      />
     </Card>
   );
 }

@@ -1,7 +1,8 @@
+import { authenticate } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
 
-export async function POST(request: NextRequest) {
+async function handlePOST(request: NextRequest) {
   try {
     const { publicId } = await request.json();
 
@@ -25,4 +26,8 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function POST(req: NextRequest) {
+  return authenticate(() => handlePOST(req))(req, new NextResponse());
 }

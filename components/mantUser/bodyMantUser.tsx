@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import cookie from "js-cookie";
 import axios from "axios";
 import { Plus } from "lucide-react";
 import { columns } from "./columnsUser";
@@ -13,6 +12,7 @@ import { BreadcrumbResponsive } from "@/components/breadcrumbResponsive";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import UserForm from "./UserFormProps";
 import useUserStore from "@/lib/zustand/userStore";
+import type { User } from "@/lib/types";
 
 const BodyMantUser: React.FC = () => {
   const { users, setUsers } = useUserStore((state) => ({
@@ -21,20 +21,15 @@ const BodyMantUser: React.FC = () => {
   }));
   const [isLoading, setIsLoading] = useState(true);
   const [openNew, setOpenNew] = useState(false);
+  // Clic en la fila abre el detalle del usuario
+  const [viewUser, setViewUser] = useState<User | null>(null);
 
   const fetchUsers = async () => {
     setIsLoading(true);
-    const token = cookie.get("token");
-    if (!token) {
-      console.error("No hay token disponible");
-      setIsLoading(false);
-      return;
-    }
 
     try {
       const response = await axios.get("/api/users", {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -113,6 +108,7 @@ const BodyMantUser: React.FC = () => {
               <DataTable
                 columns={columns}
                 data={users}
+                onRowClick={setViewUser}
                 renderMobileCard={(user, actions) => (
                   <Card className="hover:bg-muted/50 transition-colors">
                     <CardContent className="p-4 space-y-3">
@@ -150,6 +146,19 @@ const BodyMantUser: React.FC = () => {
               />
             </CardContent>
           </Card>
+
+          <ManageActions
+            hideTrigger
+            open={!!viewUser}
+            onOpenChange={(open) => !open && setViewUser(null)}
+            title="Detalles de Usuario"
+            description="Visualiza los datos del usuario"
+            FormComponent={
+              viewUser ? (
+                <UserForm action="view" entity={viewUser} onSuccess={() => {}} />
+              ) : null
+            }
+          />
         </>
       )}
     </div>

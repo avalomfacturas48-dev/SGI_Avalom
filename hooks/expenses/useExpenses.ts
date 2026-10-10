@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import useExpensesStore from "@/lib/zustand/expensesStore";
 import type { AvaGasto } from "@/lib/types/entities";
@@ -25,9 +24,6 @@ export const useExpenses = (options?: UseExpensesOptions) => {
     ) => {
       setIsLoading(true);
       try {
-        const token = cookie.get("token");
-        if (!token) return { data: [], pagination: null };
-
         const params: Record<string, string | number> = {
           page,
           limit,
@@ -45,7 +41,6 @@ export const useExpenses = (options?: UseExpensesOptions) => {
 
         const response = await axios.get("/api/expenses", {
           params,
-          headers: { Authorization: `Bearer ${token}` },
         });
 
         setExpenses(response.data.data);
@@ -67,12 +62,8 @@ export const useExpenses = (options?: UseExpensesOptions) => {
 
   const fetchAllExpenses = useCallback(async (estado: string = "A") => {
     try {
-      const token = cookie.get("token");
-      if (!token) return [];
-
       const response = await axios.get("/api/expenses", {
         params: { estado },
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       return response.data.data || [];
@@ -86,12 +77,7 @@ export const useExpenses = (options?: UseExpensesOptions) => {
   const createExpense = useCallback(
     async (data: ExpenseFormValues) => {
       try {
-        const token = cookie.get("token");
-        if (!token) return null;
-
-        const response = await axios.post("/api/expenses", data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.post("/api/expenses", data);
 
         toast.success("Gasto creado exitosamente");
         options?.onSuccess?.();
@@ -109,12 +95,7 @@ export const useExpenses = (options?: UseExpensesOptions) => {
   const updateExpense = useCallback(
     async (id: string, data: ExpenseFormValues) => {
       try {
-        const token = cookie.get("token");
-        if (!token) return null;
-
-        const response = await axios.put(`/api/expenses/${id}`, data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.put(`/api/expenses/${id}`, data);
 
         toast.success("Gasto actualizado exitosamente");
         options?.onSuccess?.();
@@ -132,15 +113,7 @@ export const useExpenses = (options?: UseExpensesOptions) => {
   const cancelExpense = useCallback(
     async (id: string, data: CancellationFormValues) => {
       try {
-        const token = cookie.get("token");
-        if (!token) {
-          toast.error("No hay token de autenticación");
-          throw new Error("No hay token de autenticación");
-        }
-
-        const response = await axios.post(`/api/expenses/cancel/${id}`, data, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.post(`/api/expenses/cancel/${id}`, data);
 
         if (response.data.success) {
           toast.success("Gasto anulado exitosamente");

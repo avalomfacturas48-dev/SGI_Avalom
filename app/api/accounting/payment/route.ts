@@ -2,59 +2,49 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authenticate } from "@/lib/auth";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { monthlyPaymentSchema } from "@/lib/schemas/apiSchemas";
+import { BusinessRuleError } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const data = await req.json();
-
-      const {
-        pag_monto,
-        pag_fechapago,
-        pag_estado,
-        pag_cuenta,
-        pag_descripcion,
-        pag_metodopago,
-        pag_banco,
-        pag_referencia,
-        alqm_id,
-      } = data;
-
-      const paymentAmount = BigInt(pag_monto);
+      const parsed = await parseBody(req, monthlyPaymentSchema);
+      if (!parsed.success) return parsed.response;
+      const { alqm_id, pag_monto, ...pago } = parsed.data;
 
       const result = await prisma.$transaction(async (tx) => {
-        const payment = await tx.ava_pago.create({
-          data: {
-            pag_monto: paymentAmount,
-            pag_fechapago: new Date(pag_fechapago),
-            pag_estado,
-            pag_cuenta,
-            pag_descripcion,
-            pag_metodopago,
-            pag_banco,
-            pag_referencia,
-            alqm_id: BigInt(alqm_id),
-          },
-        });
-
         const currentMonthlyRent = await tx.ava_alquilermensual.findUnique({
-          where: { alqm_id: BigInt(alqm_id) },
+          where: { alqm_id },
         });
 
         if (!currentMonthlyRent) {
-          throw new Error("El alquiler mensual no existe.");
+          throw new BusinessRuleError("El alquiler mensual no existe.");
+        }
+        if (currentMonthlyRent.alqm_estado === "R") {
+          throw new BusinessRuleError("No se puede pagar un mes regalado.");
         }
 
-        const newMontopagado =
-          currentMonthlyRent.alqm_montopagado + paymentAmount;
+        const pendiente =
+          currentMonthlyRent.alqm_montototal - currentMonthlyRent.alqm_montopagado;
+        if (pag_monto > pendiente) {
+          throw new BusinessRuleError(
+            `El monto supera el saldo pendiente (₡${pendiente.toString()}).`
+          );
+        }
 
+        const payment = await tx.ava_pago.create({
+          data: { ...pago, pag_monto, pag_estado: "A", alqm_id },
+        });
+
+        const newMontopagado = currentMonthlyRent.alqm_montopagado + pag_monto;
         const newEstado =
           newMontopagado >= currentMonthlyRent.alqm_montototal
             ? "P"
             : currentMonthlyRent.alqm_estado;
 
         const updatedMonthlyRent = await tx.ava_alquilermensual.update({
-          where: { alqm_id: BigInt(alqm_id) },
+          where: { alqm_id },
           data: {
             alqm_montopagado: newMontopagado,
             alqm_estado: newEstado,
@@ -69,6 +59,12 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     } catch (error) {
+      if (error instanceof BusinessRuleError) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: 400 }
+        );
+      }
       console.error("Error al procesar el pago:", error);
       return NextResponse.json(
         { success: false, error: "Error interno del servidor" },

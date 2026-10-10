@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Plus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import cookie from "js-cookie";
 import axios from "axios";
 import {
   Card,
@@ -47,10 +46,8 @@ const BodyPropertyDetail: React.FC<BodyPropertyDetailProps> = ({
 
   const fetchProperty = useCallback(async () => {
     try {
-      const token = cookie.get("token");
       const response = await axios.get(`/api/property/${propId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import useDepositStore from "@/lib/zustand/useDepositStore";
 
 export const usePayment = (depoId: string | undefined) => {
@@ -11,12 +10,8 @@ export const usePayment = (depoId: string | undefined) => {
   const fetchRental = async () => {
     try {
       setIsLoading(true);
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
 
-      const response = await axios.get(`/api/accounting/deposit/${depoId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(`/api/accounting/deposit/${depoId}`);
 
       if (response?.data?.success) {
         setSelectedDeposit(response.data.data);

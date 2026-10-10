@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import usePaymentStore from "@/lib/zustand/monthlyPaymentStore";
 import { AvaPago } from "@/lib/types";
 
@@ -22,12 +21,9 @@ export function useCancelPayment(alqmId: string | undefined) {
   const fetchPayments = async () => {
     try {
       setIsLoading(true);
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
 
       const response = await axios.get(
-        `/api/accounting/monthlyrent/${alqmId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `/api/accounting/monthlyrent/${alqmId}`
       );
 
       if (response?.data?.success) {

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import cookie from "js-cookie";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -152,12 +151,7 @@ const BodyContract: React.FC = () => {
     const fetchRental = async () => {
       setLoading(true);
       try {
-        const token = cookie.get("token");
-        if (!token) throw new Error("Token no disponible");
-
-        const { data } = await axios.get(`/api/modifiyrent/${alqId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const { data } = await axios.get(`/api/modifiyrent/${alqId}`);
         if (!data?.success) {
           throw new Error(data?.error || "Error al cargar el alquiler.");
         }
@@ -217,7 +211,6 @@ const BodyContract: React.FC = () => {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const token = cookie.get("token");
       const payload = {
         ...form,
         montoTotal: form.montoTotal ? Number(form.montoTotal) : undefined,
@@ -231,7 +224,6 @@ const BodyContract: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });

@@ -86,7 +86,13 @@ export function ServiceFormDialog({ open, onOpenChange, service, onSubmit, exist
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        // No cerrar mientras se guarda: el request seguiría corriendo por detrás
+        if (!isSubmitting) onOpenChange(next);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Editar Servicio" : "Nuevo Servicio"}</DialogTitle>

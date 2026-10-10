@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import cookie from 'js-cookie'
 import { toast } from 'sonner'
 
 interface ImportClientsProps {
@@ -29,9 +28,6 @@ export function ImportClients({ onSuccess }: ImportClientsProps) {
       const res = await fetch('/api/import-clients', {
         method: 'POST',
         body: formData,
-        headers: {
-          Authorization: `Bearer ${cookie.get('token') ?? ''}`,
-        },
       })
       const body = await res.json()
       if (!res.ok) throw new Error(body.message || 'Error en importación')

@@ -5,20 +5,16 @@ import bcrypt from "bcryptjs";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { UserWithToken } from "@/lib/types";
 import { stringifyWithBigInt } from "@/utils/converters";
+import { parseBody } from "@/lib/validation";
+import { userCreateSchema } from "@/lib/schemas/apiSchemas";
+import { canManageRole, manageableRoles } from "@/lib/constants/roles";
 
 export async function GET(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
       const currentUser = req.user as UserWithToken;
-      let rolesToFetch: string[] = [];
-
-      if (currentUser.userRole === "A") {
-        rolesToFetch = ["A", "E", "R"];
-      } else if (currentUser.userRole === "J") {
-        rolesToFetch = ["A", "J", "E", "R"];
-      } else if (currentUser.userRole === "E") {
-        rolesToFetch = ["E", "R"];
-      } else {
+      const rolesToFetch = manageableRoles(currentUser.userRole);
+      if (rolesToFetch.length === 0) {
         return NextResponse.json(
           {
             success: false,
@@ -54,25 +50,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return authenticate(async (req: NextRequest, res: NextResponse) => {
     try {
-      const body = await request.json();
+      const parsed = await parseBody(request, userCreateSchema);
+      if (!parsed.success) return parsed.response;
+      const body = parsed.data;
 
-      if (
-        !body.usu_nombre ||
-        !body.usu_papellido ||
-        !body.usu_cedula ||
-        !body.usu_correo ||
-        !body.usu_contrasena ||
-        !body.usu_estado ||
-        !body.usu_rol
-      ) {
+      const currentUser = req.user as UserWithToken;
+      if (!canManageRole(currentUser.userRole, body.usu_rol)) {
         return NextResponse.json(
-          { success: false, error: "Faltan campos relevantes" },
-          { status: 400 }
+          { success: false, error: "No tienes permiso para gestionar ese rol" },
+          { status: 403 }
         );
       }
 
       const hashedPassword = await bcrypt.hash(body.usu_contrasena, 10);
-      const emailLowerCase = body.usu_correo.toLowerCase();
 
       const user = await prisma.ava_usuario.create({
         data: {
@@ -80,7 +70,7 @@ export async function POST(request: NextRequest) {
           usu_papellido: body.usu_papellido,
           usu_sapellido: body.usu_sapellido,
           usu_cedula: body.usu_cedula,
-          usu_correo: emailLowerCase,
+          usu_correo: body.usu_correo,
           usu_contrasena: hashedPassword,
           usu_telefono: body.usu_telefono,
           usu_estado: body.usu_estado,

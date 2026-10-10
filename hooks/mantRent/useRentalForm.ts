@@ -4,16 +4,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { isMontoEntero, MONTO_ENTERO_MSG } from "@/lib/schemas/formFields";
 import axios from "axios";
-import cookie from "js-cookie";
 import useRentalStore from "@/lib/zustand/useRentalStore";
 import { Cliente } from "@/lib/types";
 import { format, toDate, toZonedTime } from "date-fns-tz";
 import { convertToCostaRicaTime, convertToUTCSV } from "@/utils/dateUtils";
 
 const rentalFormSchema = z.object({
-  alq_monto: z.string().refine((value) => !isNaN(Number(value)), {
-    message: "El monto debe ser un número",
+  alq_monto: z.string().refine((value) => isMontoEntero(value) && Number(value) > 0, {
+    message: `${MONTO_ENTERO_MSG}, mayor a 0`,
   }),
   alq_fechapago: z.string(),
   alq_estado: z.enum(["A", "F", "C"]),
@@ -44,14 +44,7 @@ export const useRentalForm = ({
 
   const fetchHasPayments = async (alqId: string) => {
     try {
-      const token = cookie.get("token");
-      if (!token) return;
-
-      const response = await axios.get(`/api/rent/haspayments/${alqId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(`/api/rent/haspayments/${alqId}`);
 
       if (response?.data?.success) {
         setHasPayments(response.data.data.hasPayments);
@@ -105,10 +98,7 @@ export const useRentalForm = ({
   const onSubmit: SubmitHandler<RentalFormInputs> = async (formData) => {
     try {
       setIsLoading(true);
-      const token = cookie.get("token");
-      if (!token) throw new Error("Token no disponible");
 
-      const headers = { Authorization: `Bearer ${token}` };
 
       let response;
       if (selectedRental?.alq_id) {
@@ -122,8 +112,7 @@ export const useRentalForm = ({
             ava_clientexalquiler: clientsInRental.map((c) => ({
               cli_id: c.cli_id,
             })),
-          },
-          { headers }
+          }
         );
       }
 

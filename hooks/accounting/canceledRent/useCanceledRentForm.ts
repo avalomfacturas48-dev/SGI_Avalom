@@ -2,9 +2,9 @@
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { isMontoEntero, MONTO_ENTERO_MSG } from "@/lib/schemas/formFields";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import cookie from "js-cookie";
 import { useParams } from "next/navigation";
 import useCanceledRentalStore from "@/lib/zustand/useCanceledRentalStore";
 
@@ -12,8 +12,8 @@ const schema = z.object({
   depo_montodevuelto: z
     .string()
     .min(1, "El monto devuelto es requerido, puede ser 0 si no hay devolución")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Debe ser un número mayor o igual a 0",
+    .refine((val) => isMontoEntero(val), {
+      message: `${MONTO_ENTERO_MSG}, mayor o igual a 0`,
     }),
   depo_descmontodevuelto: z
     .string()
@@ -22,8 +22,8 @@ const schema = z.object({
   depo_montocastigo: z
     .string()
     .min(1, "El monto de castigo es requerido, puede ser 0 si no hay castigo")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Debe ser un número mayor o igual a 0",
+    .refine((val) => isMontoEntero(val), {
+      message: `${MONTO_ENTERO_MSG}, mayor o igual a 0`,
     }),
   depo_descrmontocastigo: z
     .string()
@@ -37,14 +37,14 @@ const schema = z.object({
   alqc_montodevuelto: z
     .string()
     .min(1, "El monto devuelto es requerido, puede ser 0 si no hay devolución")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Debe ser un número mayor o igual a 0",
+    .refine((val) => isMontoEntero(val), {
+      message: `${MONTO_ENTERO_MSG}, mayor o igual a 0`,
     }),
   alqc_castigo: z
     .string()
     .min(1, "El monto de castigo es requerido, puede ser 0 si no hay castigo")
-    .refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
-      message: "Debe ser un número mayor o igual a 0",
+    .refine((val) => isMontoEntero(val), {
+      message: `${MONTO_ENTERO_MSG}, mayor o igual a 0`,
     }),
   alqc_motivomontodevuelto: z
     .string()
@@ -112,21 +112,18 @@ export const useCanceledRentForm = () => {
     }
 
     try {
-      const token = cookie.get("token");
       console.log("alqc_fecha_cancelacion", data.alqc_fecha_cancelacion);
       const response = await axios.put(
         `/api/accounting/canceledrent/${alqId}`,
         {
           ...data,
-          depo_fechadevolucion: new Date(
-            `${data.depo_fechadevolucion}T00:00:00`
-          ).toISOString(),
+          // Opcional: sin fecha se envía null (antes reventaba con "undefinedT00:00:00")
+          depo_fechadevolucion: data.depo_fechadevolucion
+            ? new Date(`${data.depo_fechadevolucion}T00:00:00`).toISOString()
+            : null,
           alqc_fecha_cancelacion: new Date(
             `${data.alqc_fecha_cancelacion}T00:00:00`
           ).toISOString(),
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       );
 

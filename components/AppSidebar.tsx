@@ -145,8 +145,8 @@ export function AppSidebar() {
     cookie.set("theme", next, { expires: 365 });
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/");
   };
 

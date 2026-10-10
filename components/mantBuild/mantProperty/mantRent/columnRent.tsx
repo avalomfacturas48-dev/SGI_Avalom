@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
-import cookie from "js-cookie";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Trash2 } from "lucide-react";
 import { AvaAlquiler } from "@/lib/types";
@@ -91,14 +90,7 @@ export const columnsRent: ColumnDef<AvaAlquiler>[] = [
 
       const handleAction = async () => {
         try {
-          const token = cookie.get("token");
-          if (!token) {
-            console.error("No hay token disponible");
-            return;
-          }
-
           const headers = {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           };
 

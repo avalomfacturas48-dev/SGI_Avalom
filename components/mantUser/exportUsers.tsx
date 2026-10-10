@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import cookie from 'js-cookie'
 import { toast } from 'sonner'
 
 export function ExportUsers() {
@@ -11,9 +10,7 @@ export function ExportUsers() {
   const handleExport = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/export-users', {
-        headers: { Authorization: `Bearer ${cookie.get('token') ?? ''}` },
-      })
+      const res = await fetch('/api/export-users')
       if (!res.ok) throw new Error(`Error ${res.status}`)
       const blob = await res.blob()
       const url = window.URL.createObjectURL(blob)
